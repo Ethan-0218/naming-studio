@@ -1,7 +1,8 @@
 # 오행 (love-teller 오행.ts)
+# 작명: 문자열→오행 매핑, 수리오행(획수→오행) 지원
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Optional
 
 
 @dataclass(frozen=True)
@@ -65,6 +66,38 @@ class 오행:
     @staticmethod
     def list() -> list["오행"]:
         return [오행.목, 오행.화, 오행.토, 오행.금, 오행.수]
+
+    @staticmethod
+    def from_string(s: str) -> Optional["오행"]:
+        """한자(木/火/土/金/水) 또는 한글(목/화/토/금/수) 문자열을 오행으로 변환. 빈 문자열·미인식 시 None."""
+        if not s or not s.strip():
+            return None
+        t = s.strip()
+        if t in ("목", "木"):
+            return 오행.목
+        if t in ("화", "火"):
+            return 오행.화
+        if t in ("토", "土"):
+            return 오행.토
+        if t in ("금", "金"):
+            return 오행.금
+        if t in ("수", "水"):
+            return 오행.수
+        return None
+
+    @staticmethod
+    def from_stroke_count(stroke_count: int) -> "오행":
+        """수리오행: 획수 일의 자리 1·2=목, 3·4=화, 5·6=토, 7·8=금, 9·0=수. 원획 기준 사용."""
+        r = stroke_count % 10
+        if r in (1, 2):
+            return 오행.목
+        if r in (3, 4):
+            return 오행.화
+        if r in (5, 6):
+            return 오행.토
+        if r in (7, 8):
+            return 오행.금
+        return 오행.수
 
 
 # 십간/십이지에서 참조하므로 여기서 인스턴스 생성
