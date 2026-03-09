@@ -44,7 +44,8 @@ def candidate_exploration_node(state: NamingState) -> dict:
     if result.updated_requirement_summary:
         requirement_summary = result.updated_requirement_summary
 
-    content_blocks = [_to_frontend_block(block) for block in result.content]
+    limited = _limit_name_blocks(result.content, max_names=3)
+    content_blocks = [_to_frontend_block(block) for block in limited]
 
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
@@ -54,6 +55,19 @@ def candidate_exploration_node(state: NamingState) -> dict:
         "stage_turn_count": state.get("stage_turn_count", 0) + 1,
         "_content_blocks": content_blocks,
     }
+
+
+def _limit_name_blocks(content: list, max_names: int = 3) -> list:
+    """content에서 NAME 블록이 최대 max_names개가 되도록 초과분을 제거합니다. 순서 유지."""
+    name_count = 0
+    out = []
+    for block in content:
+        if getattr(block, "type", None) == "NAME":
+            if name_count >= max_names:
+                continue
+            name_count += 1
+        out.append(block)
+    return out
 
 
 def _to_frontend_block(block) -> dict:

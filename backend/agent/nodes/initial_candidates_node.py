@@ -39,7 +39,8 @@ def initial_candidates_node(state: NamingState) -> dict:
     messages = [SystemMessage(content=system_prompt)] + list(state.get("messages", []))
     result = structured_llm.invoke(messages)
 
-    content_blocks = [_to_frontend_block(block) for block in result.content]
+    limited = _limit_name_blocks(result.content, max_names=3)
+    content_blocks = [_to_frontend_block(block) for block in limited]
 
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
@@ -48,6 +49,19 @@ def initial_candidates_node(state: NamingState) -> dict:
         "stage_turn_count": 0,
         "_content_blocks": content_blocks,
     }
+
+
+def _limit_name_blocks(content: list, max_names: int = 3) -> list:
+    """content에서 NAME 블록이 최대 max_names개가 되도록 초과분을 제거합니다. 순서 유지."""
+    name_count = 0
+    out = []
+    for block in content:
+        if getattr(block, "type", None) == "NAME":
+            if name_count >= max_names:
+                continue
+            name_count += 1
+        out.append(block)
+    return out
 
 
 def _to_frontend_block(block) -> dict:

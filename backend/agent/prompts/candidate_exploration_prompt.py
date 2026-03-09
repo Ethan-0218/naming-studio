@@ -28,7 +28,7 @@ def build_stage_prompt(state: NamingState) -> str:
 {disliked_text}
 {summary_text}{sibling_text}{candidates_text}
 
-사용자의 반응을 분석해 취향을 파악하고, 그에 맞는 이름을 자연스럽게 추천하거나 대화를 이어가세요.
+사용자의 반응을 분석해 취향을 파악하고, 그에 맞는 이름을 자연스럽게 추천하거나 대화를 이어가세요. 한 번에 최대 3개의 이름만 추천하세요.
 
 score_breakdown 활용:
 - 좋아요/싫어요 이름의 score_breakdown을 비교해 취향 패턴을 파악하세요.
@@ -38,7 +38,7 @@ score_breakdown 활용:
 {f"- 형제자매 이름({', '.join(sibling_names)})과 계열 연속성 또는 다양성 선호를 파악해 반영하세요." if sibling_names else ""}
 
 응답 구성:
-- content 배열에 TEXT 블록과 NAME 블록을 섞어 자연스러운 대화 흐름을 만드세요.
+- content 배열에 TEXT 블록과 NAME 블록을 섞어 자연스러운 대화 흐름을 만드세요. NAME 블록은 최대 3개만 넣으세요.
 - 새로운 이름이 필요하면 request_new_candidates=True, candidate_filters에 필터 지정.
   candidate_filters: max_받침_count(0=받침 없음, 1=최대 1글자만 받침, 2 또는 null=제한 없음), preferred_오행, rarity_preference.
 - updated_requirement_summary를 매 턴마다 최신 누적 요약으로 업데이트하세요.
