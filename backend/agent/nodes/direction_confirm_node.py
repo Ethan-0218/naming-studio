@@ -15,7 +15,15 @@ def direction_confirm_node(state: NamingState) -> dict:
     messages = [SystemMessage(content=system_prompt)] + list(state.get("messages", []))
     result = structured_llm.invoke(messages)
 
-    next_stage = "initial_candidates" if result.confirmed else "direction_confirm"
+    # 이미 방향을 제안한 적 있는 경우에만 사용자 확인을 인정.
+    # naming_direction이 없으면 이번이 첫 제안 — 사용자가 아직 못 봤으므로 confirmed 무시.
+    prior_direction = state.get("naming_direction")
+    if not prior_direction:
+        confirmed = False
+    else:
+        confirmed = result.confirmed
+
+    next_stage = "initial_candidates" if confirmed else "direction_confirm"
 
     return {
         "messages": [AIMessage(content=result.message)],

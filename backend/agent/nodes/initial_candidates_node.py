@@ -15,12 +15,15 @@ def initial_candidates_node(state: NamingState) -> dict:
             from agent.tools.find_name_candidates_tool import find_name_candidates
             user_info = state.get("user_info", {})
             사주 = state.get("사주_summary") or {}
+            preference = state.get("preference_profile", {})
             current_candidates = find_name_candidates(
                 surname=user_info.get("surname", ""),
                 surname_hanja=user_info.get("surname_hanja", ""),
                 gender=user_info.get("gender", "남"),
                 session_id=state.get("session_id", ""),
                 부족한_오행=사주.get("부족한_오행", []),
+                name_length=preference.get("name_length"),
+                sibling_names=preference.get("sibling_names"),
                 limit=8,
             )
         except Exception:

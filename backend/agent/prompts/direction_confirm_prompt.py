@@ -39,9 +39,10 @@ def build_stage_prompt(state: NamingState) -> str:
 - 방향 설명 후 "이 방향으로 진행해도 괜찮으신가요?" 라고 확인하세요.
 
 사용자 응답 판단:
-- "좋아", "괜찮아", "그렇게 해줘", "응", "레쓰고" 등 긍정 → confirmed=True
+- 이전에 제안한 방향(naming_direction)이 없으면 → 이번이 첫 제안이므로 반드시 confirmed=False
+- 이전 방향이 있고 사용자가 "좋아", "괜찮아", "그렇게 해줘", "응", "레쓰고", "가보자" 등 긍정 → confirmed=True
 - 수정 요청이나 다른 방향 언급 → confirmed=False, feedback에 내용 기록
-- 애매한 경우 → confirmed=True로 처리 (우선 진행)
+- 이전 방향이 있고 애매한 경우 → confirmed=True로 처리 (우선 진행)
 
 naming_direction 필드에 이번에 제안하는 방향을 한 문장으로 요약하세요.
 """.strip()

@@ -47,6 +47,8 @@ class PreferenceProfile(BaseModel):
     values: str | None = Field(None, description="이름에 담고 싶은 의미나 가치")
     avoid: str | None = Field(None, description="피하고 싶은 이름의 특징")
     extra: str | None = Field(None, description="기타 취향 정보")
+    name_length: str | None = Field(None, description="이름 글자 수 선호. 외자/두글자/상관없음")
+    sibling_names: list[str] | None = Field(None, description="형제자매 이름 목록. 예: ['서윤', '서준']")
 
 
 class PreferenceInterviewOutput(_Strict):

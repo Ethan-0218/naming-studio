@@ -12,7 +12,8 @@ _REQUIRED_PREF_FIELDS = ["name_feel", "받침_preference", "values"]
 
 
 def _missing_fields(profile: dict) -> list[str]:
-    return [f for f in _REQUIRED_PREF_FIELDS if not profile.get(f)]
+    """None인 필드만 미수집으로 판단. 빈 문자열("없음", "" 등)은 수집된 것으로 처리."""
+    return [f for f in _REQUIRED_PREF_FIELDS if profile.get(f) is None]
 
 
 def _followup_message(missing: list[str]) -> str:

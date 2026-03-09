@@ -24,6 +24,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
             user_info = state.get("user_info", {})
             사주 = state.get("사주_summary") or {}
             filters = result.candidate_filters
+            preference = state.get("preference_profile", {})
             current_candidates = find_name_candidates(
                 surname=user_info.get("surname", ""),
                 surname_hanja=user_info.get("surname_hanja", ""),
@@ -33,6 +34,8 @@ def candidate_exploration_node(state: NamingState) -> dict:
                 preferred_오행=filters.preferred_오행,
                 require_받침=filters.require_받침,
                 rarity_preference=filters.rarity_preference,
+                name_length=preference.get("name_length"),
+                sibling_names=preference.get("sibling_names"),
                 limit=8,
             )
         except Exception:

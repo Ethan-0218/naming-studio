@@ -152,6 +152,8 @@ def find_name_candidates(
     preferred_오행: str | None = None,
     require_받침: str | None = None,  # "있음" | "없음" | None
     rarity_preference: str | None = None,  # "희귀" | "보통" | "흔한"
+    name_length: str | None = None,  # "외자" | "두글자" | "상관없음" | None
+    sibling_names: list[str] | None = None,
     limit: int = 8,
     pool_size: int = 500,
 ) -> list[dict]:
@@ -163,6 +165,13 @@ def find_name_candidates(
     disliked = set(name_store.get_disliked(session_id))
     liked = set(name_store.get_liked(session_id))
     exclude = disliked | liked
+
+    # 형제자매 이름 첫 음절 집합 (약한 페널티용)
+    sibling_first_syllables: set[str] = set()
+    if sibling_names:
+        for sn in sibling_names:
+            if sn:
+                sibling_first_syllables.add(sn[0])
 
     pool = name_repo.find_by_gender(gender_obj, limit=pool_size)
 
@@ -183,6 +192,12 @@ def find_name_candidates(
         elif require_받침 == "있음":
             if not any((ord(c) - 0xAC00) % 28 != 0 for c in name if 0xAC00 <= ord(c) <= 0xD7A3):
                 continue
+
+        # 이름 글자 수 필터
+        if name_length == "외자" and len(name) != 1:
+            continue
+        elif name_length == "두글자" and len(name) != 2:
+            continue
 
         # 음절별 발음오행 계산
         syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
@@ -227,17 +242,21 @@ def find_name_candidates(
         획수음양_norm = _획수음양_score(성_hanja_obj, name_hanja_objs)
         용신_norm = _용신_score(name_hanja_objs, syllable_오행_list, 부족한_오행_list)
 
+        # 형제자매 이름 첫 음절 중복 시 약한 페널티
+        sibling_penalty = -0.03 if name and name[0] in sibling_first_syllables else 0.0
+
         total_score = (
-            용신_norm * 0.35
-            + 수리격_norm * 0.25
-            + 발음오행_norm * 0.10
-            + 자원오행_norm * 0.10
-            + 발음음양_norm * 0.10
-            + 획수음양_norm * 0.10
+            용신_norm * 0.40
+            + 자원오행_norm * 0.18
+            + 수리격_norm * 0.15
+            + 발음오행_norm * 0.12
+            + 발음음양_norm * 0.08
+            + 획수음양_norm * 0.07
             + rarity_tiebreak * 0.001
+            + sibling_penalty
         )
 
-        # 음절별 정보 구성
+        # 음절별 정보 구성 (hanja_options는 후보 확정 후 채움)
         syllables = []
         for i, char in enumerate(name):
             h = name_hanja_objs[i]
@@ -270,4 +289,22 @@ def find_name_candidates(
         scored.append((total_score, candidate))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    return [c for _, c in scored[:limit]]
+    top_candidates = [c for _, c in scored[:limit]]
+
+    # 상위 후보에만 hanja_options 채우기 (메인 루프 밖 → DB 쿼리 최소화)
+    for candidate in top_candidates:
+        for syllable in candidate["syllables"]:
+            char = syllable["한글"]
+            options_raw = hanja_repo.search_by_eum(char, limit=20)
+            options_filtered = [o for o in options_raw if not o.is_family_hanja][:5]
+            syllable["hanja_options"] = [
+                {
+                    "한자": o.hanja,
+                    "meaning": o.mean,
+                    "오행": o.character_five_elements or "",
+                    "stroke_count": o.original_stroke_count if o.original_stroke_count is not None else o.dictionary_stroke_count,
+                }
+                for o in options_filtered
+            ]
+
+    return top_candidates
