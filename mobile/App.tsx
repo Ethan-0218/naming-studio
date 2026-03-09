@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -17,7 +18,8 @@ const BACKEND_URL = 'http://localhost:8000';
 // ── Types ──────────────────────────────────────────────────────────────
 type ContentBlock =
   | { type: 'TEXT'; data: { text: string } }
-  | { type: 'NAME'; data: NameData };
+  | { type: 'NAME'; data: NameData }
+  | { type: 'FORM_BUTTON' };   // 정보 입력 버튼 블록 (로컬 전용)
 
 interface NameData {
   한글: string;
@@ -26,7 +28,6 @@ interface NameData {
   발음오행_조화: string;
   rarity_signal: string;
   reason: string;
-  hanja_options: unknown[];
 }
 
 interface ApiResponse {
@@ -47,27 +48,56 @@ interface ChatMessage {
   stage?: string;
 }
 
-// ── Harmony badge colour ───────────────────────────────────────────────
+interface HanjaResult {
+  hanja: string;
+  eum: string;
+  mean: string;
+  stroke: number | null;
+}
+
+interface SelectedHanja {
+  hangul: string;
+  hanja: string;
+  mean: string;
+}
+
+interface UserInfoForm {
+  surname: SelectedHanja | null;
+  gender: '남' | '여';
+  birth_year: string;
+  birth_month: string;
+  birth_day: string;
+  is_lunar: boolean;
+  birth_hour: string;
+  birth_minute: string;
+  birth_time_unknown: boolean;
+  dolrimja: SelectedHanja | null;
+}
+
+const WELCOME_MESSAGE: ChatMessage = {
+  id: 'welcome',
+  role: 'assistant',
+  content: [
+    {
+      type: 'TEXT',
+      data: {
+        text: '안녕하세요! 저는 이름이예요 ✨\n\n아이에게 꼭 맞는 이름을 함께 찾아드릴게요.\n\n시작하려면 아이의 성씨, 성별, 생년월일, 출생시간이 필요해요.',
+      },
+    },
+    { type: 'FORM_BUTTON' },
+  ],
+};
+
+// ── Constants ──────────────────────────────────────────────────────────
 const harmonyColor: Record<string, string> = {
-  대길: '#2ecc71',
-  반길: '#f39c12',
-  대흉: '#e74c3c',
+  대길: '#2ecc71', 반길: '#f39c12', 대흉: '#e74c3c',
 };
-
 const rarityColor: Record<string, string> = {
-  희귀: '#9b59b6',
-  보통: '#3498db',
-  흔한: '#95a1a8',
+  희귀: '#9b59b6', 보통: '#3498db', 흔한: '#95a1a8',
 };
-
 const ohaengColor: Record<string, string> = {
-  목: '#27ae60',
-  화: '#e74c3c',
-  토: '#d4a017',
-  금: '#7f8c8d',
-  수: '#2980b9',
+  목: '#27ae60', 화: '#e74c3c', 토: '#d4a017', 금: '#7f8c8d', 수: '#2980b9',
 };
-
 const stageLabel: Record<string, string> = {
   welcome: '환영',
   info_collection: '정보 수집',
@@ -79,22 +109,397 @@ const stageLabel: Record<string, string> = {
   candidate_exploration: '이름 탐색',
 };
 
-// ── Sub-components ────────────────────────────────────────────────────
-function StageBadge({ stage }: { stage: string }) {
+const PURPLE = '#6c63ff';
+const BG = '#f4f3ff';
+const CARD_BG = '#ffffff';
+
+// ── HanjaSearchField (공통) ────────────────────────────────────────────
+function HanjaSearchField({ selected, onSelect, onClear, error, endpoint, placeholder, chipSuffix = '' }: {
+  selected: SelectedHanja | null;
+  onSelect: (s: SelectedHanja) => void;
+  onClear: () => void;
+  error?: string;
+  endpoint: string;   // "/api/surname-search" | "/api/hanja-search"
+  placeholder: string;
+  chipSuffix?: string;  // 성씨: "씨", 돌림자: "자"
+}) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<HanjaResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function search(q: string) {
+    setQuery(q);
+    if (!q.trim()) { setResults([]); return; }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`${BACKEND_URL}${endpoint}?q=${encodeURIComponent(q)}`);
+        const data: HanjaResult[] = await res.json();
+        setResults(data);
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 250);
+  }
+
+  function pick(r: HanjaResult) {
+    onSelect({ hangul: r.eum, hanja: r.hanja, mean: r.mean });
+    setQuery('');
+    setResults([]);
+  }
+
+  if (selected) {
+    return (
+      <View style={fm.hanjaChip}>
+        <View style={fm.hanjaChipInner}>
+          <Text style={fm.hanjaChipChar}>{selected.hanja}</Text>
+          <View>
+            <Text style={fm.hanjaChipHangul}>{selected.hangul}{chipSuffix}</Text>
+            <Text style={fm.hanjaChipMean} numberOfLines={1}>{selected.mean}</Text>
+          </View>
+        </View>
+        <Pressable onPress={onClear} style={fm.hanjaChipClearBtn}>
+          <Text style={fm.hanjaChipClearText}>변경</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
-    <View style={s.stageBadge}>
-      <Text style={s.stageBadgeText}>{stageLabel[stage] ?? stage}</Text>
+    <View>
+      <View style={fm.searchRow}>
+        <TextInput
+          style={[fm.input, { flex: 1 }, error && fm.inputErr]}
+          value={query}
+          onChangeText={search}
+          placeholder={placeholder}
+          placeholderTextColor="#bbb"
+          maxLength={4}
+        />
+        {searching && <ActivityIndicator style={{ marginLeft: 8 }} color={PURPLE} size="small" />}
+      </View>
+      {error && !query ? <Text style={fm.errText}>{error}</Text> : null}
+      {results.length > 0 && (
+        <View style={fm.searchResults}>
+          {results.map((r, i) => (
+            <Pressable
+              key={i}
+              style={[fm.searchResultItem, i < results.length - 1 && fm.searchResultBorder]}
+              onPress={() => pick(r)}
+            >
+              <Text style={fm.searchResultHanja}>{r.hanja}</Text>
+              <Text style={fm.searchResultEum}>{r.eum}{chipSuffix}</Text>
+              <Text style={fm.searchResultMean} numberOfLines={1}>{r.mean}</Text>
+              {r.stroke != null && <Text style={fm.searchResultStroke}>{r.stroke}획</Text>}
+            </Pressable>
+          ))}
+        </View>
+      )}
+      {query.trim() && !searching && results.length === 0 && (
+        <Text style={fm.searchNoResult}>검색 결과가 없어요</Text>
+      )}
     </View>
   );
 }
 
-function NameCard({
-  data,
-  liked,
-  disliked,
-  onLike,
-  onDislike,
-}: {
+// ── DolrimjaModal (채팅 중 돌림자 수정) ───────────────────────────────
+function DolrimjaModal({ visible, onClose, onSubmit, loading }: {
+  visible: boolean;
+  onClose: () => void;
+  onSubmit: (selected: SelectedHanja) => void;
+  loading: boolean;
+}) {
+  const [selected, setSelected] = useState<SelectedHanja | null>(null);
+
+  function handleClose() {
+    setSelected(null);
+    onClose();
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
+      <Pressable style={fm.backdrop} onPress={handleClose} />
+      <View style={[fm.sheet, { maxHeight: '60%' }]}>
+        <View style={fm.handle} />
+        <View style={fm.header}>
+          <Text style={fm.title}>돌림자 변경</Text>
+          <Pressable style={fm.closeBtn} onPress={handleClose}>
+            <Text style={fm.closeBtnText}>✕</Text>
+          </Pressable>
+        </View>
+        <Text style={fm.subtitle}>새로운 돌림자를 검색해서 선택해주세요</Text>
+        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <View style={fm.field}>
+            <HanjaSearchField
+              selected={selected}
+              onSelect={setSelected}
+              onClear={() => setSelected(null)}
+              endpoint="/api/hanja-search"
+              placeholder="돌림자 검색 (예: 준, 현, 민)"
+              chipSuffix="자"
+            />
+          </View>
+          <Pressable
+            style={[fm.submitBtn, (!selected || loading) && fm.submitBtnOff]}
+            onPress={() => selected && onSubmit(selected)}
+            disabled={!selected || loading}
+          >
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={fm.submitText}>돌림자 변경하기</Text>
+            }
+          </Pressable>
+          <View style={{ height: 32 }} />
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+// ── InfoForm Modal ─────────────────────────────────────────────────────
+function InfoFormModal({ visible, onClose, onSubmit, loading }: {
+  visible: boolean;
+  onClose: () => void;
+  onSubmit: (form: UserInfoForm) => void;
+  loading: boolean;
+}) {
+  const [form, setForm] = useState<UserInfoForm>({
+    surname: null,
+    gender: '남',
+    birth_year: '',
+    birth_month: '',
+    birth_day: '',
+    is_lunar: false,
+    birth_hour: '',
+    birth_minute: '',
+    birth_time_unknown: false,
+    dolrimja: null,
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  function set<K extends keyof UserInfoForm>(key: K, value: UserInfoForm[K]) {
+    setForm(prev => ({ ...prev, [key]: value }));
+    setErrors(prev => ({ ...prev, [key]: '' }));
+  }
+
+  function validate(): boolean {
+    const errs: Record<string, string> = {};
+    if (!form.surname?.hangul) errs.surname = '성씨를 선택해주세요';
+    const y = parseInt(form.birth_year);
+    const m = parseInt(form.birth_month);
+    const d = parseInt(form.birth_day);
+    if (!form.birth_year || isNaN(y) || y < 2000 || y > 2030)
+      errs.birth_year = '올바른 연도 (2000-2030)';
+    if (!form.birth_month || isNaN(m) || m < 1 || m > 12)
+      errs.birth_month = '1-12';
+    if (!form.birth_day || isNaN(d) || d < 1 || d > 31)
+      errs.birth_day = '1-31';
+    if (!form.birth_time_unknown && form.birth_hour) {
+      const h = parseInt(form.birth_hour);
+      if (isNaN(h) || h < 0 || h > 23) errs.birth_hour = '0-23';
+    }
+    if (!form.birth_time_unknown && form.birth_minute) {
+      const min = parseInt(form.birth_minute);
+      if (isNaN(min) || min < 0 || min > 59) errs.birth_minute = '0-59';
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  function handleSubmit() {
+    if (validate()) onSubmit(form);
+  }
+
+  const canSubmit = !!(form.surname?.hangul && form.birth_year && form.birth_month && form.birth_day);
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <Pressable style={fm.backdrop} onPress={onClose} />
+      <View style={fm.sheet}>
+        <View style={fm.handle} />
+        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <View style={fm.header}>
+            <Text style={fm.title}>아이 정보 입력</Text>
+            <Pressable style={fm.closeBtn} onPress={onClose}>
+              <Text style={fm.closeBtnText}>✕</Text>
+            </Pressable>
+          </View>
+          <Text style={fm.subtitle}>정확한 정보를 입력하면 더 잘 어울리는 이름을 추천해드릴 수 있어요</Text>
+
+          {/* 성씨 */}
+          <View style={fm.field}>
+            <Text style={fm.label}>성씨 <Text style={fm.req}>*</Text></Text>
+            <HanjaSearchField
+              selected={form.surname}
+              onSelect={s => set('surname', s)}
+              onClear={() => set('surname', null)}
+              endpoint="/api/surname-search"
+              placeholder="성씨 검색 (예: 김, 이, 박)"
+              chipSuffix="씨"
+              error={errors.surname}
+            />
+          </View>
+
+          {/* 성별 */}
+          <View style={fm.field}>
+            <Text style={fm.label}>성별 <Text style={fm.req}>*</Text></Text>
+            <View style={fm.genderRow}>
+              {(['남', '여'] as const).map(g => (
+                <Pressable
+                  key={g}
+                  style={[fm.genderBtn, form.gender === g && fm.genderBtnOn]}
+                  onPress={() => set('gender', g)}
+                >
+                  <Text style={[fm.genderText, form.gender === g && fm.genderTextOn]}>
+                    {g === '남' ? '👦 아들' : '👧 딸'}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          {/* 생년월일 */}
+          <View style={fm.field}>
+            <View style={fm.labelRow}>
+              <Text style={fm.label}>생년월일 <Text style={fm.req}>*</Text></Text>
+              <View style={fm.lunarRow}>
+                {([false, true] as const).map(lunar => (
+                  <Pressable
+                    key={String(lunar)}
+                    style={[fm.lunarBtn, form.is_lunar === lunar && fm.lunarBtnOn]}
+                    onPress={() => set('is_lunar', lunar)}
+                  >
+                    <Text style={[fm.lunarText, form.is_lunar === lunar && fm.lunarTextOn]}>
+                      {lunar ? '음력' : '양력'}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+            <View style={fm.dateRow}>
+              <View style={{ flex: 2.2 }}>
+                <TextInput
+                  style={[fm.input, errors.birth_year && fm.inputErr]}
+                  value={form.birth_year}
+                  onChangeText={v => set('birth_year', v.replace(/\D/g, ''))}
+                  placeholder="년도"
+                  placeholderTextColor="#bbb"
+                  keyboardType="numeric"
+                  maxLength={4}
+                />
+                {errors.birth_year ? <Text style={fm.errText}>{errors.birth_year}</Text> : null}
+              </View>
+              <Text style={fm.sep}>년</Text>
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  style={[fm.input, errors.birth_month && fm.inputErr]}
+                  value={form.birth_month}
+                  onChangeText={v => set('birth_month', v.replace(/\D/g, ''))}
+                  placeholder="월"
+                  placeholderTextColor="#bbb"
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+                {errors.birth_month ? <Text style={fm.errText}>{errors.birth_month}</Text> : null}
+              </View>
+              <Text style={fm.sep}>월</Text>
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  style={[fm.input, errors.birth_day && fm.inputErr]}
+                  value={form.birth_day}
+                  onChangeText={v => set('birth_day', v.replace(/\D/g, ''))}
+                  placeholder="일"
+                  placeholderTextColor="#bbb"
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+                {errors.birth_day ? <Text style={fm.errText}>{errors.birth_day}</Text> : null}
+              </View>
+              <Text style={fm.sep}>일</Text>
+            </View>
+          </View>
+
+          {/* 돌림자 (선택) */}
+          <View style={fm.field}>
+            <Text style={fm.label}>돌림자 <Text style={fm.optional}>(선택)</Text></Text>
+            <HanjaSearchField
+              selected={form.dolrimja}
+              onSelect={s => set('dolrimja', s)}
+              onClear={() => set('dolrimja', null)}
+              endpoint="/api/hanja-search"
+              placeholder="돌림자 검색 (예: 준, 현, 민)"
+              chipSuffix="자"
+            />
+          </View>
+
+          {/* 출생시간 */}
+          <View style={fm.field}>
+            <Text style={fm.label}>출생시간</Text>
+            <Pressable
+              style={fm.checkRow}
+              onPress={() => set('birth_time_unknown', !form.birth_time_unknown)}
+            >
+              <View style={[fm.checkbox, form.birth_time_unknown && fm.checkboxOn]}>
+                {form.birth_time_unknown && <Text style={fm.checkMark}>✓</Text>}
+              </View>
+              <Text style={fm.checkLabel}>시간을 모릅니다</Text>
+            </Pressable>
+            {!form.birth_time_unknown && (
+              <View style={fm.dateRow}>
+                <View style={{ flex: 1 }}>
+                  <TextInput
+                    style={[fm.input, errors.birth_hour && fm.inputErr]}
+                    value={form.birth_hour}
+                    onChangeText={v => set('birth_hour', v.replace(/\D/g, ''))}
+                    placeholder="시"
+                    placeholderTextColor="#bbb"
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                  {errors.birth_hour ? <Text style={fm.errText}>{errors.birth_hour}</Text> : null}
+                </View>
+                <Text style={fm.sep}>시</Text>
+                <View style={{ flex: 1 }}>
+                  <TextInput
+                    style={[fm.input, errors.birth_minute && fm.inputErr]}
+                    value={form.birth_minute}
+                    onChangeText={v => set('birth_minute', v.replace(/\D/g, ''))}
+                    placeholder="분"
+                    placeholderTextColor="#bbb"
+                    keyboardType="numeric"
+                    maxLength={2}
+                  />
+                  {errors.birth_minute ? <Text style={fm.errText}>{errors.birth_minute}</Text> : null}
+                </View>
+                <Text style={fm.sep}>분</Text>
+                <View style={{ flex: 1 }} />
+              </View>
+            )}
+          </View>
+
+          <Pressable
+            style={[fm.submitBtn, (!canSubmit || loading) && fm.submitBtnOff]}
+            onPress={handleSubmit}
+            disabled={!canSubmit || loading}
+          >
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={fm.submitText}>이름 찾기 시작 →</Text>
+            }
+          </Pressable>
+          <View style={{ height: 32 }} />
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+// ── NameCard ───────────────────────────────────────────────────────────
+function NameCard({ data, liked, disliked, onLike, onDislike }: {
   data: NameData;
   liked: boolean;
   disliked: boolean;
@@ -106,22 +511,20 @@ function NameCard({
     <View style={s.nameCard}>
       <View style={s.nameHeader}>
         <Text style={s.nameText}>{data.full_name}</Text>
-        <View style={[s.harmonyBadge, { backgroundColor: harmonyColor[harmony] ?? '#95a1a8' }]}>
-          <Text style={s.harmonyText}>{harmony}</Text>
+        <View style={[s.badge, { backgroundColor: harmonyColor[harmony] ?? '#95a1a8' }]}>
+          <Text style={s.badgeText}>{harmony}</Text>
         </View>
-        <View style={[s.rarityBadge, { backgroundColor: rarityColor[data.rarity_signal] ?? '#3498db' }]}>
-          <Text style={s.rarityText}>{data.rarity_signal}</Text>
+        <View style={[s.badge, { backgroundColor: rarityColor[data.rarity_signal] ?? '#3498db' }]}>
+          <Text style={s.badgeText}>{data.rarity_signal}</Text>
         </View>
       </View>
-
-      {/* 음절 분석 */}
       <View style={s.syllableRow}>
         {data.syllables.map((syl, i) => (
           <View key={i} style={s.syllable}>
             <Text style={s.sylHanja}>{syl.한자 || syl.한글}</Text>
             <Text style={s.sylHangul}>{syl.한글}</Text>
             {syl.오행 ? (
-              <View style={[s.ohaengDot, { backgroundColor: ohaengColor[syl.오행] ?? '#ccc' }]}>
+              <View style={[s.ohaengPill, { backgroundColor: ohaengColor[syl.오행] ?? '#ccc' }]}>
                 <Text style={s.ohaengText}>{syl.오행}</Text>
               </View>
             ) : null}
@@ -129,66 +532,64 @@ function NameCard({
           </View>
         ))}
       </View>
-
       {data.reason ? <Text style={s.nameReason}>{data.reason}</Text> : null}
-
-      {/* 좋아요/싫어요 */}
       <View style={s.reactionRow}>
-        <Pressable
-          style={[s.reactionBtn, liked && s.reactionBtnActive]}
-          onPress={onLike}
-        >
-          <Text style={[s.reactionBtnText, liked && s.reactionBtnTextActive]}>
-            👍 좋아요
-          </Text>
+        <Pressable style={[s.reactionBtn, liked && s.reactionLiked]} onPress={onLike}>
+          <Text style={[s.reactionText, liked && s.reactionTextActive]}>👍 좋아요</Text>
         </Pressable>
-        <Pressable
-          style={[s.reactionBtn, disliked && s.reactionBtnDislike]}
-          onPress={onDislike}
-        >
-          <Text style={[s.reactionBtnText, disliked && s.reactionBtnTextActive]}>
-            👎 별로
-          </Text>
+        <Pressable style={[s.reactionBtn, disliked && s.reactionDisliked]} onPress={onDislike}>
+          <Text style={[s.reactionText, disliked && s.reactionTextActive]}>👎 별로</Text>
         </Pressable>
       </View>
     </View>
   );
 }
 
-function MessageBubble({
-  msg,
-  liked,
-  disliked,
-  onLike,
-  onDislike,
-}: {
+// ── MessageBubble ──────────────────────────────────────────────────────
+function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, formSubmitted }: {
   msg: ChatMessage;
   liked: string[];
   disliked: string[];
   onLike: (name: string) => void;
   onDislike: (name: string) => void;
+  onOpenForm: () => void;
+  formSubmitted: boolean;
 }) {
-  const isUser = msg.role === 'user';
-  if (isUser) {
-    const text = msg.content.map(b => b.type === 'TEXT' ? b.data.text : '').join('');
+  if (msg.role === 'user') {
+    const text = msg.content
+      .filter(b => b.type === 'TEXT')
+      .map(b => (b as { type: 'TEXT'; data: { text: string } }).data.text)
+      .join('');
     return (
-      <View style={s.userBubbleWrap}>
+      <View style={s.userWrap}>
         <View style={s.userBubble}>
-          <Text style={s.userBubbleText}>{text}</Text>
+          <Text style={s.userText}>{text}</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={s.assistantBubbleWrap}>
-      {msg.stage ? <StageBadge stage={msg.stage} /> : null}
+    <View style={s.aiWrap}>
+      {msg.stage ? (
+        <View style={s.stagePill}>
+          <Text style={s.stagePillText}>{stageLabel[msg.stage] ?? msg.stage}</Text>
+        </View>
+      ) : null}
       {msg.content.map((block, i) => {
         if (block.type === 'TEXT') {
           return (
-            <View key={i} style={s.assistantBubble}>
-              <Text style={s.assistantBubbleText}>{block.data.text}</Text>
+            <View key={i} style={s.aiBubble}>
+              <Text style={s.aiText}>{block.data.text}</Text>
             </View>
+          );
+        }
+        if (block.type === 'FORM_BUTTON') {
+          if (formSubmitted) return null;
+          return (
+            <Pressable key={i} style={s.formOpenBtn} onPress={onOpenForm}>
+              <Text style={s.formOpenBtnText}>📋  정보 입력하기</Text>
+            </Pressable>
           );
         }
         if (block.type === 'NAME') {
@@ -212,7 +613,9 @@ function MessageBubble({
 
 // ── Main App ──────────────────────────────────────────────────────────
 export default function App() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -221,23 +624,37 @@ export default function App() {
   const [dislikedNames, setDislikedNames] = useState<string[]>([]);
   const [paymentRequired, setPaymentRequired] = useState(false);
   const [showLiked, setShowLiked] = useState(false);
+  const [dolrimjaModalOpen, setDolrimjaModalOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   }, [messages]);
 
-  async function sendRequest(message: string, action?: string) {
+  async function handleFormSubmit(form: UserInfoForm) {
+    const pad = (n: string) => n.padStart(2, '0');
+    const birth_date = `${form.birth_year}-${pad(form.birth_month)}-${pad(form.birth_day)}`;
+    const birth_time = form.birth_time_unknown
+      ? null
+      : (form.birth_hour ? `${pad(form.birth_hour)}:${pad(form.birth_minute || '00')}` : null);
+
+    const user_info = {
+      surname: form.surname!.hangul,
+      surname_hanja: form.surname!.hanja,
+      gender: form.gender,
+      birth_date,
+      birth_time,
+      is_lunar: form.is_lunar,
+      돌림자: form.dolrimja?.hangul ?? '',
+      돌림자_한자: form.dolrimja?.hanja ?? '',
+    };
+
     setLoading(true);
     try {
-      const body: Record<string, string | null> = { message, session_id: sessionId };
-      if (action) body.action = action;
-
       const res = await fetch(`${BACKEND_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ message: JSON.stringify(user_info), action: 'submit_info' }),
       });
       if (!res.ok) {
         const err = await res.json();
@@ -250,21 +667,22 @@ export default function App() {
       setLikedNames(data.liked_names);
       setDislikedNames(data.disliked_names);
       setPaymentRequired(data.payment_required);
+      setFormSubmitted(true);
+      setFormOpen(false);
 
-      const aiMsg: ChatMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: data.content,
-        stage: data.stage,
-      };
-      setMessages(prev => [...prev, aiMsg]);
+      const lunarLabel = form.is_lunar ? ' (음력)' : ' (양력)';
+      const timeLabel = birth_time ?? '시간 모름';
+      const dolrimjaLabel = form.dolrimja ? ` | 돌림자: ${form.dolrimja.hanja}(${form.dolrimja.hangul})` : '';
+      const summaryText =
+        `${form.surname!.hanja}(${form.surname!.hangul}) | ${form.gender === '남' ? '아들 👦' : '딸 👧'} | ${birth_date}${lunarLabel} | ${timeLabel}${dolrimjaLabel}`;
+
+      setMessages(prev => [
+        ...prev,
+        { id: 'form-user', role: 'user', content: [{ type: 'TEXT', data: { text: summaryText } }] },
+        { id: 'form-ai', role: 'assistant', content: data.content, stage: data.stage },
+      ]);
     } catch (e: unknown) {
-      const errMsg: ChatMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: [{ type: 'TEXT', data: { text: `오류: ${e instanceof Error ? e.message : String(e)}` } }],
-      };
-      setMessages(prev => [...prev, errMsg]);
+      alert(`오류: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
     }
@@ -274,49 +692,64 @@ export default function App() {
     const text = input.trim();
     if (!text || loading) return;
     setInput('');
-    const userMsg: ChatMessage = {
+    setMessages(prev => [...prev, {
       id: Date.now().toString(),
       role: 'user',
       content: [{ type: 'TEXT', data: { text } }],
-    };
-    setMessages(prev => [...prev, userMsg]);
-    await sendRequest(text);
+    }]);
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, session_id: sessionId }),
+      });
+      if (!res.ok) throw new Error((await res.json()).detail);
+      const data: ApiResponse = await res.json();
+      setSessionId(data.session_id);
+      setStage(data.stage);
+      setLikedNames(data.liked_names);
+      setDislikedNames(data.disliked_names);
+      setPaymentRequired(data.payment_required);
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: data.content,
+        stage: data.stage,
+      }]);
+    } catch (e: unknown) {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: [{ type: 'TEXT', data: { text: `오류: ${e instanceof Error ? e.message : String(e)}` } }],
+      }]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleLike(name: string) {
-    const already = likedNames.includes(name);
-    const action = already ? `unlike:${name}` : `like:${name}`;
-    setLoading(true);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: '', session_id: sessionId, action }),
-      });
-      const data: ApiResponse = await res.json();
-      setLikedNames(data.liked_names);
-      setDislikedNames(data.disliked_names);
-    } finally {
-      setLoading(false);
-    }
+    const op = likedNames.includes(name) ? 'unlike' : 'like';
+    const res = await fetch(`${BACKEND_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '', session_id: sessionId, action: `${op}:${name}` }),
+    });
+    const data: ApiResponse = await res.json();
+    setLikedNames(data.liked_names);
+    setDislikedNames(data.disliked_names);
   }
 
   async function handleDislike(name: string) {
-    const already = dislikedNames.includes(name);
-    const action = already ? `undislike:${name}` : `dislike:${name}`;
-    setLoading(true);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: '', session_id: sessionId, action }),
-      });
-      const data: ApiResponse = await res.json();
-      setLikedNames(data.liked_names);
-      setDislikedNames(data.disliked_names);
-    } finally {
-      setLoading(false);
-    }
+    const op = dislikedNames.includes(name) ? 'undislike' : 'dislike';
+    const res = await fetch(`${BACKEND_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '', session_id: sessionId, action: `${op}:${name}` }),
+    });
+    const data: ApiResponse = await res.json();
+    setLikedNames(data.liked_names);
+    setDislikedNames(data.disliked_names);
   }
 
   async function handlePayment() {
@@ -328,31 +761,69 @@ export default function App() {
         body: JSON.stringify({ message: '결제 완료했습니다', session_id: sessionId, action: 'payment_complete' }),
       });
       const data: ApiResponse = await res.json();
-      setSessionId(data.session_id);
       setStage(data.stage);
-      setLikedNames(data.liked_names);
-      setDislikedNames(data.disliked_names);
       setPaymentRequired(false);
-      const aiMsg: ChatMessage = {
+      setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: 'assistant',
         content: data.content,
         stage: data.stage,
-      };
-      setMessages(prev => [...prev, aiMsg]);
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDolrimjaUpdate(selected: SelectedHanja) {
+    setDolrimjaModalOpen(false);
+    setLoading(true);
+    // 유저 메시지 버블 표시
+    const userText = `돌림자를 ${selected.hanja}(${selected.hangul})자로 변경할게요`;
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      role: 'user',
+      content: [{ type: 'TEXT', data: { text: userText } }],
+    }]);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: JSON.stringify(selected),
+          session_id: sessionId,
+          action: 'update_dolrimja',
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).detail);
+      const data: ApiResponse = await res.json();
+      setStage(data.stage);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.content,
+        stage: data.stage,
+      }]);
+    } catch (e: unknown) {
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: [{ type: 'TEXT', data: { text: `오류: ${e instanceof Error ? e.message : String(e)}` } }],
+      }]);
     } finally {
       setLoading(false);
     }
   }
 
   function handleReset() {
-    setMessages([]);
+    setMessages([WELCOME_MESSAGE]);
     setSessionId(null);
     setStage('welcome');
     setLikedNames([]);
     setDislikedNames([]);
     setPaymentRequired(false);
+    setFormSubmitted(false);
     setInput('');
+    setShowLiked(false);
   }
 
   return (
@@ -363,14 +834,19 @@ export default function App() {
       <View style={s.header}>
         <View>
           <Text style={s.headerTitle}>이름이 ✨</Text>
-          <Text style={s.headerStage}>{stageLabel[stage] ?? stage}</Text>
+          <Text style={s.headerSub}>{stageLabel[stage] ?? stage}</Text>
         </View>
         <View style={s.headerRight}>
-          <Pressable style={s.headerBtn} onPress={() => setShowLiked(v => !v)}>
+          {formSubmitted && (
+            <Pressable style={s.headerBtn} onPress={() => setDolrimjaModalOpen(true)}>
+              <Text style={s.headerBtnText}>돌림자 수정</Text>
+            </Pressable>
+          )}
+          <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={() => setShowLiked(v => !v)}>
             <Text style={s.headerBtnText}>👍 {likedNames.length}</Text>
           </Pressable>
           <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={handleReset}>
-            <Text style={s.headerBtnText}>↺ 초기화</Text>
+            <Text style={s.headerBtnText}>↺</Text>
           </Pressable>
         </View>
       </View>
@@ -381,21 +857,17 @@ export default function App() {
           <Text style={s.likedTitle}>👍 좋아요한 이름</Text>
           {likedNames.length === 0
             ? <Text style={s.likedEmpty}>아직 없어요</Text>
-            : likedNames.map(n => (
-              <Text key={n} style={s.likedName}>{n}</Text>
-            ))}
+            : likedNames.map(n => <Text key={n} style={s.likedName}>{n}</Text>)}
           {dislikedNames.length > 0 && (
             <>
               <Text style={[s.likedTitle, { marginTop: 8 }]}>👎 별로인 이름</Text>
-              {dislikedNames.map(n => (
-                <Text key={n} style={s.dislikedName}>{n}</Text>
-              ))}
+              {dislikedNames.map(n => <Text key={n} style={s.dislikedName}>{n}</Text>)}
             </>
           )}
         </View>
       )}
 
-      {/* Messages */}
+      {/* Chat */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -403,20 +875,9 @@ export default function App() {
       >
         <ScrollView
           ref={scrollRef}
-          style={s.messageList}
-          contentContainerStyle={s.messageListContent}
+          style={s.list}
+          contentContainerStyle={s.listContent}
         >
-          {messages.length === 0 && (
-            <View style={s.emptyState}>
-              <Text style={s.emptyTitle}>안녕하세요 👋</Text>
-              <Text style={s.emptyDesc}>
-                메시지를 보내면 이름이와 작명 여정을 시작합니다.
-              </Text>
-              <Pressable style={s.startBtn} onPress={() => sendRequest('안녕하세요')}>
-                <Text style={s.startBtnText}>대화 시작하기</Text>
-              </Pressable>
-            </View>
-          )}
           {messages.map(msg => (
             <MessageBubble
               key={msg.id}
@@ -425,27 +886,27 @@ export default function App() {
               disliked={dislikedNames}
               onLike={handleLike}
               onDislike={handleDislike}
+              onOpenForm={() => setFormOpen(true)}
+              formSubmitted={formSubmitted}
             />
           ))}
           {loading && (
-            <View style={s.loadingWrap}>
-              <ActivityIndicator color="#6c63ff" />
+            <View style={s.loadingRow}>
+              <ActivityIndicator color={PURPLE} />
               <Text style={s.loadingText}>이름이가 생각 중...</Text>
             </View>
           )}
         </ScrollView>
 
-        {/* Payment gate */}
         {paymentRequired && (
-          <View style={s.paymentBanner}>
-            <Text style={s.paymentText}>더 많은 이름을 탐색하려면 결제가 필요해요</Text>
-            <Pressable style={s.paymentBtn} onPress={handlePayment}>
-              <Text style={s.paymentBtnText}>결제하고 계속하기 →</Text>
+          <View style={s.payBanner}>
+            <Text style={s.payText}>더 많은 이름을 탐색하려면 결제가 필요해요</Text>
+            <Pressable style={s.payBtn} onPress={handlePayment}>
+              <Text style={s.payBtnText}>결제하고 계속하기 →</Text>
             </Pressable>
           </View>
         )}
 
-        {/* Input */}
         <View style={s.inputRow}>
           <TextInput
             style={s.input}
@@ -455,27 +916,170 @@ export default function App() {
             placeholderTextColor="#aaa"
             onSubmitEditing={handleSend}
             returnKeyType="send"
-            editable={!loading}
+            editable={!loading && formSubmitted}
             multiline
           />
           <Pressable
-            style={[s.sendBtn, (!input.trim() || loading) && s.sendBtnDisabled]}
+            style={[s.sendBtn, (!input.trim() || loading || !formSubmitted) && s.sendBtnOff]}
             onPress={handleSend}
-            disabled={!input.trim() || loading}
+            disabled={!input.trim() || loading || !formSubmitted}
           >
             <Text style={s.sendBtnText}>전송</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Info Form Modal */}
+      <InfoFormModal
+        visible={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSubmit={handleFormSubmit}
+        loading={loading}
+      />
+
+      {/* Dolrimja Modal */}
+      <DolrimjaModal
+        visible={dolrimjaModalOpen}
+        onClose={() => setDolrimjaModalOpen(false)}
+        onSubmit={handleDolrimjaUpdate}
+        loading={loading}
+      />
     </View>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────
-const PURPLE = '#6c63ff';
-const BG = '#f4f3ff';
-const CARD_BG = '#ffffff';
+// ── Form Modal Styles ──────────────────────────────────────────────────
+const fm = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  sheet: {
+    backgroundColor: CARD_BG,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    maxHeight: '88%',
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#ddd',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  title: { fontSize: 20, fontWeight: '800', color: '#1a1a2e' },
+  closeBtn: { padding: 6 },
+  closeBtnText: { fontSize: 18, color: '#999' },
+  subtitle: { fontSize: 13, color: '#888', lineHeight: 18, marginBottom: 20 },
 
+  row: { flexDirection: 'row', marginBottom: 0 },
+  field: { marginBottom: 18 },
+  label: { fontSize: 14, fontWeight: '600', color: '#444', marginBottom: 8 },
+  req: { color: '#e74c3c' },
+  labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+
+  input: {
+    borderWidth: 1.5,
+    borderColor: '#e0dbff',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: '#222',
+    backgroundColor: '#fafafa',
+  },
+  inputErr: { borderColor: '#e74c3c' },
+  errText: { color: '#e74c3c', fontSize: 11, marginTop: 3 },
+
+  genderRow: { flexDirection: 'row', gap: 8 },
+  genderBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: '#e0dbff',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  genderBtnOn: { borderColor: PURPLE, backgroundColor: '#f0eeff' },
+  genderText: { fontSize: 13, color: '#888' },
+  genderTextOn: { color: PURPLE, fontWeight: '700' },
+
+  lunarRow: { flexDirection: 'row', gap: 4 },
+  lunarBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  lunarBtnOn: { borderColor: PURPLE, backgroundColor: '#f0eeff' },
+  lunarText: { fontSize: 12, color: '#888' },
+  lunarTextOn: { color: PURPLE, fontWeight: '700' },
+
+  dateRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
+  sep: { color: '#666', fontSize: 15, paddingTop: 11 },
+
+  checkRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  checkbox: {
+    width: 20, height: 20, borderRadius: 5,
+    borderWidth: 2, borderColor: '#ccc',
+    marginRight: 8, alignItems: 'center', justifyContent: 'center',
+  },
+  checkboxOn: { borderColor: PURPLE, backgroundColor: PURPLE },
+  checkMark: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  checkLabel: { fontSize: 14, color: '#666' },
+
+  submitBtn: {
+    backgroundColor: PURPLE,
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  submitBtnOff: { backgroundColor: '#ccc' },
+  submitText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+
+  optional: { color: '#aaa', fontWeight: '400' },
+
+  // ── Hanja search (공통) ──
+  searchRow: { flexDirection: 'row', alignItems: 'center' },
+  searchResults: {
+    borderWidth: 1.5, borderColor: '#e0dbff',
+    borderRadius: 10, marginTop: 4,
+    backgroundColor: CARD_BG, overflow: 'hidden',
+  },
+  searchResultItem: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 12, paddingVertical: 10, gap: 10,
+  },
+  searchResultBorder: { borderBottomWidth: 1, borderBottomColor: '#f0eeff' },
+  searchResultHanja: { fontSize: 22, fontWeight: '700', color: '#1a1a2e', width: 34, textAlign: 'center' },
+  searchResultEum: { fontSize: 15, fontWeight: '600', color: PURPLE, width: 44 },
+  searchResultMean: { fontSize: 12, color: '#888', flex: 1 },
+  searchResultStroke: { fontSize: 11, color: '#bbb' },
+  searchNoResult: { fontSize: 13, color: '#aaa', marginTop: 6, paddingLeft: 4 },
+
+  hanjaChip: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderWidth: 1.5, borderColor: PURPLE, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#f0eeff',
+  },
+  hanjaChipInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  hanjaChipChar: { fontSize: 28, fontWeight: '800', color: '#1a1a2e' },
+  hanjaChipHangul: { fontSize: 16, fontWeight: '700', color: PURPLE },
+  hanjaChipMean: { fontSize: 12, color: '#888', maxWidth: 180 },
+  hanjaChipClearBtn: {
+    backgroundColor: 'rgba(108,99,255,0.12)',
+    borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5,
+  },
+  hanjaChipClearText: { fontSize: 13, color: PURPLE, fontWeight: '600' },
+});
+
+// ── Chat Styles ────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: BG },
 
@@ -489,13 +1093,11 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerTitle: { color: '#fff', fontSize: 20, fontWeight: '700' },
-  headerStage: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 },
+  headerSub: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 },
   headerRight: { flexDirection: 'row', alignItems: 'center' },
   headerBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
   },
   headerBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
 
@@ -503,162 +1105,103 @@ const s = StyleSheet.create({
     backgroundColor: CARD_BG,
     borderBottomWidth: 1,
     borderBottomColor: '#e8e4ff',
-    padding: 12,
-    paddingHorizontal: 16,
+    padding: 12, paddingHorizontal: 16,
   },
   likedTitle: { fontSize: 13, fontWeight: '700', color: '#555', marginBottom: 4 },
   likedEmpty: { color: '#aaa', fontSize: 13 },
   likedName: { color: PURPLE, fontSize: 14, fontWeight: '600', paddingVertical: 2 },
   dislikedName: { color: '#e74c3c', fontSize: 14, paddingVertical: 2 },
 
-  messageList: { flex: 1 },
-  messageListContent: { padding: 12, paddingBottom: 8 },
+  list: { flex: 1 },
+  listContent: { padding: 14, paddingBottom: 8 },
 
-  emptyState: { alignItems: 'center', marginTop: 60, paddingHorizontal: 32 },
-  emptyTitle: { fontSize: 24, fontWeight: '700', color: '#333', marginBottom: 8 },
-  emptyDesc: { fontSize: 15, color: '#666', textAlign: 'center', lineHeight: 22 },
-  startBtn: {
-    marginTop: 24,
-    backgroundColor: PURPLE,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    borderRadius: 24,
-  },
-  startBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-
-  userBubbleWrap: { alignItems: 'flex-end', marginBottom: 8 },
+  userWrap: { alignItems: 'flex-end', marginBottom: 8 },
   userBubble: {
     backgroundColor: PURPLE,
-    borderRadius: 18,
-    borderBottomRightRadius: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    borderRadius: 18, borderBottomRightRadius: 4,
+    paddingHorizontal: 14, paddingVertical: 10,
     maxWidth: '78%',
   },
-  userBubbleText: { color: '#fff', fontSize: 15, lineHeight: 21 },
+  userText: { color: '#fff', fontSize: 15, lineHeight: 21 },
 
-  assistantBubbleWrap: { alignItems: 'flex-start', marginBottom: 10, maxWidth: '92%' },
-  assistantBubble: {
+  aiWrap: { alignItems: 'flex-start', marginBottom: 12, maxWidth: '92%' },
+  aiBubble: {
     backgroundColor: CARD_BG,
-    borderRadius: 18,
-    borderTopLeftRadius: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    borderRadius: 18, borderTopLeftRadius: 4,
+    paddingHorizontal: 14, paddingVertical: 10,
     marginBottom: 6,
+    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
-  assistantBubbleText: { color: '#222', fontSize: 15, lineHeight: 23 },
+  aiText: { color: '#222', fontSize: 15, lineHeight: 23 },
 
-  stageBadge: {
+  stagePill: {
     backgroundColor: '#e8e4ff',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginBottom: 4,
+    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 4,
   },
-  stageBadgeText: { fontSize: 11, color: PURPLE, fontWeight: '600' },
+  stagePillText: { fontSize: 11, color: PURPLE, fontWeight: '600' },
+
+  formOpenBtn: {
+    backgroundColor: PURPLE,
+    borderRadius: 12,
+    paddingHorizontal: 20, paddingVertical: 12,
+    alignSelf: 'flex-start',
+    marginTop: 2,
+  },
+  formOpenBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 
   nameCard: {
-    backgroundColor: CARD_BG,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 8,
-    width: '100%',
-    borderLeftWidth: 3,
-    borderLeftColor: PURPLE,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    backgroundColor: CARD_BG, borderRadius: 14, padding: 14, marginBottom: 8,
+    width: '100%', borderLeftWidth: 3, borderLeftColor: PURPLE,
+    shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }, elevation: 3,
   },
   nameHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 },
   nameText: { fontSize: 22, fontWeight: '800', color: '#1a1a2e', marginRight: 4 },
-  harmonyBadge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  harmonyText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  rarityBadge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  rarityText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  badgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
 
   syllableRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   syllable: { alignItems: 'center', flex: 1, backgroundColor: '#f8f7ff', borderRadius: 8, padding: 8 },
   sylHanja: { fontSize: 20, fontWeight: '700', color: '#333' },
   sylHangul: { fontSize: 13, color: '#888', marginTop: 2 },
-  ohaengDot: {
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginTop: 3,
-  },
+  ohaengPill: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginTop: 3 },
   ohaengText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   sylMeaning: { fontSize: 11, color: '#999', textAlign: 'center', marginTop: 3 },
-
   nameReason: { fontSize: 13, color: '#555', fontStyle: 'italic', marginBottom: 8 },
 
   reactionRow: { flexDirection: 'row', gap: 8 },
   reactionBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingVertical: 8,
-    alignItems: 'center',
+    flex: 1, borderWidth: 1.5, borderColor: '#ddd',
+    borderRadius: 8, paddingVertical: 8, alignItems: 'center',
   },
-  reactionBtnActive: { borderColor: '#2ecc71', backgroundColor: '#f0fdf4' },
-  reactionBtnDislike: { borderColor: '#e74c3c', backgroundColor: '#fef2f2' },
-  reactionBtnText: { fontSize: 14, color: '#888' },
-  reactionBtnTextActive: { color: '#333', fontWeight: '600' },
+  reactionLiked: { borderColor: '#2ecc71', backgroundColor: '#f0fdf4' },
+  reactionDisliked: { borderColor: '#e74c3c', backgroundColor: '#fef2f2' },
+  reactionText: { fontSize: 14, color: '#888' },
+  reactionTextActive: { color: '#333', fontWeight: '600' },
 
-  loadingWrap: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 },
   loadingText: { color: '#888', fontSize: 14 },
 
-  paymentBanner: {
-    backgroundColor: '#fff8e1',
-    borderTopWidth: 1,
-    borderTopColor: '#ffe082',
-    padding: 14,
-    alignItems: 'center',
-    gap: 8,
+  payBanner: {
+    backgroundColor: '#fff8e1', borderTopWidth: 1, borderTopColor: '#ffe082',
+    padding: 14, alignItems: 'center', gap: 8,
   },
-  paymentText: { color: '#795548', fontSize: 14 },
-  paymentBtn: {
-    backgroundColor: '#f59e0b',
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  paymentBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  payText: { color: '#795548', fontSize: 14 },
+  payBtn: { backgroundColor: '#f59e0b', borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  payBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 
   inputRow: {
-    flexDirection: 'row',
-    padding: 10,
-    backgroundColor: CARD_BG,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    alignItems: 'flex-end',
-    gap: 8,
+    flexDirection: 'row', padding: 10, backgroundColor: CARD_BG,
+    borderTopWidth: 1, borderTopColor: '#eee', alignItems: 'flex-end', gap: 8,
   },
   input: {
-    flex: 1,
-    backgroundColor: BG,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: '#222',
-    maxHeight: 100,
-    borderWidth: 1,
-    borderColor: '#e0dbff',
+    flex: 1, backgroundColor: BG, borderRadius: 12,
+    paddingHorizontal: 14, paddingVertical: 10,
+    fontSize: 15, color: '#222', maxHeight: 100,
+    borderWidth: 1, borderColor: '#e0dbff',
   },
-  sendBtn: {
-    backgroundColor: PURPLE,
-    borderRadius: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-  },
-  sendBtnDisabled: { backgroundColor: '#ccc' },
+  sendBtn: { backgroundColor: PURPLE, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
+  sendBtnOff: { backgroundColor: '#ccc' },
   sendBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });
