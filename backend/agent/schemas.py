@@ -66,7 +66,13 @@ class DirectionBriefingOutput(_Strict):
 # ── 방향 확인 ─────────────────────────────────────────────────────────────
 
 class DirectionConfirmOutput(_Strict):
-    message: str
+    message: str = Field(description=(
+        "부모님께 전달할 작명 방향 설명 및 확인 질문. "
+        "반드시 3~5문장 이상으로 충분히 작성하세요: "
+        "(1) 대화 내용 자연스럽게 요약, "
+        "(2) 아이의 에너지·취향을 반영한 구체적 작명 방향 설명 — 왜 이 방향인지 부모님이 납득할 수 있도록, "
+        "(3) '이 방향으로 진행할까요?' 확인 질문으로 마무리."
+    ))
     naming_direction: str = Field(description="이번에 제안하는 작명 방향 한 문장 요약")
     confirmed: bool = Field(description="방향에 동의하면 True, 수정을 원하면 False")
     feedback: str | None = Field(None, description="수정 요청 시 원하는 방향 변경 내용")
