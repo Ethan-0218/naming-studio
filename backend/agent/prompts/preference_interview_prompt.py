@@ -14,7 +14,6 @@ def build_stage_prompt(state: NamingState) -> str:
 - 보완이 필요한 에너지: {', '.join(사주.get('부족한_오행', []))}
 """
 
-    # 이미 수집된 정보 정리
     surname = user_info.get("surname", "")
     gender = user_info.get("gender", "")
     돌림자 = user_info.get("돌림자", "")
@@ -29,7 +28,6 @@ def build_stage_prompt(state: NamingState) -> str:
         known_info_lines.append(f"- 돌림자: {돌림자_한자}({돌림자}) — 이미 확정됨")
     known_info_text = "\n".join(known_info_lines)
 
-    # 돌림자 받침 여부 계산 (받침 있으면 받침 선호 질문 생략 지시)
     has_받침 = False
     if 돌림자:
         code = ord(돌림자[0]) - 0xAC00
@@ -39,38 +37,53 @@ def build_stage_prompt(state: NamingState) -> str:
     받침_지시 = ""
     if 돌림자:
         if has_받침:
-            받침_지시 = f"※ 돌림자 '{돌림자}'에 받침이 있으므로 받침 선호는 이미 결정된 것이나 다름없습니다. 받침에 대해 다시 묻지 마세요."
+            받침_지시 = f"※ 돌림자 '{돌림자}'에 받침이 있으므로 받침에 대해 다시 묻지 마세요."
         else:
-            받침_지시 = f"※ 돌림자 '{돌림자}'에 받침이 없으므로, 나머지 글자의 받침 선호만 자연스럽게 물어볼 수 있습니다."
+            받침_지시 = f"※ 돌림자 '{돌림자}'에 받침이 없으므로, 나머지 글자의 받침 선호만 물어볼 수 있습니다."
 
     돌림자_지시 = ""
     if 돌림자:
         돌림자_지시 = f"※ 돌림자는 이미 {돌림자_한자}({돌림자})자로 확정되어 있습니다. 돌림자에 대해 다시 묻거나 확인하지 마세요."
 
+    # 현재까지 파악된 취향 프로필
+    preference_profile = state.get("preference_profile", {})
+    파악된_항목 = []
+    남은_항목 = []
+
+    field_labels = {
+        "name_feel": "이름의 느낌",
+        "받침_preference": "받침 선호",
+        "values": "이름에 담고 싶은 의미/가치",
+    }
+
+    for field, label in field_labels.items():
+        if preference_profile.get(field):
+            파악된_항목.append(f"- {label}: {preference_profile[field]}")
+        else:
+            남은_항목.append(f"- {label}")
+
+    파악된_text = "\n".join(파악된_항목) if 파악된_항목 else "- (아직 없음)"
+    남은_text = "\n".join(남은_항목) if 남은_항목 else "- (모두 파악됨)"
+
     return f"""
 [현재 단계: 취향 인터뷰]{사주_text}
 
-이미 수집된 정보:
+아이 기본 정보 (이미 확정 — preference_profile에 넣지 마세요):
 {known_info_text}
 
 {돌림자_지시}
 {받침_지시}
 
-아이 이름에 대한 부모님의 취향과 바람을 자연스럽게 인터뷰하세요.
-아래 항목 중 아직 파악되지 않은 것만 대화 흐름에 맞게 물어보세요:
-- 이름의 느낌 (부드러운/강한/중성적 등)
-- 받침 선호 (이미 결정된 경우 생략)
-- 특별히 좋아하거나 싫어하는 발음
-- 이름에 담고 싶은 의미나 가치
-- 피하고 싶은 이름의 특징
+현재까지 파악된 이름 취향 (preference_profile):
+{파악된_text}
 
-최소 3번의 대화를 나눈 후, 충분히 파악이 됐다고 판단되면 JSON으로 신호를 보내세요.
-취향 파악이 충분하면:
-<json>
-{{"ready_to_proceed": true, "preference_profile": {{...수집된 취향...}}}}
-</json>
-아직 더 물어봐야 한다면:
-<json>
-{{"ready_to_proceed": false}}
-</json>
+아직 파악되지 않은 취향 항목:
+{남은_text}
+
+역할: 사용자의 답변에서 이름 취향을 추출하고, 아직 파악되지 않은 항목을 자연스럽게 하나씩 질문하세요.
+⚠️ preference_profile에는 이름 취향만 기록하세요 (name_feel, 받침_preference, values, liked_sounds, disliked_sounds, avoid, extra).
+   성씨·성별·생년월일 등 기본 정보는 절대 preference_profile에 넣지 마세요.
+- 한 번에 하나의 질문만 하세요
+- 남은 항목이 있으면 다음 항목을 자연스럽게 이어서 질문하세요
+- 남은 항목이 없으면 짧게 마무리 멘트만 하세요 (다음 단계로 넘어가는 것은 시스템이 처리합니다)
 """.strip()

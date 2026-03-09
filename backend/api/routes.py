@@ -37,6 +37,7 @@ class NamingResponse(BaseModel):
     payment_required: bool = False
     naming_direction: str | None = None
     requirement_summary: str = ""
+    debug: dict | None = None
 
 
 @router.get("/surname-search")
@@ -136,12 +137,19 @@ async def chat(request: NamingRequest):
             payment_required = True
 
         content_blocks = result.get("_content_blocks", [])
-        if not content_blocks:
-            messages = result.get("messages", [])
-            if messages:
-                last = messages[-1]
-                text = last.content if hasattr(last, "content") else str(last)
-                content_blocks = [{"type": "TEXT", "data": {"text": text}}]
+        raw_llm_output = None
+        messages = result.get("messages", [])
+        if messages:
+            last = messages[-1]
+            raw_llm_output = last.content if hasattr(last, "content") else str(last)
+        if not content_blocks and raw_llm_output:
+            content_blocks = [{"type": "TEXT", "data": {"text": raw_llm_output}}]
+
+        # debug: state snapshot (messages 제외하고 직렬화 가능한 필드만)
+        debug_state = {
+            k: v for k, v in result.items()
+            if k not in ("messages",) and not k.startswith("_")
+        }
 
         return NamingResponse(
             session_id=session_id,
@@ -152,6 +160,10 @@ async def chat(request: NamingRequest):
             payment_required=payment_required,
             naming_direction=result.get("naming_direction"),
             requirement_summary=result.get("requirement_summary", ""),
+            debug={
+                "raw_llm_output": raw_llm_output,
+                "state": debug_state,
+            },
         )
 
     except Exception as e:

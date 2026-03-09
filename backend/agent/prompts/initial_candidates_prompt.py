@@ -1,31 +1,5 @@
 from agent.state import NamingState
 
-_CONTENT_BLOCK_FORMAT = """
-응답은 반드시 아래 JSON 형식으로 반환하세요:
-{
-  "content": [
-    {"type": "TEXT", "data": {"text": "자연스러운 대화 텍스트"}},
-    {"type": "NAME", "data": {
-        "한글": "지우",
-        "full_name": "김지우",
-        "syllables": [
-            {"한글": "지", "한자": "智", "meaning": "지혜", "오행": "금"},
-            {"한글": "우", "한자": "宇", "meaning": "우주", "오행": "토"}
-        ],
-        "발음오행_조화": "대길",
-        "rarity_signal": "보통",
-        "reason": "맑고 단정한 인상",
-        "hanja_options": []
-    }},
-    ...
-  ],
-  "request_new_candidates": false,
-  "candidate_filters": {},
-  "updated_requirement_summary": ""
-}
-content 배열을 순서대로 읽으면 자연스러운 대화가 되어야 합니다.
-"""
-
 
 def build_stage_prompt(state: NamingState) -> str:
     candidates = state.get("current_candidates", [])
@@ -45,5 +19,7 @@ def build_stage_prompt(state: NamingState) -> str:
 각 이름의 느낌, 의미, 좋은 점을 쉽고 따뜻하게 설명하세요.
 전문용어 없이 부모님이 이해하기 쉬운 말로 설명하세요.
 
-{_CONTENT_BLOCK_FORMAT}
+content 배열에 TEXT 블록과 NAME 블록을 섞어 자연스러운 대화 흐름을 만드세요.
+각 NAME 블록의 syllables에는 한글/한자/meaning/오행을 정확히 채워주세요.
+request_new_candidates는 false로, updated_requirement_summary는 빈 문자열로 설정하세요.
 """.strip()

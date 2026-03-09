@@ -39,6 +39,7 @@ interface ApiResponse {
   payment_required: boolean;
   naming_direction: string | null;
   requirement_summary: string;
+  debug?: { raw_llm_output?: string; state?: Record<string, unknown> } | null;
 }
 
 interface ChatMessage {
@@ -46,6 +47,7 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: ContentBlock[];
   stage?: string;
+  debug?: ApiResponse['debug'];
 }
 
 interface HanjaResult {
@@ -268,14 +270,14 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
   loading: boolean;
 }) {
   const [form, setForm] = useState<UserInfoForm>({
-    surname: null,
+    surname: { hangul: '김', hanja: '金', mean: '쇠 금, 성 김' },
     gender: '남',
-    birth_year: '',
-    birth_month: '',
-    birth_day: '',
+    birth_year: '2025',
+    birth_month: '1',
+    birth_day: '15',
     is_lunar: false,
-    birth_hour: '',
-    birth_minute: '',
+    birth_hour: '14',
+    birth_minute: '30',
     birth_time_unknown: false,
     dolrimja: null,
   });
@@ -498,6 +500,39 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
   );
 }
 
+// ── DebugPanel ────────────────────────────────────────────────────────
+function DebugPanel({ debug }: { debug: ApiResponse['debug'] }) {
+  const [open, setOpen] = useState(false);
+  if (!debug) return null;
+  return (
+    <View style={db.wrap}>
+      <Pressable style={db.toggle} onPress={() => setOpen(v => !v)}>
+        <Text style={db.toggleText}>{open ? '▾' : '▸'} DEBUG</Text>
+      </Pressable>
+      {open && (
+        <ScrollView style={db.scroll} nestedScrollEnabled>
+          <ScrollView horizontal nestedScrollEnabled>
+            <View>
+              {debug.raw_llm_output != null && (
+                <>
+                  <Text style={db.sectionLabel}>── raw LLM output ──</Text>
+                  <Text style={db.code}>{debug.raw_llm_output}</Text>
+                </>
+              )}
+              {debug.state != null && (
+                <>
+                  <Text style={[db.sectionLabel, { marginTop: 10 }]}>── state snapshot ──</Text>
+                  <Text style={db.code}>{JSON.stringify(debug.state, null, 2)}</Text>
+                </>
+              )}
+            </View>
+          </ScrollView>
+        </ScrollView>
+      )}
+    </View>
+  );
+}
+
 // ── NameCard ───────────────────────────────────────────────────────────
 function NameCard({ data, liked, disliked, onLike, onDislike }: {
   data: NameData;
@@ -546,7 +581,7 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
 }
 
 // ── MessageBubble ──────────────────────────────────────────────────────
-function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, formSubmitted }: {
+function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, formSubmitted, showDebug }: {
   msg: ChatMessage;
   liked: string[];
   disliked: string[];
@@ -554,6 +589,7 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
   onDislike: (name: string) => void;
   onOpenForm: () => void;
   formSubmitted: boolean;
+  showDebug: boolean;
 }) {
   if (msg.role === 'user') {
     const text = msg.content
@@ -576,6 +612,7 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
           <Text style={s.stagePillText}>{stageLabel[msg.stage] ?? msg.stage}</Text>
         </View>
       ) : null}
+      {showDebug && <DebugPanel debug={msg.debug} />}
       {msg.content.map((block, i) => {
         if (block.type === 'TEXT') {
           return (
@@ -625,6 +662,7 @@ export default function App() {
   const [paymentRequired, setPaymentRequired] = useState(false);
   const [showLiked, setShowLiked] = useState(false);
   const [dolrimjaModalOpen, setDolrimjaModalOpen] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -679,7 +717,7 @@ export default function App() {
       setMessages(prev => [
         ...prev,
         { id: 'form-user', role: 'user', content: [{ type: 'TEXT', data: { text: summaryText } }] },
-        { id: 'form-ai', role: 'assistant', content: data.content, stage: data.stage },
+        { id: 'form-ai', role: 'assistant', content: data.content, stage: data.stage, debug: data.debug },
       ]);
     } catch (e: unknown) {
       alert(`오류: ${e instanceof Error ? e.message : String(e)}`);
@@ -716,6 +754,7 @@ export default function App() {
         role: 'assistant',
         content: data.content,
         stage: data.stage,
+        debug: data.debug,
       }]);
     } catch (e: unknown) {
       setMessages(prev => [...prev, {
@@ -768,6 +807,7 @@ export default function App() {
         role: 'assistant',
         content: data.content,
         stage: data.stage,
+        debug: data.debug,
       }]);
     } finally {
       setLoading(false);
@@ -802,6 +842,7 @@ export default function App() {
         role: 'assistant',
         content: data.content,
         stage: data.stage,
+        debug: data.debug,
       }]);
     } catch (e: unknown) {
       setMessages(prev => [...prev, {
@@ -837,8 +878,11 @@ export default function App() {
           <Text style={s.headerSub}>{stageLabel[stage] ?? stage}</Text>
         </View>
         <View style={s.headerRight}>
+          <Pressable style={[s.headerBtn, showDebug && s.headerBtnOn]} onPress={() => setShowDebug(v => !v)}>
+            <Text style={s.headerBtnText}>DEV</Text>
+          </Pressable>
           {formSubmitted && (
-            <Pressable style={s.headerBtn} onPress={() => setDolrimjaModalOpen(true)}>
+            <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={() => setDolrimjaModalOpen(true)}>
               <Text style={s.headerBtnText}>돌림자 수정</Text>
             </Pressable>
           )}
@@ -888,6 +932,7 @@ export default function App() {
               onDislike={handleDislike}
               onOpenForm={() => setFormOpen(true)}
               formSubmitted={formSubmitted}
+              showDebug={showDebug}
             />
           ))}
           {loading && (
@@ -1079,6 +1124,41 @@ const fm = StyleSheet.create({
   hanjaChipClearText: { fontSize: 13, color: PURPLE, fontWeight: '600' },
 });
 
+// ── Debug styles ────────────────────────────────────────────────────────
+const db = StyleSheet.create({
+  wrap: {
+    width: '100%',
+    marginBottom: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  toggle: {
+    backgroundColor: '#1e1e2e',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  toggleText: { color: '#7c7cff', fontSize: 11, fontWeight: '700', fontFamily: 'monospace' },
+  scroll: {
+    backgroundColor: '#12121f',
+    maxHeight: 500,
+    padding: 10,
+  },
+  sectionLabel: {
+    color: '#555',
+    fontSize: 10,
+    fontFamily: 'monospace',
+    marginBottom: 4,
+  },
+  code: {
+    color: '#a8ff78',
+    fontSize: 11,
+    fontFamily: 'monospace',
+    lineHeight: 17,
+  },
+});
+
 // ── Chat Styles ────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: BG },
@@ -1099,6 +1179,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
   },
+  headerBtnOn: { backgroundColor: 'rgba(255,220,50,0.35)' },
   headerBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
 
   likedPanel: {

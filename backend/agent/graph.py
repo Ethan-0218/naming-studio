@@ -1,8 +1,5 @@
 """LangGraph 작명 에이전트 그래프."""
 
-import uuid
-from typing import Any
-
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -18,8 +15,18 @@ from agent.nodes.payment_gate_node import payment_gate_node
 from agent.nodes.candidate_exploration_node import candidate_exploration_node
 
 
+def _after_preference_interview(state: NamingState) -> str:
+    """취향 인터뷰 완료 시 direction_confirm으로 자동 체인, 아니면 END."""
+    return "direction_confirm" if state.get("stage") == "direction_confirm" else END
+
+
+def _after_direction_confirm(state: NamingState) -> str:
+    """방향 확인 완료 시 initial_candidates로 자동 체인, 아니면 END."""
+    return "initial_candidates" if state.get("stage") == "initial_candidates" else END
+
+
 def create_agent_graph():
-    """NamingState 기반 9-node StateGraph를 컴파일해 반환합니다."""
+    """NamingState 기반 StateGraph를 컴파일해 반환합니다."""
     memory = MemorySaver()
     graph = StateGraph(NamingState)
 
@@ -53,17 +60,25 @@ def create_agent_graph():
         },
     )
 
-    # 각 stage 노드 → END (다음 API 호출 시 router가 재진입)
-    for node in [
-        "welcome",
-        "info_collection",
-        "preference_interview",
-        "direction_briefing",
-        "direction_confirm",
-        "initial_candidates",
-        "payment_gate",
-        "candidate_exploration",
-    ]:
+    # 단순 END 노드
+    for node in ["welcome", "info_collection", "direction_briefing", "payment_gate", "candidate_exploration"]:
         graph.add_edge(node, END)
+
+    # preference_interview → 완료 시 direction_confirm 자동 체인
+    graph.add_conditional_edges(
+        "preference_interview",
+        _after_preference_interview,
+        {"direction_confirm": "direction_confirm", END: END},
+    )
+
+    # direction_confirm → 확인 완료 시 initial_candidates 자동 체인
+    graph.add_conditional_edges(
+        "direction_confirm",
+        _after_direction_confirm,
+        {"initial_candidates": "initial_candidates", END: END},
+    )
+
+    # initial_candidates → END (payment_gate는 API routes에서 처리)
+    graph.add_edge("initial_candidates", END)
 
     return graph.compile(checkpointer=memory)

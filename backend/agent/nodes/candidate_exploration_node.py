@@ -1,54 +1,74 @@
 """후보 탐색 노드: 결제 후 무한 루프로 이름 탐색."""
 
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, AIMessage
 from langchain_openai import ChatOpenAI
 from agent.state import NamingState
 from agent.prompts import build_system_prompt
-from agent.content_block_parser import parse_content_blocks, extract_meta
+from agent.schemas import CandidatesOutput
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
 def candidate_exploration_node(state: NamingState) -> dict:
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
+    structured_llm = llm.with_structured_output(CandidatesOutput, method="function_calling")
     system_prompt = build_system_prompt(state)
     messages = [SystemMessage(content=system_prompt)] + list(state.get("messages", []))
-    response = llm.invoke(messages)
-
-    response_text = response.content if hasattr(response, "content") else str(response)
-    content_blocks = parse_content_blocks(response_text)
-    meta = extract_meta(response_text)
+    result = structured_llm.invoke(messages)
 
     current_candidates = list(state.get("current_candidates", []))
     requirement_summary = state.get("requirement_summary", "")
 
-    # 새 후보 요청
-    if meta.get("request_new_candidates"):
+    if result.request_new_candidates:
         try:
             from agent.tools.find_name_candidates_tool import find_name_candidates
             user_info = state.get("user_info", {})
-            filters = meta.get("candidate_filters", {})
+            filters = result.candidate_filters
             current_candidates = find_name_candidates(
                 surname=user_info.get("surname", ""),
                 gender=user_info.get("gender", "남"),
                 session_id=state.get("session_id", ""),
-                preferred_오행=filters.get("preferred_오행"),
-                require_받침=filters.get("require_받침"),
-                rarity_preference=filters.get("rarity_preference"),
+                preferred_오행=filters.preferred_오행,
+                require_받침=filters.require_받침,
+                rarity_preference=filters.rarity_preference,
                 limit=8,
             )
         except Exception:
             pass
 
-    # 요구사항 요약 업데이트
-    updated_summary = meta.get("updated_requirement_summary")
-    if updated_summary:
-        requirement_summary = updated_summary
+    if result.updated_requirement_summary:
+        requirement_summary = result.updated_requirement_summary
+
+    content_blocks = [_to_frontend_block(block) for block in result.content]
 
     return {
-        "messages": [response],
+        "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
         "current_candidates": current_candidates,
         "requirement_summary": requirement_summary,
-        "stage": "candidate_exploration",  # 루프
+        "stage": "candidate_exploration",
         "stage_turn_count": state.get("stage_turn_count", 0) + 1,
         "_content_blocks": content_blocks,
     }
+
+
+def _to_frontend_block(block) -> dict:
+    if block.type == "TEXT":
+        return {"type": "TEXT", "data": {"text": block.text or ""}}
+    return {"type": "NAME", "data": {
+        "한글": block.한글 or "",
+        "full_name": block.full_name or "",
+        "syllables": [s.model_dump() for s in (block.syllables or [])],
+        "발음오행_조화": block.발음오행_조화,
+        "rarity_signal": block.rarity_signal,
+        "reason": block.reason,
+    }}
+
+
+def _blocks_to_text(blocks: list[dict]) -> str:
+    parts = []
+    for b in blocks:
+        if b.get("type") == "TEXT":
+            parts.append(b["data"]["text"])
+        elif b.get("type") == "NAME":
+            d = b["data"]
+            parts.append(f"[이름 추천] {d.get('full_name', '')} — {d.get('reason', '')}")
+    return "\n".join(parts)
