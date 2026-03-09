@@ -76,7 +76,7 @@ class SyllableInfo(_Strict):
     한글: str
     한자: str
     meaning: str
-    오행: str
+    오행: str = ""
 
 
 class ContentBlock(_Strict):
