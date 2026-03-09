@@ -150,7 +150,7 @@ def find_name_candidates(
     surname_hanja: str = "",
     부족한_오행: list[str] | None = None,
     preferred_오행: str | None = None,
-    require_받침: str | None = None,  # "있음" | "없음" | None
+    max_받침_count: int | None = None,  # 0/1/2, None=제한 없음
     rarity_preference: str | None = None,  # "희귀" | "보통" | "흔한"
     name_length: str | None = None,  # "외자" | "두글자" | "상관없음" | None
     sibling_names: list[str] | None = None,
@@ -185,12 +185,13 @@ def find_name_candidates(
         if name in exclude:
             continue
 
-        # 받침 필터
-        if require_받침 == "없음":
-            if any((ord(c) - 0xAC00) % 28 != 0 for c in name if 0xAC00 <= ord(c) <= 0xD7A3):
-                continue
-        elif require_받침 == "있음":
-            if not any((ord(c) - 0xAC00) % 28 != 0 for c in name if 0xAC00 <= ord(c) <= 0xD7A3):
+        # 받침 필터: 이름에서 받침 있는 글자 수가 max_받침_count 초과면 제외
+        if max_받침_count is not None:
+            받침_개수 = sum(
+                1 for c in name
+                if 0xAC00 <= ord(c) <= 0xD7A3 and (ord(c) - 0xAC00) % 28 != 0
+            )
+            if 받침_개수 > max_받침_count:
                 continue
 
         # 이름 글자 수 필터

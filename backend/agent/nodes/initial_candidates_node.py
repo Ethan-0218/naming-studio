@@ -22,6 +22,7 @@ def initial_candidates_node(state: NamingState) -> dict:
                 gender=user_info.get("gender", "남"),
                 session_id=state.get("session_id", ""),
                 부족한_오행=사주.get("부족한_오행", []),
+                max_받침_count=preference.get("max_받침_count"),
                 name_length=preference.get("name_length"),
                 sibling_names=preference.get("sibling_names"),
                 limit=8,

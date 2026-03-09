@@ -41,7 +41,8 @@ class InfoCollectionOutput(_Strict):
 class PreferenceProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     name_feel: str | None = Field(None, description="이름의 느낌. 예: 부드러운, 강한, 중성적")
-    받침_preference: str | None = Field(None, description="받침 선호. 있음/없음/상관없음")
+    받침_preference: str | None = Field(None, description="받침 선호를 유저 표현 그대로 저장. 예: '받침 없는 이름 선호', '두 글자 모두 받침 있는 건 피함', '한 글자만 받침 허용', '상관없음'")
+    max_받침_count: int | None = Field(None, description="이름에서 받침 있는 글자 수 상한. 0=받침 없음 선호, 1=최대 1글자만 받침 허용, 2=둘 다 받침 허용, null=제한 없음")
     liked_sounds: str | None = Field(None, description="좋아하는 발음")
     disliked_sounds: str | None = Field(None, description="싫어하는 발음")
     values: str | None = Field(None, description="이름에 담고 싶은 의미나 가치")
@@ -103,7 +104,7 @@ class ContentBlock(_Strict):
 
 class CandidateFilters(_Strict):
     preferred_오행: str | None = Field(None, description="선호 오행. 목/화/토/금/수 중 하나")
-    require_받침: str | None = Field(None, description="받침 조건. 있음 또는 없음")
+    max_받침_count: int | None = Field(None, description="받침 있는 글자 수 상한. 0/1/2 또는 null(제한 없음)")
     rarity_preference: str | None = Field(None, description="희귀도 선호. 희귀/보통/흔함")
 
 

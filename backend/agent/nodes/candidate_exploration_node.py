@@ -32,7 +32,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
                 session_id=state.get("session_id", ""),
                 부족한_오행=사주.get("부족한_오행", []),
                 preferred_오행=filters.preferred_오행,
-                require_받침=filters.require_받침,
+                max_받침_count=filters.max_받침_count,
                 rarity_preference=filters.rarity_preference,
                 name_length=preference.get("name_length"),
                 sibling_names=preference.get("sibling_names"),

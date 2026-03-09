@@ -40,6 +40,7 @@ score_breakdown 활용:
 응답 구성:
 - content 배열에 TEXT 블록과 NAME 블록을 섞어 자연스러운 대화 흐름을 만드세요.
 - 새로운 이름이 필요하면 request_new_candidates=True, candidate_filters에 필터 지정.
+  candidate_filters: max_받침_count(0=받침 없음, 1=최대 1글자만 받침, 2 또는 null=제한 없음), preferred_오행, rarity_preference.
 - updated_requirement_summary를 매 턴마다 최신 누적 요약으로 업데이트하세요.
   예: "부드럽고 받침 없는 이름을 선호하며, 너무 흔한 이름은 피하고 싶어함."
 """.strip()
