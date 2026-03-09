@@ -5,3 +5,4 @@ langchain>=0.3.0
 langchain-openai>=0.2.0
 langgraph>=0.2.0
 python-dotenv>=1.0.0
+korean-lunar-calendar>=0.3.0
