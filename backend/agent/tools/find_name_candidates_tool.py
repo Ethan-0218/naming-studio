@@ -9,6 +9,8 @@ from domain.saju.오행 import 오행
 from domain.saju.음양 import 음양
 from db.registered_name_repository import RegisteredNameRepository
 from db.hanja_repository import HanjaRepository
+from db.hanja_combinations_repository import HanjaCombinationsRepository
+from db.scored_combinations_repository import ScoredCombinationsRepository
 from db.hanja_model import Hanja
 from agent import name_store
 
@@ -17,15 +19,6 @@ def _get_surname_오행(surname: str) -> 오행 | None:
     if not surname:
         return None
     return 발음오행_from_초성(surname[0])
-
-
-def _best_hanja_for(syllable: str, hanja_repo: HanjaRepository) -> Hanja | None:
-    """음절에 맞는 최적 한자를 usage_count 기준으로 선택합니다."""
-    results = hanja_repo.search_by_eum(syllable, limit=20)
-    name_hanja = [h for h in results if not h.is_family_hanja] or results
-    if not name_hanja:
-        return None
-    return max(name_hanja, key=lambda h: h.usage_count or 0)
 
 
 def _get_surname_hanja(surname_hanja_char: str, hanja_repo: HanjaRepository) -> Hanja | None:
@@ -43,7 +36,6 @@ def _parse_음양(s: str) -> 음양 | None:
 
 
 def _자원오행_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
-    """한자 자원오행 조화 점수 (0~1). character_five_elements 기준."""
     성_오행 = 오행.from_string(성_hanja.character_five_elements) if 성_hanja else None
     name_오행s = [오행.from_string(h.character_five_elements) if h else None for h in name_hanjas]
 
@@ -62,7 +54,6 @@ def _자원오행_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]
 
 
 def _수리격_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None], gender: str) -> float:
-    """81수리 이름수리격 점수 (0~1)."""
     def _stroke(h: Hanja | None) -> int | None:
         if h is None:
             return None
@@ -88,7 +79,6 @@ def _수리격_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None], g
 
 
 def _발음음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
-    """발음 음양 조화 점수 (0 or 1)."""
     성_yin = _parse_음양(성_hanja.sound_based_yin_yang) if 성_hanja else None
     name_yins = [_parse_음양(h.sound_based_yin_yang) if h else None for h in name_hanjas]
 
@@ -106,7 +96,6 @@ def _발음음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]
 
 
 def _획수음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
-    """획수 음양 조화 점수 (0 or 1)."""
     성_yin = _parse_음양(성_hanja.stroke_based_yin_yang) if 성_hanja else None
     name_yins = [_parse_음양(h.stroke_based_yin_yang) if h else None for h in name_hanjas]
 
@@ -143,6 +132,113 @@ def _용신_score(
     return 1.0 if any(o in name_오행_set for o in 부족한_오행) else 0.0
 
 
+def _build_candidate_from_combo(
+    name: str,
+    surname: str,
+    rn_count: int,
+    best_name_hanjas: list[Hanja | None],
+    syllable_오행_list: list,
+    성_hanja_obj: Hanja | None,
+    gender: str,
+    harmony_level: str,
+    harmony_reason: str,
+    발음오행_norm: float,
+    부족한_오행_list: list[str],
+    combos_by_name: dict,
+    용신_override: float | None = None,
+) -> dict:
+    """조합에서 후보 dict를 구성합니다."""
+    syllables = []
+    for i, char in enumerate(name):
+        h = best_name_hanjas[i] if i < len(best_name_hanjas) else None
+        s_오행 = syllable_오행_list[i]
+        syllables.append({
+            "한글": char,
+            "한자": h.hanja if h else "",
+            "meaning": h.mean if h else "",
+            "오행": s_오행.value if s_오행 else "",
+            "hanja_options": [],
+        })
+
+    candidate = {
+        "한글": name,
+        "full_name": surname + name,
+        "syllables": syllables,
+        "발음오행_조화": harmony_level,
+        "발음오행_조화_이유": harmony_reason,
+        "rarity_signal": "희귀" if rn_count < 100 else ("보통" if rn_count < 1000 else "흔한"),
+        "reason": "",
+        "score_breakdown": {
+            "발음오행": round(발음오행_norm, 3),
+            "자원오행": round(_자원오행_score(성_hanja_obj, best_name_hanjas), 3),
+            "수리격": round(_수리격_score(성_hanja_obj, best_name_hanjas, gender), 3),
+            "획수음양": round(_획수음양_score(성_hanja_obj, best_name_hanjas), 3),
+            "발음음양": round(_발음음양_score(성_hanja_obj, best_name_hanjas), 3),
+            "용신": round(
+                용신_override if 용신_override is not None
+                else _용신_score(best_name_hanjas, syllable_오행_list, 부족한_오행_list),
+                3,
+            ),
+        },
+    }
+
+    # hanja_options 채우기 (조합 목록에서 추출)
+    name_combos = combos_by_name.get(name, [])
+    if name_combos:
+        seen1: list[Hanja] = []
+        seen1_ids: set[int] = set()
+        seen2: list[Hanja] = []
+        seen2_ids: set[int] = set()
+        for h1, h2 in name_combos:
+            if h1.id not in seen1_ids:
+                seen1.append(h1)
+                seen1_ids.add(h1.id)
+            if h2.id not in seen2_ids:
+                seen2.append(h2)
+                seen2_ids.add(h2.id)
+
+        options_per_syllable = [seen1[:5], seen2[:5]]
+        for i, syllable in enumerate(candidate["syllables"]):
+            if i < len(options_per_syllable):
+                syllable["hanja_options"] = [
+                    {
+                        "한자": o.hanja,
+                        "meaning": o.mean,
+                        "오행": o.character_five_elements or "",
+                        "stroke_count": (
+                            o.original_stroke_count
+                            if o.original_stroke_count is not None
+                            else o.dictionary_stroke_count
+                        ),
+                    }
+                    for o in options_per_syllable[i]
+                ]
+
+    return candidate
+
+
+def _score_for_sorting(
+    성_hanja_obj: Hanja | None,
+    best_name_hanjas: list[Hanja | None],
+    gender: str,
+    발음오행_norm: float,
+    syllable_오행_list: list,
+    부족한_오행_list: list[str],
+    rarity_tiebreak: float,
+    sibling_penalty: float,
+) -> float:
+    return (
+        _용신_score(best_name_hanjas, syllable_오행_list, 부족한_오행_list) * 0.40
+        + _자원오행_score(성_hanja_obj, best_name_hanjas) * 0.18
+        + _수리격_score(성_hanja_obj, best_name_hanjas, gender) * 0.15
+        + 발음오행_norm * 0.12
+        + _발음음양_score(성_hanja_obj, best_name_hanjas) * 0.08
+        + _획수음양_score(성_hanja_obj, best_name_hanjas) * 0.07
+        + rarity_tiebreak * 0.001
+        + sibling_penalty
+    )
+
+
 def find_name_candidates(
     surname: str,
     gender: str,  # "남" | "여"
@@ -156,36 +252,42 @@ def find_name_candidates(
     sibling_names: list[str] | None = None,
     limit: int = 8,
     pool_size: int = 500,
+    offset: int = 0,
 ) -> list[dict]:
-    """등록명 DB에서 이름 후보를 가져와 종합 점수 계산 후 상위 후보를 반환합니다."""
+    """등록명 DB에서 이름 후보를 가져와 종합 점수 계산 후 상위 후보를 반환합니다.
+
+    사전 계산 DB(scored_combinations.sqlite3)에 있는 이름은 즉시 조회,
+    없는 이름(하위 ~1.3%)만 기존 런타임 계산 로직으로 폴백한다.
+    """
     gender_obj = 성별.여 if gender == "여" else 성별.남
     name_repo = RegisteredNameRepository()
     hanja_repo = HanjaRepository()
+    scored_repo = ScoredCombinationsRepository()
+    combo_repo = HanjaCombinationsRepository()
 
     disliked = set(name_store.get_disliked(session_id))
     liked = set(name_store.get_liked(session_id))
     exclude = disliked | liked
 
-    # 형제자매 이름 첫 음절 집합 (약한 페널티용)
     sibling_first_syllables: set[str] = set()
     if sibling_names:
         for sn in sibling_names:
             if sn:
                 sibling_first_syllables.add(sn[0])
 
-    pool = name_repo.find_by_gender(gender_obj, limit=pool_size)
+    pool = name_repo.find_by_gender(gender_obj, limit=pool_size, offset=offset)
 
     surname_오행 = _get_surname_오행(surname)
     성_hanja_obj = _get_surname_hanja(surname_hanja, hanja_repo)
     부족한_오행_list = 부족한_오행 or []
 
-    scored: list[tuple[float, dict]] = []
+    # 하드 필터링
+    filtered_pool = []
     for rn in pool:
         name = rn.name
         if name in exclude:
             continue
 
-        # 받침 필터: 이름에서 받침 있는 글자 수가 max_받침_count 초과면 제외
         if max_받침_count is not None:
             받침_개수 = sum(
                 1 for c in name
@@ -194,16 +296,56 @@ def find_name_candidates(
             if 받침_개수 > max_받침_count:
                 continue
 
-        # 이름 글자 수 필터
         if name_length == "외자" and len(name) != 1:
             continue
         elif name_length == "두글자" and len(name) != 2:
             continue
 
-        # 음절별 발음오행 계산
+        if preferred_오행:
+            syllable_오행s = [발음오행_from_초성(c) for c in name]
+            has_preferred = any(
+                o is not None and o.value == preferred_오행
+                for o in syllable_오행s
+            )
+            if not has_preferred:
+                continue
+
+        filtered_pool.append(rn)
+
+    if not filtered_pool:
+        return []
+
+    pool_names = [rn.name for rn in filtered_pool]
+    rn_count_by_name = {rn.name: rn.count for rn in filtered_pool}
+
+    # ── 사전 계산 DB 우선 조회 ─────────────────────────────────────────────
+    # {이름: (hanja1, hanja2, precomputed_score)} — 이름당 최고점 조합 1개
+    precomputed_best: dict[str, tuple[Hanja, Hanja, float]] = {}
+    fallback_names: list[str] = list(pool_names)
+
+    use_precomputed = scored_repo.is_available() and surname_hanja
+    if use_precomputed:
+        required_ohaengs = 부족한_오행_list if 부족한_오행_list else ["목", "화", "토", "금", "수"]
+        precomputed_best = scored_repo.get_best_combination(
+            surname_hanja=surname_hanja,
+            names=pool_names,
+            required_ohaengs=required_ohaengs,
+        )
+        covered = set(precomputed_best.keys())
+        fallback_names = [n for n in pool_names if n not in covered]
+
+    # ── 폴백: 기존 런타임 계산 ────────────────────────────────────────────
+    fallback_combos: dict[str, list[tuple[Hanja, Hanja]]] = {}
+    if fallback_names:
+        fallback_combos = combo_repo.get_combinations_bulk(fallback_names)
+
+    # ── 점수 계산 및 정렬 ────────────────────────────────────────────────
+    scored: list[tuple[float, dict]] = []
+
+    for rn in filtered_pool:
+        name = rn.name
         syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
 
-        # 발음오행 조화 계산 (성씨 기준)
         harmony_score = 0
         harmony_level = "반길"
         harmony_reason = ""
@@ -216,96 +358,73 @@ def find_name_candidates(
                 harmony_level = harmony.level
                 harmony_reason = harmony.reason
 
-        # preferred_오행 필터
-        if preferred_오행:
-            has_preferred = any(
-                o is not None and o.value == preferred_오행
-                for o in syllable_오행_list
-            )
-            if not has_preferred:
-                continue
+        발음오행_norm = (harmony_score + 4) / 8
 
-        # 희귀도 tiebreak
         rarity_tiebreak = 0.0
         if rarity_preference == "희귀":
             rarity_tiebreak = -rn.count
         elif rarity_preference == "흔한":
             rarity_tiebreak = rn.count
 
-        # 음절별 한자 선택
-        name_hanja_objs: list[Hanja | None] = [_best_hanja_for(c, hanja_repo) for c in name]
-
-        # 개별 점수 계산
-        발음오행_norm = (harmony_score + 4) / 8
-        자원오행_norm = _자원오행_score(성_hanja_obj, name_hanja_objs)
-        수리격_norm = _수리격_score(성_hanja_obj, name_hanja_objs, gender)
-        발음음양_norm = _발음음양_score(성_hanja_obj, name_hanja_objs)
-        획수음양_norm = _획수음양_score(성_hanja_obj, name_hanja_objs)
-        용신_norm = _용신_score(name_hanja_objs, syllable_오행_list, 부족한_오행_list)
-
-        # 형제자매 이름 첫 음절 중복 시 약한 페널티
         sibling_penalty = -0.03 if name and name[0] in sibling_first_syllables else 0.0
 
-        total_score = (
-            용신_norm * 0.40
-            + 자원오행_norm * 0.18
-            + 수리격_norm * 0.15
-            + 발음오행_norm * 0.12
-            + 발음음양_norm * 0.08
-            + 획수음양_norm * 0.07
-            + rarity_tiebreak * 0.001
-            + sibling_penalty
+        if name in precomputed_best:
+            # 사전 계산 경로: score 재계산 없이 precomputed_score + 발음오행/용신 가산
+            h1, h2, pre_score, ohaeng_covered = precomputed_best[name]
+            best_name_hanjas: list[Hanja | None] = [h1, h2]
+            # precomputed_score = 자원오행(0.18) + 수리격(0.15) + 발음음양(0.08) + 획수음양(0.07)
+            용신_val = 1.0 if ohaeng_covered else 0.0
+            best_score = (
+                pre_score
+                + 용신_val * 0.40
+                + 발음오행_norm * 0.12
+                + rarity_tiebreak * 0.001
+                + sibling_penalty
+            )
+            combos_for_options: dict[str, list[tuple[Hanja, Hanja]]] = {name: [(h1, h2)]}
+            용신_override_val: float | None = 용신_val
+        else:
+            # 폴백 경로: 기존 런타임 계산
+            name_combos = fallback_combos.get(name, [])
+            best_score = -999.0
+            best_name_hanjas = [None] * len(name)
+
+            if name_combos:
+                for h1f, h2f in name_combos:
+                    nh: list[Hanja | None] = [h1f, h2f]
+                    s = _score_for_sorting(
+                        성_hanja_obj, nh, gender,
+                        발음오행_norm, syllable_오행_list, 부족한_오행_list,
+                        rarity_tiebreak, sibling_penalty,
+                    )
+                    if s > best_score:
+                        best_score = s
+                        best_name_hanjas = nh
+            else:
+                best_score = _score_for_sorting(
+                    성_hanja_obj, [None] * len(name), gender,
+                    발음오행_norm, syllable_오행_list, 부족한_오행_list,
+                    rarity_tiebreak, sibling_penalty,
+                )
+            combos_for_options = {name: name_combos}
+            용신_override_val = None
+
+        candidate = _build_candidate_from_combo(
+            name=name,
+            surname=surname,
+            rn_count=rn.count,
+            best_name_hanjas=best_name_hanjas,
+            syllable_오행_list=syllable_오행_list,
+            성_hanja_obj=성_hanja_obj,
+            gender=gender,
+            harmony_level=harmony_level,
+            harmony_reason=harmony_reason,
+            발음오행_norm=발음오행_norm,
+            부족한_오행_list=부족한_오행_list,
+            combos_by_name=combos_for_options,
+            용신_override=용신_override_val,
         )
-
-        # 음절별 정보 구성 (hanja_options는 후보 확정 후 채움)
-        syllables = []
-        for i, char in enumerate(name):
-            h = name_hanja_objs[i]
-            s_오행 = syllable_오행_list[i]
-            syllables.append({
-                "한글": char,
-                "한자": h.hanja if h else "",
-                "meaning": h.mean if h else "",
-                "오행": s_오행.value if s_오행 else "",
-                "hanja_options": [],
-            })
-
-        candidate = {
-            "한글": name,
-            "full_name": surname + name,
-            "syllables": syllables,
-            "발음오행_조화": harmony_level,
-            "발음오행_조화_이유": harmony_reason,
-            "rarity_signal": "희귀" if rn.count < 100 else ("보통" if rn.count < 1000 else "흔한"),
-            "reason": "",
-            "score_breakdown": {
-                "발음오행": round(발음오행_norm, 3),
-                "자원오행": round(자원오행_norm, 3),
-                "수리격": round(수리격_norm, 3),
-                "획수음양": round(획수음양_norm, 3),
-                "발음음양": round(발음음양_norm, 3),
-                "용신": round(용신_norm, 3),
-            },
-        }
-        scored.append((total_score, candidate))
+        scored.append((best_score, candidate))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    top_candidates = [c for _, c in scored[:limit]]
-
-    # 상위 후보에만 hanja_options 채우기 (메인 루프 밖 → DB 쿼리 최소화)
-    for candidate in top_candidates:
-        for syllable in candidate["syllables"]:
-            char = syllable["한글"]
-            options_raw = hanja_repo.search_by_eum(char, limit=20)
-            options_filtered = [o for o in options_raw if not o.is_family_hanja][:5]
-            syllable["hanja_options"] = [
-                {
-                    "한자": o.hanja,
-                    "meaning": o.mean,
-                    "오행": o.character_five_elements or "",
-                    "stroke_count": o.original_stroke_count if o.original_stroke_count is not None else o.dictionary_stroke_count,
-                }
-                for o in options_filtered
-            ]
-
-    return top_candidates
+    return [c for _, c in scored[:limit]]

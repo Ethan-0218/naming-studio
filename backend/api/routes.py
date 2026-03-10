@@ -119,6 +119,7 @@ async def chat(request: NamingRequest):
                 "naming_direction": None,
                 "current_candidates": [],
                 "payment_status": "pending",
+                "candidate_call_count": 0,
             }
             result = graph.invoke(initial_state, config=config)
         else:
@@ -215,6 +216,7 @@ def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> N
         "naming_direction": None,
         "current_candidates": [],
         "payment_status": "pending",
+        "candidate_call_count": 0,
     }
     result = graph.invoke(initial_state, config=config)
 

@@ -25,6 +25,8 @@ def candidate_exploration_node(state: NamingState) -> dict:
             사주 = state.get("사주_summary") or {}
             filters = result.candidate_filters
             preference = state.get("preference_profile", {})
+            pool_size = 500
+            call_count = state.get("candidate_call_count", 0)
             current_candidates = find_name_candidates(
                 surname=user_info.get("surname", ""),
                 surname_hanja=user_info.get("surname_hanja", ""),
@@ -37,9 +39,14 @@ def candidate_exploration_node(state: NamingState) -> dict:
                 name_length=preference.get("name_length"),
                 sibling_names=preference.get("sibling_names"),
                 limit=8,
+                pool_size=pool_size,
+                offset=call_count * pool_size,
             )
+            candidate_call_count = call_count + 1
         except Exception:
-            pass
+            candidate_call_count = state.get("candidate_call_count", 0)
+    else:
+        candidate_call_count = state.get("candidate_call_count", 0)
 
     if result.updated_requirement_summary:
         requirement_summary = result.updated_requirement_summary
@@ -53,6 +60,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
         "requirement_summary": requirement_summary,
         "stage": "candidate_exploration",
         "stage_turn_count": state.get("stage_turn_count", 0) + 1,
+        "candidate_call_count": candidate_call_count,
         "_content_blocks": content_blocks,
     }
 

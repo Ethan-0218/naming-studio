@@ -52,11 +52,13 @@ class RegisteredNameRepository:
             )
             return [_row_to_registered_name(row) for row in cur.fetchall()]
 
-    def find_by_gender(self, gender: 성별, limit: int = 100) -> list[RegisteredName]:
+    def find_by_gender(
+        self, gender: 성별, limit: int = 100, offset: int = 0
+    ) -> list[RegisteredName]:
         db_gender = _성별_to_db_gender(gender)
         with self._connect() as conn:
             cur = conn.execute(
-                "SELECT * FROM registered_names WHERE gender = ? ORDER BY count DESC LIMIT ?",
-                (db_gender, limit),
+                "SELECT * FROM registered_names WHERE gender = ? ORDER BY count DESC LIMIT ? OFFSET ?",
+                (db_gender, limit, offset),
             )
             return [_row_to_registered_name(row) for row in cur.fetchall()]

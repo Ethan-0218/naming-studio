@@ -13,3 +13,15 @@ HANJA_DB_PATH: Path = Path(os.getenv("HANJA_DB_PATH", str(_here.parent / "db" / 
 REGISTERED_NAME_DB_PATH: Path = Path(
     os.getenv("REGISTERED_NAME_DB_PATH", str(_here.parent / "db" / "registered_name.sqlite3"))
 )
+NAME_HANJA_COMBINATIONS_DB_PATH: Path = Path(
+    os.getenv(
+        "NAME_HANJA_COMBINATIONS_DB_PATH",
+        str(_here.parent / "db" / "name_hanja_combinations.sqlite3"),
+    )
+)
+SCORED_COMBINATIONS_DB_PATH: Path = Path(
+    os.getenv(
+        "SCORED_COMBINATIONS_DB_PATH",
+        str(_here.parent / "db" / "scored_combinations.sqlite3"),
+    )
+)
