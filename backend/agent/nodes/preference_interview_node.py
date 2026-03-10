@@ -5,6 +5,7 @@ from langchain_openai import ChatOpenAI
 from agent.state import NamingState
 from agent.prompts import build_system_prompt
 from agent.schemas import PreferenceInterviewOutput
+from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 # 반드시 파악해야 할 필드 목록
@@ -26,6 +27,7 @@ def _followup_message(missing: list[str]) -> str:
 
 
 def preference_interview_node(state: NamingState) -> dict:
+    emit("취향을 분석하고 있어요...")
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
     structured_llm = llm.with_structured_output(PreferenceInterviewOutput, method="function_calling")
     system_prompt = build_system_prompt(state)

@@ -1,12 +1,16 @@
-"""FastAPI 라우트: POST /api/chat."""
+"""FastAPI 라우트: POST /api/chat, POST /api/chat/stream."""
 
+import asyncio
+import contextvars
 import json
 import uuid
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage
 
 from agent import name_store
+from agent import progress as _progress
 
 router = APIRouter()
 
@@ -128,47 +132,146 @@ async def chat(request: NamingRequest):
                 config=config,
             )
 
-        stage = result.get("stage", "welcome")
-        payment_required = (
-            stage == "payment_gate" or result.get("_payment_required", False)
-        )
-
-        # 결제 게이트: 결제 안 된 상태에서 initial_candidates 이후면 payment_gate
-        if stage == "candidate_exploration" and result.get("payment_status", "pending") != "completed":
-            payment_required = True
-
-        content_blocks = result.get("_content_blocks", [])
-        raw_llm_output = None
-        messages = result.get("messages", [])
-        if messages:
-            last = messages[-1]
-            raw_llm_output = last.content if hasattr(last, "content") else str(last)
-        if not content_blocks and raw_llm_output:
-            content_blocks = [{"type": "TEXT", "data": {"text": raw_llm_output}}]
-
-        # debug: state snapshot (messages 제외하고 직렬화 가능한 필드만)
-        debug_state = {
-            k: v for k, v in result.items()
-            if k not in ("messages",) and not k.startswith("_")
-        }
-
-        return NamingResponse(
-            session_id=session_id,
-            stage=stage,
-            content=content_blocks,
-            liked_names=name_store.get_liked(session_id),
-            disliked_names=name_store.get_disliked(session_id),
-            payment_required=payment_required,
-            naming_direction=result.get("naming_direction"),
-            requirement_summary=result.get("requirement_summary", ""),
-            debug={
-                "raw_llm_output": raw_llm_output,
-                "state": debug_state,
-            },
-        )
+        return _build_naming_response(session_id, result)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def _build_naming_response(session_id: str, result: dict) -> NamingResponse:
+    """graph.invoke() 결과로 NamingResponse 생성."""
+    stage = result.get("stage", "welcome")
+    payment_required = (
+        stage == "payment_gate" or result.get("_payment_required", False)
+    )
+    if stage == "candidate_exploration" and result.get("payment_status", "pending") != "completed":
+        payment_required = True
+
+    content_blocks = result.get("_content_blocks", [])
+    raw_llm_output = None
+    messages = result.get("messages", [])
+    if messages:
+        last = messages[-1]
+        raw_llm_output = last.content if hasattr(last, "content") else str(last)
+    if not content_blocks and raw_llm_output:
+        content_blocks = [{"type": "TEXT", "data": {"text": raw_llm_output}}]
+
+    debug_state = {
+        k: v for k, v in result.items()
+        if k not in ("messages",) and not k.startswith("_")
+    }
+
+    return NamingResponse(
+        session_id=session_id,
+        stage=stage,
+        content=content_blocks,
+        liked_names=name_store.get_liked(session_id),
+        disliked_names=name_store.get_disliked(session_id),
+        payment_required=payment_required,
+        naming_direction=result.get("naming_direction"),
+        requirement_summary=result.get("requirement_summary", ""),
+        debug={
+            "raw_llm_output": raw_llm_output,
+            "state": debug_state,
+        },
+    )
+
+
+@router.post("/chat/stream")
+async def chat_stream(request: NamingRequest):
+    """LLM 호출이 있는 액션을 SSE로 스트리밍합니다."""
+    session_id = request.session_id or str(uuid.uuid4())
+
+    async def event_generator():
+        loop = asyncio.get_running_loop()
+        queue: asyncio.Queue[str] = asyncio.Queue()
+
+        def _on_progress(message: str) -> None:
+            loop.call_soon_threadsafe(queue.put_nowait, message)
+
+        token = _progress.set_callback(_on_progress)
+
+        def _run() -> NamingResponse:
+            graph = _get_agent_graph()
+            config = {"configurable": {"thread_id": session_id}}
+
+            if request.action == "submit_info":
+                return _handle_submit_info(session_id, request.message, graph, config)
+            if request.action == "update_dolrimja":
+                return _handle_update_dolrimja(session_id, request.message, graph, config)
+            if request.action == "payment_complete":
+                graph.update_state(
+                    config,
+                    {"payment_status": "completed", "stage": "candidate_exploration"},
+                )
+
+            try:
+                current_state = graph.get_state(config)
+                state_values = current_state.values if current_state else {}
+            except Exception:
+                state_values = {}
+
+            is_new_session = not state_values or not state_values.get("stage")
+
+            if is_new_session:
+                invoke_arg = {
+                    "messages": [HumanMessage(content=request.message)],
+                    "stage": "welcome",
+                    "stage_turn_count": 0,
+                    "session_id": session_id,
+                    "user_info": {},
+                    "missing_info_fields": ["surname", "gender", "birth_date", "birth_time"],
+                    "사주_summary": None,
+                    "preference_profile": {},
+                    "requirement_summary": "",
+                    "naming_direction": None,
+                    "current_candidates": [],
+                    "payment_status": "pending",
+                    "candidate_call_count": 0,
+                }
+            else:
+                invoke_arg = {"messages": [HumanMessage(content=request.message)]}
+
+            result = graph.invoke(invoke_arg, config=config)
+            return _build_naming_response(session_id, result)
+
+        try:
+            ctx = contextvars.copy_context()
+            future = loop.run_in_executor(None, ctx.run, _run)
+            get_task = asyncio.ensure_future(queue.get())
+
+            while not future.done():
+                done, _ = await asyncio.wait(
+                    [future, get_task],
+                    return_when=asyncio.FIRST_COMPLETED,
+                    timeout=60.0,
+                )
+                if get_task in done:
+                    msg = get_task.result()
+                    yield f"data: {json.dumps({'type': 'progress', 'message': msg}, ensure_ascii=False)}\n\n"
+                    get_task = asyncio.ensure_future(queue.get())
+
+            # future 완료 후 남은 큐 비우기
+            if not get_task.done():
+                get_task.cancel()
+            while not queue.empty():
+                msg = queue.get_nowait()
+                yield f"data: {json.dumps({'type': 'progress', 'message': msg}, ensure_ascii=False)}\n\n"
+
+            naming_response = await future
+            result_payload = {"type": "result", **naming_response.model_dump()}
+            yield f"data: {json.dumps(result_payload, ensure_ascii=False)}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
+        finally:
+            _progress.reset_callback(token)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> NamingResponse:

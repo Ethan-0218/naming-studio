@@ -655,6 +655,7 @@ export default function App() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [stage, setStage] = useState('welcome');
   const [likedNames, setLikedNames] = useState<string[]>([]);
@@ -668,6 +669,56 @@ export default function App() {
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   }, [messages]);
+
+  function callApiStream(
+    body: object,
+    onProgress: (msg: string) => void,
+  ): Promise<ApiResponse> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${BACKEND_URL}/api/chat/stream`);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+
+      let buffer = '';
+      let lastIndex = 0;
+      let finalResult: ApiResponse | null = null;
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState >= 3 && xhr.responseText) {
+          const newText = xhr.responseText.slice(lastIndex);
+          lastIndex = xhr.responseText.length;
+          buffer += newText;
+
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop() ?? '';
+          for (const part of parts) {
+            const line = part.trim();
+            if (!line.startsWith('data: ')) continue;
+            try {
+              const event = JSON.parse(line.slice(6));
+              if (event.type === 'progress') onProgress(event.message);
+              else if (event.type === 'result') {
+                const { type: _, ...rest } = event;
+                finalResult = rest as ApiResponse;
+              } else if (event.type === 'error') reject(new Error(event.message));
+            } catch { /* ignore malformed chunks */ }
+          }
+        }
+
+        if (xhr.readyState === 4) {
+          if (xhr.status !== 200) {
+            reject(new Error(`Server error ${xhr.status}`));
+          } else if (finalResult) {
+            resolve(finalResult);
+          } else {
+            reject(new Error('No result received'));
+          }
+        }
+      };
+
+      xhr.send(JSON.stringify(body));
+    });
+  }
 
   async function handleFormSubmit(form: UserInfoForm) {
     const pad = (n: string) => n.padStart(2, '0');
@@ -689,16 +740,10 @@ export default function App() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: JSON.stringify(user_info), action: 'submit_info' }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail ?? 'Server error');
-      }
-      const data: ApiResponse = await res.json();
+      const data = await callApiStream(
+        { message: JSON.stringify(user_info), action: 'submit_info' },
+        (msg) => setProgressMessage(msg),
+      );
 
       setSessionId(data.session_id);
       setStage(data.stage);
@@ -723,6 +768,7 @@ export default function App() {
       alert(`오류: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setLoading(false);
+      setProgressMessage(null);
     }
   }
 
@@ -737,13 +783,10 @@ export default function App() {
     }]);
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, session_id: sessionId }),
-      });
-      if (!res.ok) throw new Error((await res.json()).detail);
-      const data: ApiResponse = await res.json();
+      const data = await callApiStream(
+        { message: text, session_id: sessionId },
+        (msg) => setProgressMessage(msg),
+      );
       setSessionId(data.session_id);
       setStage(data.stage);
       setLikedNames(data.liked_names);
@@ -764,6 +807,7 @@ export default function App() {
       }]);
     } finally {
       setLoading(false);
+      setProgressMessage(null);
     }
   }
 
@@ -794,12 +838,10 @@ export default function App() {
   async function handlePayment() {
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: '결제 완료했습니다', session_id: sessionId, action: 'payment_complete' }),
-      });
-      const data: ApiResponse = await res.json();
+      const data = await callApiStream(
+        { message: '결제 완료했습니다', session_id: sessionId, action: 'payment_complete' },
+        (msg) => setProgressMessage(msg),
+      );
       setStage(data.stage);
       setPaymentRequired(false);
       setMessages(prev => [...prev, {
@@ -811,6 +853,7 @@ export default function App() {
       }]);
     } finally {
       setLoading(false);
+      setProgressMessage(null);
     }
   }
 
@@ -825,17 +868,10 @@ export default function App() {
       content: [{ type: 'TEXT', data: { text: userText } }],
     }]);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: JSON.stringify(selected),
-          session_id: sessionId,
-          action: 'update_dolrimja',
-        }),
-      });
-      if (!res.ok) throw new Error((await res.json()).detail);
-      const data: ApiResponse = await res.json();
+      const data = await callApiStream(
+        { message: JSON.stringify(selected), session_id: sessionId, action: 'update_dolrimja' },
+        (msg) => setProgressMessage(msg),
+      );
       setStage(data.stage);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
@@ -852,6 +888,7 @@ export default function App() {
       }]);
     } finally {
       setLoading(false);
+      setProgressMessage(null);
     }
   }
 
@@ -938,7 +975,9 @@ export default function App() {
           {loading && (
             <View style={s.loadingRow}>
               <ActivityIndicator color={PURPLE} />
-              <Text style={s.loadingText}>이름이가 생각 중...</Text>
+              <Text style={s.loadingText}>
+                {progressMessage ?? '이름이가 생각 중...'}
+              </Text>
             </View>
           )}
         </ScrollView>

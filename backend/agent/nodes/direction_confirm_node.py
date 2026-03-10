@@ -5,10 +5,12 @@ from langchain_openai import ChatOpenAI
 from agent.state import NamingState
 from agent.prompts import build_system_prompt
 from agent.schemas import DirectionConfirmOutput
+from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
 def direction_confirm_node(state: NamingState) -> dict:
+    emit("작명 방향을 정리하고 있어요...")
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
     structured_llm = llm.with_structured_output(DirectionConfirmOutput, method="function_calling")
     system_prompt = build_system_prompt(state)

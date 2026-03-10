@@ -6,12 +6,14 @@ from agent.state import NamingState
 from agent.prompts import build_system_prompt
 from agent.schemas import CandidatesOutput
 from agent import name_store
+from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
 def initial_candidates_node(state: NamingState) -> dict:
     current_candidates = list(state.get("current_candidates", []))
     if not current_candidates:
+        emit("이름 후보를 데이터베이스에서 검색하고 있어요...")
         try:
             from agent.tools.find_name_candidates_tool import find_name_candidates
             user_info = state.get("user_info", {})
@@ -34,6 +36,7 @@ def initial_candidates_node(state: NamingState) -> dict:
     updated_state = dict(state)
     updated_state["current_candidates"] = current_candidates
 
+    emit("이름 후보를 검토하고 있어요...")
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
     structured_llm = llm.with_structured_output(CandidatesOutput, method="function_calling")
     system_prompt = build_system_prompt(updated_state)

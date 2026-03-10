@@ -8,6 +8,7 @@ from agent.state import NamingState
 from agent.prompts import build_system_prompt
 from agent.schemas import CandidatesOutput
 from agent import name_store
+from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
@@ -59,7 +60,8 @@ def candidate_exploration_node(state: NamingState) -> dict:
     loop_messages = [system_msg] + history
 
     # Phase 1: 툴 호출 루프 (최대 4회)
-    for _ in range(4):
+    for i in range(4):
+        emit(f"이름 후보를 탐색하고 있어요... ({i + 1}번째)")
         ai_msg = tool_llm.invoke(loop_messages)
         if not ai_msg.tool_calls:
             break
@@ -69,6 +71,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
             loop_messages.append(ToolMessage(content=tool_result, tool_call_id=tc["id"]))
 
     # Phase 2: 구조화 출력
+    emit("최종 이름을 다듬고 있어요...")
     structured_llm = llm.with_structured_output(CandidatesOutput, method="function_calling")
     result = structured_llm.invoke(
         loop_messages + [HumanMessage(content="위 후보들을 바탕으로 최종 추천을 structured output으로 작성하세요.")]
