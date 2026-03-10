@@ -29,4 +29,4 @@ class NamingState(TypedDict):
     naming_direction: str | None
     current_candidates: list[dict]
     payment_status: str  # "pending" | "completed"
-    candidate_call_count: int  # find_name_candidates 호출 횟수 (offset 계산용)
+    sc_cursor: int  # scored_combinations SQL OFFSET 커서 (세션 전반에 누적)

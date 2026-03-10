@@ -113,6 +113,90 @@ class ScoredCombinationsRepository:
 
         return result
 
+    def get_top_names(
+        self,
+        surname_hanja: str,
+        gender: str,           # "male" | "female"
+        required_ohaengs: list[str],  # 부족한 오행 리스트, 없으면 ["_all"]
+        limit: int = 200,
+        offset: int = 0,
+    ) -> list[tuple[str, int, int, float, bool, int]]:
+        """scored_combinations JOIN registered_names로 점수 내림차순 상위 이름 목록 반환.
+
+        반환: [(name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count), ...]
+        """
+        cache = self._ensure_hanja_cache(self._hanja_db_path)
+
+        covered_rows: list[tuple[str, int, int, float, bool, int]] = []
+        covered_names: set[str] = set()
+
+        with sqlite3.connect(self._scored_db_path) as conn:
+            conn.row_factory = sqlite3.Row
+
+            # 1단계: 용신 커버 조합 조회
+            use_ohaeng = required_ohaengs and required_ohaengs != ["_all"]
+            if use_ohaeng:
+                ohaeng_placeholders = ",".join("?" * len(required_ohaengs))
+                params: list = [surname_hanja, gender] + required_ohaengs + [limit, offset]
+                rows = conn.execute(
+                    f"""
+                    SELECT sc.name, sc.hanja1_id, sc.hanja2_id, MAX(sc.score) AS score,
+                           rn.count AS rn_count
+                    FROM scored_combinations sc
+                    JOIN registered_names rn ON sc.name = rn.name
+                    WHERE sc.surname_hanja = ?
+                      AND rn.gender = ?
+                      AND sc.required_ohaeng IN ({ohaeng_placeholders})
+                      AND sc.rank = 1
+                    GROUP BY sc.name
+                    ORDER BY score DESC
+                    LIMIT ? OFFSET ?
+                    """,
+                    params,
+                ).fetchall()
+                for row in rows:
+                    h1 = cache.get(row["hanja1_id"])
+                    h2 = cache.get(row["hanja2_id"])
+                    if h1 and h2:
+                        covered_rows.append((row["name"], row["hanja1_id"], row["hanja2_id"], row["score"], True, row["rn_count"]))
+                        covered_names.add(row["name"])
+
+            # 2단계: 커버 안 된 이름은 _all 폴백
+            remaining = limit - len(covered_rows)
+            if remaining > 0:
+                exclude_clause = ""
+                exclude_params: list = []
+                if covered_names:
+                    excl_placeholders = ",".join("?" * len(covered_names))
+                    exclude_clause = f"AND sc.name NOT IN ({excl_placeholders})"
+                    exclude_params = list(covered_names)
+
+                params_all: list = [surname_hanja, gender] + exclude_params + [remaining, offset]
+                all_rows = conn.execute(
+                    f"""
+                    SELECT sc.name, sc.hanja1_id, sc.hanja2_id, sc.score, rn.count AS rn_count
+                    FROM scored_combinations sc
+                    JOIN registered_names rn ON sc.name = rn.name
+                    WHERE sc.surname_hanja = ?
+                      AND rn.gender = ?
+                      AND sc.required_ohaeng = '_all'
+                      AND sc.rank = 1
+                      {exclude_clause}
+                    ORDER BY sc.score DESC
+                    LIMIT ? OFFSET ?
+                    """,
+                    params_all,
+                ).fetchall()
+                for row in all_rows:
+                    h1 = cache.get(row["hanja1_id"])
+                    h2 = cache.get(row["hanja2_id"])
+                    if h1 and h2:
+                        covered_rows.append((row["name"], row["hanja1_id"], row["hanja2_id"], row["score"], False, row["rn_count"]))
+
+        # score 기준 재정렬
+        covered_rows.sort(key=lambda r: r[3], reverse=True)
+        return covered_rows
+
     def get_covered_names(
         self,
         surname_hanja: str,

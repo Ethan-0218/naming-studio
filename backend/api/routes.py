@@ -123,7 +123,7 @@ async def chat(request: NamingRequest):
                 "naming_direction": None,
                 "current_candidates": [],
                 "payment_status": "pending",
-                "candidate_call_count": 0,
+                "sc_cursor": 0,
             }
             result = graph.invoke(initial_state, config=config)
         else:
@@ -227,7 +227,7 @@ async def chat_stream(request: NamingRequest):
                     "naming_direction": None,
                     "current_candidates": [],
                     "payment_status": "pending",
-                    "candidate_call_count": 0,
+                    "sc_cursor": 0,
                 }
             else:
                 invoke_arg = {"messages": [HumanMessage(content=request.message)]}
@@ -319,7 +319,7 @@ def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> N
         "naming_direction": None,
         "current_candidates": [],
         "payment_status": "pending",
-        "candidate_call_count": 0,
+        "sc_cursor": 0,
     }
     result = graph.invoke(initial_state, config=config)
 

@@ -20,7 +20,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
     사주 = state.get("사주_summary") or {}
     preference = state.get("preference_profile", {})
     session_id = state.get("session_id", "")
-    call_count_ref = [state.get("candidate_call_count", 0)]
+    sc_cursor_ref = [state.get("sc_cursor", 0)]
 
     @lc_tool
     def get_name_candidates(
@@ -36,7 +36,6 @@ def candidate_exploration_node(state: NamingState) -> dict:
         name_feel_preference: soft(ㅅㄴㅁㅇㅎㄹ)/strong(ㅂㄱㄷㅈㅊ)/null."""
         from agent.tools.find_name_candidates_tool import find_name_candidates
         pool_size = 200
-        offset = call_count_ref[0] * pool_size
         candidates = find_name_candidates(
             surname=user_info.get("surname", ""),
             surname_hanja=user_info.get("surname_hanja", ""),
@@ -51,9 +50,9 @@ def candidate_exploration_node(state: NamingState) -> dict:
             sibling_names=preference.get("sibling_names"),
             limit=12,
             pool_size=pool_size,
-            offset=offset,
+            sc_cursor=sc_cursor_ref[0],
         )
-        call_count_ref[0] += 1
+        sc_cursor_ref[0] += pool_size
         return json.dumps(candidates, ensure_ascii=False)
 
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
@@ -100,7 +99,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
         "requirement_summary": requirement_summary,
         "stage": "candidate_exploration",
         "stage_turn_count": state.get("stage_turn_count", 0) + 1,
-        "candidate_call_count": call_count_ref[0],
+        "sc_cursor": sc_cursor_ref[0],
         "_content_blocks": content_blocks,
     }
 

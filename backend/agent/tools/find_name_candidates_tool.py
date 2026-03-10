@@ -299,19 +299,19 @@ def find_name_candidates(
     limit: int = 8,
     pool_size: int = 500,
     offset: int = 0,
+    sc_cursor: int = 0,
 ) -> list[dict]:
-    """등록명 DB에서 이름 후보를 가져와 종합 점수 계산 후 상위 후보를 반환합니다.
+    """이름 후보를 가져와 종합 점수 계산 후 상위 후보를 반환합니다.
 
-    사전 계산 DB(scored_combinations.sqlite3)에 있는 이름은 즉시 조회,
-    없는 이름(하위 ~1.3%)만 기존 런타임 계산 로직으로 폴백한다.
+    surname_hanja가 있으면 scored_combinations에서 점수 내림차순으로 직접 조회.
+    없으면 registered_names 기반 기존 로직으로 fallback한다.
     """
     logger.info(
-        "[후보검색] 성=%s 성별=%s pool=%d offset=%d 제약={max_받침=%s, 길이=%s, 선호오행=%s}",
-        surname, gender, pool_size, offset, max_받침_count, name_length, preferred_오행,
+        "[후보검색] 성=%s 성별=%s pool=%d sc_cursor=%d 제약={max_받침=%s, 길이=%s, 선호오행=%s}",
+        surname, gender, pool_size, sc_cursor, max_받침_count, name_length, preferred_오행,
     )
 
     gender_obj = 성별.여 if gender == "여" else 성별.남
-    name_repo = RegisteredNameRepository()
     hanja_repo = HanjaRepository()
     scored_repo = ScoredCombinationsRepository()
     combo_repo = HanjaCombinationsRepository()
@@ -327,12 +327,163 @@ def find_name_candidates(
             if sn:
                 sibling_first_syllables.add(sn[0])
 
-    pool = name_repo.find_by_gender(gender_obj, limit=pool_size, offset=offset)
-    logger.debug("[풀] DB에서 %d개 조회", len(pool))
-
     surname_오행 = _get_surname_오행(surname)
     성_hanja_obj = _get_surname_hanja(surname_hanja, hanja_repo)
     부족한_오행_list = 부족한_오행 or []
+
+    # ── scored_combinations 직접 조회 경로 (surname_hanja 있는 경우) ─────────
+    use_sc_direct = scored_repo.is_available() and bool(surname_hanja)
+
+    if use_sc_direct:
+        db_gender = "female" if gender == "여" else "male"
+        required_ohaengs = 부족한_오행_list if 부족한_오행_list else ["_all"]
+        sc_rows = scored_repo.get_top_names(
+            surname_hanja=surname_hanja,
+            gender=db_gender,
+            required_ohaengs=required_ohaengs,
+            limit=pool_size,
+            offset=sc_cursor,
+        )
+        logger.debug("[SC직접조회] %d개 조회 (cursor=%d)", len(sc_rows), sc_cursor)
+
+        # Python 하드 필터
+        filtered_sc: list[tuple[str, int, int, float, bool, int]] = []
+        filter_stats = {"제외": 0, "받침": 0, "길이": 0, "오행": 0}
+        for name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count in sc_rows:
+            if name in exclude:
+                filter_stats["제외"] += 1
+                continue
+
+            if max_받침_count is not None:
+                받침_개수 = sum(
+                    1 for c in name
+                    if 0xAC00 <= ord(c) <= 0xD7A3 and (ord(c) - 0xAC00) % 28 != 0
+                )
+                if 받침_개수 > max_받침_count:
+                    filter_stats["받침"] += 1
+                    continue
+
+            if name_length == "외자" and len(name) != 1:
+                filter_stats["길이"] += 1
+                continue
+            elif name_length == "두글자" and len(name) != 2:
+                filter_stats["길이"] += 1
+                continue
+
+            if preferred_오행:
+                syllable_오행s = [발음오행_from_초성(c) for c in name]
+                has_preferred = any(
+                    o is not None and o.value == preferred_오행
+                    for o in syllable_오행s
+                )
+                if not has_preferred:
+                    filter_stats["오행"] += 1
+                    continue
+
+            filtered_sc.append((name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count))
+
+        logger.info(
+            "[필터] %d→%d개 통과 (제외=%d 받침=%d 길이=%d 오행=%d)",
+            len(sc_rows), len(filtered_sc),
+            filter_stats["제외"], filter_stats["받침"],
+            filter_stats["길이"], filter_stats["오행"],
+        )
+
+        if not filtered_sc:
+            return []
+
+        # hanja cache로 precomputed_best dict 구성
+        hanja_cache = ScoredCombinationsRepository._ensure_hanja_cache(scored_repo._hanja_db_path)
+        precomputed_best: dict[str, tuple[Hanja, Hanja, float, bool]] = {}
+        rn_count_by_name: dict[str, int] = {}
+        for name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count in filtered_sc:
+            h1 = hanja_cache.get(hanja1_id)
+            h2 = hanja_cache.get(hanja2_id)
+            if h1 and h2:
+                precomputed_best[name] = (h1, h2, score, ohaeng_covered)
+                rn_count_by_name[name] = rn_count
+
+        scored: list[tuple[float, dict]] = []
+        for name, _, _, pre_score, ohaeng_covered, rn_count in filtered_sc:
+            if name not in precomputed_best:
+                continue
+            h1, h2, pre_score, ohaeng_covered = precomputed_best[name]
+            syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
+
+            harmony_score = 0
+            harmony_level = "반길"
+            harmony_reason = ""
+            if surname_오행 and len(name) >= 1:
+                첫음절_오행 = syllable_오행_list[0]
+                두번째_오행 = syllable_오행_list[1] if len(name) >= 2 else None
+                if 첫음절_오행:
+                    harmony = 오행조화.from_오행(surname_오행, 첫음절_오행, 두번째_오행)
+                    harmony_score = harmony.total_score
+                    harmony_level = harmony.level
+                    harmony_reason = harmony.reason
+
+            발음오행_norm = (harmony_score + 4) / 8
+            용신_val = 1.0 if ohaeng_covered else 0.0
+
+            rarity_tiebreak = 0.0
+            if rarity_preference == "희귀":
+                rarity_tiebreak = -rn_count
+            elif rarity_preference == "흔한":
+                rarity_tiebreak = rn_count
+
+            sibling_penalty = -0.03 if name and name[0] in sibling_first_syllables else 0.0
+
+            best_score = (
+                pre_score
+                + 용신_val * 0.40
+                + 발음오행_norm * 0.12
+                + rarity_tiebreak * 0.001
+                + sibling_penalty
+            )
+            if name_feel_preference:
+                feel = _get_feel(name)
+                if name_feel_preference == "soft" and feel == "strong":
+                    best_score *= 0.7
+                elif name_feel_preference == "strong" and feel == "soft":
+                    best_score *= 0.7
+
+            best_name_hanjas: list[Hanja | None] = [h1, h2]
+            candidate = _build_candidate_from_combo(
+                name=name,
+                surname=surname,
+                rn_count=rn_count,
+                best_name_hanjas=best_name_hanjas,
+                syllable_오행_list=syllable_오행_list,
+                성_hanja_obj=성_hanja_obj,
+                gender=gender,
+                harmony_level=harmony_level,
+                harmony_reason=harmony_reason,
+                발음오행_norm=발음오행_norm,
+                부족한_오행_list=부족한_오행_list,
+                combos_by_name={name: [(h1, h2)]},
+                용신_override=용신_val,
+            )
+            scored.append((best_score, candidate))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+
+        for rank, (score, cand) in enumerate(scored[:5], start=1):
+            sb = cand.get("score_breakdown", {})
+            logger.debug(
+                "[순위#%d] 이름=%s 점수=%.3f (용신=%.2f 자원=%.2f 수리=%.2f 발음=%.2f)",
+                rank, cand.get("한글", ""), score,
+                sb.get("용신", 0), sb.get("자원오행", 0), sb.get("수리격", 0),
+                sb.get("발음오행", 0),
+            )
+
+        final = [c for _, c in _diversify(scored, limit)]
+        logger.info("[최종] %d개 반환 (SC직접): %s", len(final), [c.get("한글", "") for c in final])
+        return final
+
+    # ── fallback: registered_names 기반 기존 로직 ────────────────────────
+    name_repo = RegisteredNameRepository()
+    pool = name_repo.find_by_gender(gender_obj, limit=pool_size, offset=offset)
+    logger.debug("[풀] registered_names에서 %d개 조회", len(pool))
 
     # 하드 필터링
     filtered_pool = []
@@ -384,29 +535,25 @@ def find_name_candidates(
     pool_names = [rn.name for rn in filtered_pool]
     rn_count_by_name = {rn.name: rn.count for rn in filtered_pool}
 
-    # ── 사전 계산 DB 우선 조회 ─────────────────────────────────────────────
-    # {이름: (hanja1, hanja2, precomputed_score)} — 이름당 최고점 조합 1개
-    precomputed_best: dict[str, tuple[Hanja, Hanja, float]] = {}
+    precomputed_best_fb: dict[str, tuple[Hanja, Hanja, float, bool]] = {}
     fallback_names: list[str] = list(pool_names)
 
     use_precomputed = scored_repo.is_available() and surname_hanja
     if use_precomputed:
-        required_ohaengs = 부족한_오행_list if 부족한_오행_list else ["목", "화", "토", "금", "수"]
-        precomputed_best = scored_repo.get_best_combination(
+        required_ohaengs_fb = 부족한_오행_list if 부족한_오행_list else ["목", "화", "토", "금", "수"]
+        precomputed_best_fb = scored_repo.get_best_combination(
             surname_hanja=surname_hanja,
             names=pool_names,
-            required_ohaengs=required_ohaengs,
+            required_ohaengs=required_ohaengs_fb,
         )
-        covered = set(precomputed_best.keys())
+        covered = set(precomputed_best_fb.keys())
         fallback_names = [n for n in pool_names if n not in covered]
         logger.debug("[사전계산] %d개 hit, %d개 폴백 런타임 계산", len(covered), len(fallback_names))
 
-    # ── 폴백: 기존 런타임 계산 ────────────────────────────────────────────
     fallback_combos: dict[str, list[tuple[Hanja, Hanja]]] = {}
     if fallback_names:
         fallback_combos = combo_repo.get_combinations_bulk(fallback_names)
 
-    # ── 점수 계산 및 정렬 ────────────────────────────────────────────────
     scored: list[tuple[float, dict]] = []
 
     for rn in filtered_pool:
@@ -435,9 +582,9 @@ def find_name_candidates(
 
         sibling_penalty = -0.03 if name and name[0] in sibling_first_syllables else 0.0
 
-        if name in precomputed_best:
+        if name in precomputed_best_fb:
             # 사전 계산 경로: score 재계산 없이 precomputed_score + 발음오행/용신 가산
-            h1, h2, pre_score, ohaeng_covered = precomputed_best[name]
+            h1, h2, pre_score, ohaeng_covered = precomputed_best_fb[name]
             best_name_hanjas: list[Hanja | None] = [h1, h2]
             # precomputed_score = 자원오행(0.18) + 수리격(0.15) + 발음음양(0.08) + 획수음양(0.07)
             용신_val = 1.0 if ohaeng_covered else 0.0
