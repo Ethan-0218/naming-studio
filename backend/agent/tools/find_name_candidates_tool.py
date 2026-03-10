@@ -1,5 +1,9 @@
 """이름 후보 검색 툴."""
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from domain.saju.성별 import 성별
 from domain.jakmyeong.발음오행 import 발음오행_from_초성
 from domain.jakmyeong.오행조화 import 오행조화
@@ -301,6 +305,11 @@ def find_name_candidates(
     사전 계산 DB(scored_combinations.sqlite3)에 있는 이름은 즉시 조회,
     없는 이름(하위 ~1.3%)만 기존 런타임 계산 로직으로 폴백한다.
     """
+    logger.info(
+        "[후보검색] 성=%s 성별=%s pool=%d offset=%d 제약={max_받침=%s, 길이=%s, 선호오행=%s}",
+        surname, gender, pool_size, offset, max_받침_count, name_length, preferred_오행,
+    )
+
     gender_obj = 성별.여 if gender == "여" else 성별.남
     name_repo = RegisteredNameRepository()
     hanja_repo = HanjaRepository()
@@ -319,6 +328,7 @@ def find_name_candidates(
                 sibling_first_syllables.add(sn[0])
 
     pool = name_repo.find_by_gender(gender_obj, limit=pool_size, offset=offset)
+    logger.debug("[풀] DB에서 %d개 조회", len(pool))
 
     surname_오행 = _get_surname_오행(surname)
     성_hanja_obj = _get_surname_hanja(surname_hanja, hanja_repo)
@@ -326,9 +336,11 @@ def find_name_candidates(
 
     # 하드 필터링
     filtered_pool = []
+    filter_stats = {"제외(shown/liked/disliked)": 0, "받침": 0, "길이": 0, "오행": 0}
     for rn in pool:
         name = rn.name
         if name in exclude:
+            filter_stats["제외(shown/liked/disliked)"] += 1
             continue
 
         if max_받침_count is not None:
@@ -337,11 +349,14 @@ def find_name_candidates(
                 if 0xAC00 <= ord(c) <= 0xD7A3 and (ord(c) - 0xAC00) % 28 != 0
             )
             if 받침_개수 > max_받침_count:
+                filter_stats["받침"] += 1
                 continue
 
         if name_length == "외자" and len(name) != 1:
+            filter_stats["길이"] += 1
             continue
         elif name_length == "두글자" and len(name) != 2:
+            filter_stats["길이"] += 1
             continue
 
         if preferred_오행:
@@ -351,9 +366,17 @@ def find_name_candidates(
                 for o in syllable_오행s
             )
             if not has_preferred:
+                filter_stats["오행"] += 1
                 continue
 
         filtered_pool.append(rn)
+
+    logger.info(
+        "[필터] %d→%d개 통과 (제외=%d 받침=%d 길이=%d 오행=%d)",
+        len(pool), len(filtered_pool),
+        filter_stats["제외(shown/liked/disliked)"], filter_stats["받침"],
+        filter_stats["길이"], filter_stats["오행"],
+    )
 
     if not filtered_pool:
         return []
@@ -376,6 +399,7 @@ def find_name_candidates(
         )
         covered = set(precomputed_best.keys())
         fallback_names = [n for n in pool_names if n not in covered]
+        logger.debug("[사전계산] %d개 hit, %d개 폴백 런타임 계산", len(covered), len(fallback_names))
 
     # ── 폴백: 기존 런타임 계산 ────────────────────────────────────────────
     fallback_combos: dict[str, list[tuple[Hanja, Hanja]]] = {}
@@ -482,4 +506,16 @@ def find_name_candidates(
         scored.append((best_score, candidate))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    return [c for _, c in _diversify(scored, limit)]
+
+    for rank, (score, cand) in enumerate(scored[:5], start=1):
+        sb = cand.get("score_breakdown", {})
+        logger.debug(
+            "[순위#%d] 이름=%s 점수=%.3f (용신=%.2f 자원=%.2f 수리=%.2f 발음=%.2f 발음음양=%.2f 획수음양=%.2f)",
+            rank, cand.get("한글", ""), score,
+            sb.get("용신", 0), sb.get("자원오행", 0), sb.get("수리격", 0),
+            sb.get("발음오행", 0), sb.get("발음음양", 0), sb.get("획수음양", 0),
+        )
+
+    final = [c for _, c in _diversify(scored, limit)]
+    logger.info("[최종] %d개 반환: %s", len(final), [c.get("한글", "") for c in final])
+    return final

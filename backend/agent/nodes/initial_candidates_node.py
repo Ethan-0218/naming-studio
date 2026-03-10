@@ -1,5 +1,9 @@
 """초기 후보 추천 노드."""
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from langchain_core.messages import SystemMessage, AIMessage
 from langchain_openai import ChatOpenAI
 from agent.state import NamingState
@@ -19,6 +23,10 @@ def initial_candidates_node(state: NamingState) -> dict:
             user_info = state.get("user_info", {})
             사주 = state.get("사주_summary") or {}
             preference = state.get("preference_profile", {})
+            logger.info(
+                "[초기후보] DB 검색 시작 (성=%s 성별=%s)",
+                user_info.get("surname", ""), user_info.get("gender", "남"),
+            )
             current_candidates = find_name_candidates(
                 surname=user_info.get("surname", ""),
                 surname_hanja=user_info.get("surname_hanja", ""),
@@ -30,6 +38,7 @@ def initial_candidates_node(state: NamingState) -> dict:
                 sibling_names=preference.get("sibling_names"),
                 limit=8,
             )
+            logger.info("[초기후보] DB 검색 완료: %d개 후보", len(current_candidates))
         except Exception:
             current_candidates = []
 
@@ -37,6 +46,7 @@ def initial_candidates_node(state: NamingState) -> dict:
     updated_state["current_candidates"] = current_candidates
 
     emit("이름 후보를 검토하고 있어요...")
+    logger.info("[초기후보] LLM 구조화 출력 시작")
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
     structured_llm = llm.with_structured_output(CandidatesOutput, method="function_calling")
     system_prompt = build_system_prompt(updated_state)
@@ -47,6 +57,7 @@ def initial_candidates_node(state: NamingState) -> dict:
     content_blocks = [_to_frontend_block(block) for block in limited]
 
     shown_names = [b["data"]["한글"] for b in content_blocks if b["type"] == "NAME"]
+    logger.info("[초기후보] 최종 추천 %d개: %s", len(shown_names), shown_names)
     name_store.add_shown(state.get("session_id", ""), shown_names)
 
     return {

@@ -1,6 +1,9 @@
 """후보 탐색 노드: 결제 후 무한 루프로 이름 탐색."""
 
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 from langchain_core.messages import SystemMessage, AIMessage, ToolMessage, HumanMessage
 from langchain_core.tools import tool as lc_tool
 from langchain_openai import ChatOpenAI
@@ -60,7 +63,9 @@ def candidate_exploration_node(state: NamingState) -> dict:
     loop_messages = [system_msg] + history
 
     # Phase 1: 툴 호출 루프 (최대 4회)
+    tool_call_count = 0
     for i in range(4):
+        logger.info("[탐색노드] Phase1 루프 %d/%d 시작", i + 1, 4)
         emit(f"이름 후보를 탐색하고 있어요... ({i + 1}번째)")
         ai_msg = tool_llm.invoke(loop_messages)
         if not ai_msg.tool_calls:
@@ -69,8 +74,11 @@ def candidate_exploration_node(state: NamingState) -> dict:
         for tc in ai_msg.tool_calls:
             tool_result = get_name_candidates.invoke(tc["args"])
             loop_messages.append(ToolMessage(content=tool_result, tool_call_id=tc["id"]))
+            tool_call_count += 1
+    logger.info("[탐색노드] Phase1 종료: 툴 %d회 호출됨", tool_call_count)
 
     # Phase 2: 구조화 출력
+    logger.info("[탐색노드] Phase2 구조화 출력 시작")
     emit("최종 이름을 다듬고 있어요...")
     structured_llm = llm.with_structured_output(CandidatesOutput, method="function_calling")
     result = structured_llm.invoke(
@@ -82,6 +90,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
 
     # shown 기록
     shown_names = [b["data"]["한글"] for b in content_blocks if b["type"] == "NAME"]
+    logger.info("[탐색노드] 최종 추천 %d개: %s", len(shown_names), shown_names)
     name_store.add_shown(session_id, shown_names)
 
     requirement_summary = result.updated_requirement_summary or state.get("requirement_summary", "")
