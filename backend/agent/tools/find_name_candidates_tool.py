@@ -15,6 +15,47 @@ from db.hanja_model import Hanja
 from agent import name_store
 
 
+_초성_table = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"]
+_SOFT = {"ㅅ", "ㄴ", "ㅁ", "ㅇ", "ㅎ", "ㄹ"}
+_STRONG = {"ㅂ", "ㄱ", "ㄷ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ"}
+
+
+def _get_초성(char: str) -> str | None:
+    code = ord(char) - 0xAC00
+    return _초성_table[code // 588] if 0 <= code <= 11171 else None
+
+
+def _get_feel(name: str) -> str:
+    초성 = _get_초성(name[0]) if name else None
+    if 초성 in _SOFT:
+        return "soft"
+    if 초성 in _STRONG:
+        return "strong"
+    return "neutral"
+
+
+def _diversify(scored: list[tuple[float, dict]], limit: int) -> list[tuple[float, dict]]:
+    pool = scored[:limit * 3]
+    result = []
+    first_syllable_count: dict[str, int] = {}
+    for score, cand in pool:
+        if len(result) >= limit:
+            break
+        first = cand["한글"][0] if cand["한글"] else ""
+        if first_syllable_count.get(first, 0) >= 2:
+            continue
+        result.append((score, cand))
+        first_syllable_count[first] = first_syllable_count.get(first, 0) + 1
+    if len(result) < limit:
+        added = {id(c) for _, c in result}
+        for score, cand in pool:
+            if len(result) >= limit:
+                break
+            if id(cand) not in added:
+                result.append((score, cand))
+    return result
+
+
 def _get_surname_오행(surname: str) -> 오행 | None:
     if not surname:
         return None
@@ -248,6 +289,7 @@ def find_name_candidates(
     preferred_오행: str | None = None,
     max_받침_count: int | None = None,  # 0/1/2, None=제한 없음
     rarity_preference: str | None = None,  # "희귀" | "보통" | "흔한"
+    name_feel_preference: str | None = None,  # "soft" | "strong" | None
     name_length: str | None = None,  # "외자" | "두글자" | "상관없음" | None
     sibling_names: list[str] | None = None,
     limit: int = 8,
@@ -267,7 +309,8 @@ def find_name_candidates(
 
     disliked = set(name_store.get_disliked(session_id))
     liked = set(name_store.get_liked(session_id))
-    exclude = disliked | liked
+    shown = set(name_store.get_shown(session_id))
+    exclude = disliked | liked | shown
 
     sibling_first_syllables: set[str] = set()
     if sibling_names:
@@ -381,6 +424,12 @@ def find_name_candidates(
                 + rarity_tiebreak * 0.001
                 + sibling_penalty
             )
+            if name_feel_preference:
+                feel = _get_feel(name)
+                if name_feel_preference == "soft" and feel == "strong":
+                    best_score *= 0.7
+                elif name_feel_preference == "strong" and feel == "soft":
+                    best_score *= 0.7
             combos_for_options: dict[str, list[tuple[Hanja, Hanja]]] = {name: [(h1, h2)]}
             용신_override_val: float | None = 용신_val
         else:
@@ -406,6 +455,12 @@ def find_name_candidates(
                     발음오행_norm, syllable_오행_list, 부족한_오행_list,
                     rarity_tiebreak, sibling_penalty,
                 )
+            if name_feel_preference:
+                feel = _get_feel(name)
+                if name_feel_preference == "soft" and feel == "strong":
+                    best_score *= 0.7
+                elif name_feel_preference == "strong" and feel == "soft":
+                    best_score *= 0.7
             combos_for_options = {name: name_combos}
             용신_override_val = None
 
@@ -427,4 +482,4 @@ def find_name_candidates(
         scored.append((best_score, candidate))
 
     scored.sort(key=lambda x: x[0], reverse=True)
-    return [c for _, c in scored[:limit]]
+    return [c for _, c in _diversify(scored, limit)]

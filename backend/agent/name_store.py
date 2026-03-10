@@ -9,7 +9,7 @@ _store: dict[str, dict[str, list[str]]] = {}
 
 def _ensure(session_id: str) -> None:
     if session_id not in _store:
-        _store[session_id] = {"liked": [], "disliked": []}
+        _store[session_id] = {"liked": [], "disliked": [], "shown": []}
 
 
 def get_liked(session_id: str) -> list[str]:
@@ -48,3 +48,15 @@ def remove_disliked(session_id: str, name: str) -> None:
     _ensure(session_id)
     if name in _store[session_id]["disliked"]:
         _store[session_id]["disliked"].remove(name)
+
+
+def add_shown(session_id: str, names: list[str]) -> None:
+    _ensure(session_id)
+    for name in names:
+        if name not in _store[session_id]["shown"]:
+            _store[session_id]["shown"].append(name)
+
+
+def get_shown(session_id: str) -> list[str]:
+    _ensure(session_id)
+    return list(_store[session_id]["shown"])

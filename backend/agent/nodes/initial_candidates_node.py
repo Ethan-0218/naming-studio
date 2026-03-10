@@ -5,6 +5,7 @@ from langchain_openai import ChatOpenAI
 from agent.state import NamingState
 from agent.prompts import build_system_prompt
 from agent.schemas import CandidatesOutput
+from agent import name_store
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
@@ -41,6 +42,9 @@ def initial_candidates_node(state: NamingState) -> dict:
 
     limited = _limit_name_blocks(result.content, max_names=3)
     content_blocks = [_to_frontend_block(block) for block in limited]
+
+    shown_names = [b["data"]["한글"] for b in content_blocks if b["type"] == "NAME"]
+    name_store.add_shown(state.get("session_id", ""), shown_names)
 
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],

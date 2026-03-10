@@ -102,14 +102,6 @@ class ContentBlock(_Strict):
     reason: str = Field("", description="type=NAME일 때 이름 추천 이유")
 
 
-class CandidateFilters(_Strict):
-    preferred_오행: str | None = Field(None, description="선호 오행. 목/화/토/금/수 중 하나")
-    max_받침_count: int | None = Field(None, description="받침 있는 글자 수 상한. 0/1/2 또는 null(제한 없음)")
-    rarity_preference: str | None = Field(None, description="희귀도 선호. 희귀/보통/흔함")
-
-
 class CandidatesOutput(_Strict):
     content: list[ContentBlock]
-    request_new_candidates: bool = Field(False, description="새 후보 풀을 다시 조회해야 하면 True")
-    candidate_filters: CandidateFilters = Field(default_factory=CandidateFilters)
     updated_requirement_summary: str = Field("", description="지금까지 파악된 요구사항 누적 요약")

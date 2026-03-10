@@ -17,7 +17,6 @@ def build_stage_prompt(state: NamingState) -> str:
     liked_text = f"좋아요한 이름: {', '.join(liked)}" if liked else "좋아요한 이름: 없음"
     disliked_text = f"싫어요한 이름: {', '.join(disliked)}" if disliked else "싫어요한 이름: 없음"
     summary_text = f"누적 요구사항 요약: {requirement_summary}" if requirement_summary else "누적 요구사항 요약: (아직 없음)"
-    candidates_text = f"\n현재 후보들:\n{json.dumps(candidates, ensure_ascii=False, indent=2)}" if candidates else ""
     sibling_text = f"\n형제자매 이름: {', '.join(sibling_names)}" if sibling_names else ""
 
     return f"""
@@ -26,9 +25,18 @@ def build_stage_prompt(state: NamingState) -> str:
 작명 방향: {direction}
 {liked_text}
 {disliked_text}
-{summary_text}{sibling_text}{candidates_text}
+{summary_text}{sibling_text}
 
 사용자의 반응을 분석해 취향을 파악하고, 그에 맞는 이름을 자연스럽게 추천하거나 대화를 이어가세요. 한 번에 최대 3개의 이름만 추천하세요.
+
+후보 조회 (get_name_candidates 툴):
+- 현재 대화 맥락에서 추천할 만한 이름이 충분하지 않으면 툴을 호출하세요.
+- 툴 파라미터로 취향을 반영하세요:
+  · 좋아요 이름들 초성이 ㅅㄴㅁㅇㅎㄹ → name_feel_preference="soft"
+  · 좋아요 이름들 초성이 ㅂㄱㄷㅈㅊ → name_feel_preference="strong"
+  · 받침 제한 있으면 max_받침_count 설정
+- 이미 본 이름은 툴이 자동으로 제외합니다.
+- 한 번 조회로 충분하면 툴 없이 바로 추천 가능. 최대 3회 호출.
 
 score_breakdown 활용:
 - 좋아요/싫어요 이름의 score_breakdown을 비교해 취향 패턴을 파악하세요.
@@ -39,8 +47,6 @@ score_breakdown 활용:
 
 응답 구성:
 - content 배열에 TEXT 블록과 NAME 블록을 섞어 자연스러운 대화 흐름을 만드세요. NAME 블록은 최대 3개만 넣으세요.
-- 새로운 이름이 필요하면 request_new_candidates=True, candidate_filters에 필터 지정.
-  candidate_filters: max_받침_count(0=받침 없음, 1=최대 1글자만 받침, 2 또는 null=제한 없음), preferred_오행, rarity_preference.
 - updated_requirement_summary를 매 턴마다 최신 누적 요약으로 업데이트하세요.
   예: "부드럽고 받침 없는 이름을 선호하며, 너무 흔한 이름은 피하고 싶어함."
 """.strip()
