@@ -25,7 +25,6 @@ class NamingState(TypedDict):
     missing_info_fields: list[str]
     사주_summary: dict | None
     preference_profile: dict
-    requirement_summary: str
     naming_direction: str | None
     current_candidates: list[dict]
     payment_status: str  # "pending" | "completed"

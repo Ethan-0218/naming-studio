@@ -8,7 +8,6 @@ def build_stage_prompt(state: NamingState) -> str:
     session_id = state.get("session_id", "")
     liked = name_store.get_liked(session_id)
     disliked = name_store.get_disliked(session_id)
-    requirement_summary = state.get("requirement_summary", "")
     direction = state.get("naming_direction", "")
     candidates = state.get("current_candidates", [])
     preference = state.get("preference_profile", {})
@@ -16,16 +15,34 @@ def build_stage_prompt(state: NamingState) -> str:
 
     liked_text = f"좋아요한 이름: {', '.join(liked)}" if liked else "좋아요한 이름: 없음"
     disliked_text = f"싫어요한 이름: {', '.join(disliked)}" if disliked else "싫어요한 이름: 없음"
-    summary_text = f"누적 요구사항 요약: {requirement_summary}" if requirement_summary else "누적 요구사항 요약: (아직 없음)"
     sibling_text = f"\n형제자매 이름: {', '.join(sibling_names)}" if sibling_names else ""
+
+    pref_lines = []
+    if preference.get("max_받침_count") is not None:
+        pref_lines.append(f"받침 제한: 최대 {preference['max_받침_count']}개")
+    if preference.get("name_length"):
+        pref_lines.append(f"이름 길이: {preference['name_length']}")
+    if preference.get("name_feel"):
+        pref_lines.append(f"이름 느낌: {preference['name_feel']}")
+    pref_text = ("\n" + "\n".join(pref_lines)) if pref_lines else ""
 
     return f"""
 [현재 단계: 이름 탐색]
 
-작명 방향: {direction}
+현재 작명 방향: {direction}{pref_text}
 {liked_text}
-{disliked_text}
-{summary_text}{sibling_text}
+{disliked_text}{sibling_text}
+
+【방향/취향 변경 감지 — 최우선 처리】
+유저가 이름 스타일·느낌·기운·의미·받침 조건·이름 길이 중 하나라도 변경 요청하면 반드시 아래를 채우세요:
+- updated_naming_direction: 기존 방향에서 변경된 부분만 교체 (증분 업데이트). 나머지는 그대로 유지.
+  예: "강한 느낌의 건강한 이름" + "부드럽고 여성스러운 이름으로 바꿔줘" → "부드럽고 여성스러운 느낌의 건강한 이름"
+  예: "부드럽고 수기운 이름" + "목기운으로 바꿔줘" → "부드럽고 목기운 이름"
+- updated_preference_fields: 변경된 필드만 채우세요 (변경 없으면 null).
+  · 받침 조건 변경 → max_받침_count (0=없음, 1=최대1개, 2=제한없음)
+  · 이름 길이 변경 → name_length ("외자", "두글자", "상관없음")
+  · 느낌/스타일 변경 → name_feel ("부드러운", "강한", "중성적" 등)
+변경 없으면 updated_naming_direction은 빈 문자열, updated_preference_fields는 모든 필드 null.
 
 사용자의 반응을 분석해 취향을 파악하고, 그에 맞는 이름을 자연스럽게 추천하거나 대화를 이어가세요. 한 번에 최대 3개의 이름만 추천하세요.
 
@@ -51,6 +68,4 @@ score_breakdown 활용:
   · type은 반드시 "NAME_REF"로 설정하세요.
   · id는 툴이 반환한 후보 목록의 id 값을 그대로 사용하세요. 한자/의미/음절 등은 직접 생성하지 마세요.
   · reason에 이름 추천 이유를 쉬운 말로 작성하세요. score_breakdown의 높은 항목을 반영하세요.
-- updated_requirement_summary를 매 턴마다 최신 누적 요약으로 업데이트하세요.
-  예: "부드럽고 받침 없는 이름을 선호하며, 너무 흔한 이름은 피하고 싶어함."
 """.strip()

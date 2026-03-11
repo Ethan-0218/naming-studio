@@ -9,7 +9,7 @@ from langchain_core.tools import tool as lc_tool
 from langchain_openai import ChatOpenAI
 from agent.state import NamingState
 from agent.prompts import build_system_prompt
-from agent.schemas import LLMCandidatesOutput
+from agent.schemas import LLMCandidatesOutput, UpdatedPreferenceFields
 from agent import name_store
 from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
@@ -127,11 +127,22 @@ def candidate_exploration_node(state: NamingState) -> dict:
     logger.info("[탐색노드] 최종 추천 %d개: %s", len(shown_names), shown_names)
     name_store.add_shown(session_id, shown_names)
 
-    requirement_summary = result.updated_requirement_summary or state.get("requirement_summary", "")
+    updated_direction = result.updated_naming_direction
+    naming_direction = updated_direction if updated_direction else state.get("naming_direction", "")
+
+    preference_profile = dict(state.get("preference_profile", {}))
+    pf: UpdatedPreferenceFields = result.updated_preference_fields
+    if pf.max_받침_count is not None:
+        preference_profile["max_받침_count"] = pf.max_받침_count
+    if pf.name_length is not None:
+        preference_profile["name_length"] = pf.name_length
+    if pf.name_feel is not None:
+        preference_profile["name_feel"] = pf.name_feel
 
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
-        "requirement_summary": requirement_summary,
+        "naming_direction": naming_direction,
+        "preference_profile": preference_profile,
         "stage": "candidate_exploration",
         "stage_turn_count": state.get("stage_turn_count", 0) + 1,
         "sc_cursor": sc_cursor_ref[0],

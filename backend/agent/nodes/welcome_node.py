@@ -25,7 +25,6 @@ def welcome_node(state: NamingState) -> dict:
         "user_info": {},
         "사주_summary": None,
         "preference_profile": {},
-        "requirement_summary": "",
         "naming_direction": None,
         "current_candidates": [],
         "payment_status": "pending",

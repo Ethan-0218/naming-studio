@@ -32,7 +32,7 @@ def parse_content_blocks(llm_response: str) -> list[dict]:
 
 def extract_meta(llm_response: str) -> dict:
     """LLM 응답에서 content 외 메타 필드를 추출합니다.
-    반환: {request_new_candidates, candidate_filters, updated_requirement_summary, confirmed, ready_to_proceed}
+    반환: {request_new_candidates, candidate_filters, updated_naming_direction, confirmed, ready_to_proceed}
     """
     match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", llm_response, re.DOTALL)
     if match:

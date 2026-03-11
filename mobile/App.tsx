@@ -54,7 +54,6 @@ interface ApiResponse {
   disliked_names: string[];
   payment_required: boolean;
   naming_direction: string | null;
-  requirement_summary: string;
   debug?: { raw_llm_output?: string; state?: Record<string, unknown> } | null;
 }
 

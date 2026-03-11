@@ -104,7 +104,7 @@ class ContentBlock(_Strict):
 
 class CandidatesOutput(_Strict):
     content: list[ContentBlock]
-    updated_requirement_summary: str = Field("", description="지금까지 파악된 요구사항 누적 요약")
+    updated_naming_direction: str = Field("", description="변경된 작명 방향. 변경 없으면 빈 문자열.")
 
 
 # ── LLM용 경량 이름 선택 스키마 ──────────────────────────────────────────
@@ -117,6 +117,17 @@ class LLMContentBlock(_Strict):
     reason: str | None = Field(None, description="type=NAME_REF일 때 이름 추천 이유 (부모님께 쉬운 말로)")
 
 
+class UpdatedPreferenceFields(_Strict):
+    """탐색 중 유저 요청으로 변경된 취향 필드. 변경 없는 필드는 None."""
+    max_받침_count: int | None = Field(None, description="변경 시에만. 0=받침없음, 1=최대1개, 2=제한없음")
+    name_length: str | None = Field(None, description="변경 시에만. 예: '외자', '두글자', '상관없음'")
+    name_feel: str | None = Field(None, description="변경 시에만. 예: '부드러운', '강한', '중성적'")
+
+
 class LLMCandidatesOutput(_Strict):
     content: list[LLMContentBlock]
-    updated_requirement_summary: str = Field("", description="지금까지 파악된 요구사항 누적 요약")
+    updated_naming_direction: str = Field("", description="변경된 작명 방향. 변경 없으면 빈 문자열.")
+    updated_preference_fields: UpdatedPreferenceFields = Field(
+        default_factory=UpdatedPreferenceFields,
+        description="유저가 이번 턴에 변경 요청한 취향 필드만 채우세요. 변경 없는 필드는 null.",
+    )

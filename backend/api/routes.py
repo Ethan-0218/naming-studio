@@ -40,7 +40,6 @@ class NamingResponse(BaseModel):
     actions: list[str] = []
     payment_required: bool = False
     naming_direction: str | None = None
-    requirement_summary: str = ""
     debug: dict | None = None
 
 
@@ -119,7 +118,6 @@ async def chat(request: NamingRequest):
                 "missing_info_fields": ["surname", "gender", "birth_date", "birth_time"],
                 "사주_summary": None,
                 "preference_profile": {},
-                "requirement_summary": "",
                 "naming_direction": None,
                 "current_candidates": [],
                 "payment_status": "pending",
@@ -169,7 +167,6 @@ def _build_naming_response(session_id: str, result: dict) -> NamingResponse:
         disliked_names=name_store.get_disliked(session_id),
         payment_required=payment_required,
         naming_direction=result.get("naming_direction"),
-        requirement_summary=result.get("requirement_summary", ""),
         debug={
             "raw_llm_output": raw_llm_output,
             "state": debug_state,
@@ -223,7 +220,6 @@ async def chat_stream(request: NamingRequest):
                     "missing_info_fields": ["surname", "gender", "birth_date", "birth_time"],
                     "사주_summary": None,
                     "preference_profile": {},
-                    "requirement_summary": "",
                     "naming_direction": None,
                     "current_candidates": [],
                     "payment_status": "pending",
@@ -315,7 +311,6 @@ def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> N
         "missing_info_fields": [],
         "사주_summary": 사주_summary,
         "preference_profile": {},
-        "requirement_summary": "",
         "naming_direction": None,
         "current_candidates": [],
         "payment_status": "pending",

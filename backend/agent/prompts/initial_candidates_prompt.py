@@ -31,5 +31,5 @@ def build_stage_prompt(state: NamingState) -> str:
   · syllables의 hanja_options를 참고해 "이 글자는 準(기준), 俊(뛰어날) 중 선택 가능해요"처럼 한자 선택지를 언급하세요.
 
 content 배열에 TEXT 블록과 NAME_REF 블록을 섞어 자연스러운 대화 흐름을 만드세요. NAME_REF 블록은 최대 3개만 넣으세요.
-updated_requirement_summary는 빈 문자열로 설정하세요.
+updated_naming_direction는 빈 문자열로 설정하세요.
 """.strip()
