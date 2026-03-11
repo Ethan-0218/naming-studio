@@ -36,6 +36,7 @@ def initial_candidates_node(state: NamingState) -> dict:
                 max_받침_count=preference.get("max_받침_count"),
                 name_length=preference.get("name_length"),
                 sibling_names=preference.get("sibling_names"),
+                sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
                 limit=8,
             )
             logger.info("[초기후보] DB 검색 완료: %d개 후보", len(current_candidates))

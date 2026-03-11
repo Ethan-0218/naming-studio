@@ -77,6 +77,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
             name_feel_preference=name_feel_preference,
             name_length=preference.get("name_length"),
             sibling_names=preference.get("sibling_names"),
+            sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
             limit=12,
             pool_size=pool_size,
             sc_cursor=sc_cursor_ref[0],

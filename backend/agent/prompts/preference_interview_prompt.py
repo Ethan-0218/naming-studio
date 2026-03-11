@@ -29,7 +29,11 @@ def build_stage_prompt(state: NamingState) -> str:
     if profile.get("rarity_preference") and profile["rarity_preference"] != "상관없음":
         struct_lines.append(f"이름 희귀도: {profile['rarity_preference']}")
     if profile.get("sibling_names"):
-        struct_lines.append(f"형제자매 이름: {', '.join(profile['sibling_names'])}")
+        sibling_line = f"형제자매 이름: {', '.join(profile['sibling_names'])}"
+        anchors = profile.get("sibling_anchor_syllables")
+        if anchors:
+            sibling_line += f" (공통 앵커: {'·'.join(anchors)} → 이름에 포함 우선)"
+        struct_lines.append(sibling_line)
     elif profile.get("sibling_names") == []:
         struct_lines.append("형제자매: 없음")
 

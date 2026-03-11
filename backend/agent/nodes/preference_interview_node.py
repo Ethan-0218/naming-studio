@@ -13,6 +13,7 @@ from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 _QUESTION_SEQUENCE = [
     "sibling_names",
+    "sibling_style_match",   # 형제자매 있을 때만 노출
     "name_length",
     "rarity_preference",
     "_section3_feel",
@@ -35,8 +36,18 @@ def _make_choice_block(question_key: str) -> dict:
                 "field_key": "sibling_names",
                 "follow_up": {
                     "trigger": "있어요",
-                    "placeholder": "이름을 입력해주세요 (예: 서윤, 서준)",
+                    "placeholder": "이름을 입력해주세요 (여러 명이면 쉼표로 구분: 서윤, 서준)",
                 },
+            },
+        },
+        "sibling_style_match": {
+            "type": "CHOICE_GROUP",
+            "data": {
+                "question": "형제자매와 이름 계열을 맞추고 싶으신가요?",
+                "choices": ["비슷하게 해주세요", "독립적으로 짓고 싶어요"],
+                "multi": False,
+                "allow_custom": False,
+                "field_key": "sibling_style_match",
             },
         },
         "name_length": {
@@ -100,9 +111,34 @@ def _make_choice_block(question_key: str) -> dict:
     return blocks[question_key]
 
 
+# ── 앵커 음절 계산 ───────────────────────────────────────────────────────
+
+def _get_초성(char: str) -> str | None:
+    _초성_table = list("ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ")
+    code = ord(char) - 0xAC00
+    return _초성_table[code // 588] if 0 <= code <= 11171 else None
+
+
+def _compute_anchor_syllables(sibling_names: list[str]) -> list[str]:
+    """형제자매 이름에서 공유할 앵커 음절을 계산한다."""
+    names = [n for n in sibling_names if n]
+    if not names:
+        return []
+    if len(names) == 1:
+        return list(names[0])   # "은우" → ["은", "우"]
+    # 2명 이상: 가장 많이 등장하는 음절 중 모든 이름에 등장하는 것 우선
+    from collections import Counter
+    counter: Counter = Counter(s for name in names for s in name)
+    common = [s for s, c in counter.items() if c >= len(names)]
+    if common:
+        return common
+    max_c = max(counter.values())
+    return [s for s, c in counter.items() if c == max_c]
+
+
 # ── 응답 파싱 ────────────────────────────────────────────────────────────
 
-def _parse_answer(question_key: str, user_msg: str) -> dict:
+def _parse_answer(question_key: str, user_msg: str, profile: dict | None = None) -> dict:
     """유저 메시지를 파싱해 preference_profile 업데이트 딕셔너리를 반환."""
     msg = user_msg.strip()
     updates: dict = {}
@@ -115,6 +151,16 @@ def _parse_answer(question_key: str, user_msg: str) -> dict:
             names_part = msg.split(":", 1)[-1].strip() if "있어요" in msg else msg
             names = [n.strip() for n in names_part.replace(",", " ").replace("，", " ").split() if n.strip()]
             updates["sibling_names"] = names if names else []
+
+    elif question_key == "sibling_style_match":
+        match = "비슷하게" in msg
+        updates["sibling_style_match"] = match
+        if match:
+            sibling_names = (profile or {}).get("sibling_names") or []
+            anchors = _compute_anchor_syllables(sibling_names)
+            updates["sibling_anchor_syllables"] = anchors if anchors else None
+        else:
+            updates["sibling_anchor_syllables"] = None
 
     elif question_key == "name_length":
         if "외자" in msg:
@@ -153,6 +199,8 @@ def _parse_answer(question_key: str, user_msg: str) -> dict:
 def _get_next_question(profile: dict) -> str | None:
     """다음으로 물어볼 질문 키를 반환. None이면 인터뷰 완료."""
     for q in _QUESTION_SEQUENCE:
+        if q == "sibling_style_match" and not profile.get("sibling_names"):
+            continue  # 형제자매 없으면 skip
         if profile.get(q) is None:
             return q
     return None
@@ -164,6 +212,7 @@ def _get_ack_text(question_key: str | None, user_msg: str) -> str:
         return ""
     acks = {
         "sibling_names": "확인했어요!",
+        "sibling_style_match": "형제자매 이름 계열 선호를 기억했어요.",
         "name_length": "이름 길이를 기억했어요.",
         "rarity_preference": "이제 이름의 느낌과 의미에 대해 여쭤볼게요.",
         "_section3_feel": "느낌 취향을 기억했어요.",
@@ -220,7 +269,7 @@ def preference_interview_node(state: NamingState) -> dict:
     last_user_msg = _get_last_user_message(messages)
 
     if current_q and last_user_msg:
-        updates = _parse_answer(current_q, last_user_msg)
+        updates = _parse_answer(current_q, last_user_msg, profile)
         profile.update(updates)
 
     # ── 다음 질문 결정 ──────────────────────────────────────────────────
