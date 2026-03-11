@@ -16,6 +16,29 @@ from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
 def candidate_exploration_node(state: NamingState) -> dict:
+    session_id = state.get("session_id", "")
+    stage_turn_count = state.get("stage_turn_count", 0)
+
+    # 결제 직후 첫 턴: 리드 메시지만 반환, 이름 추천 없음
+    if stage_turn_count == 0:
+        shown = name_store.get_shown(session_id)
+        direction = state.get("naming_direction", "") or ""
+        shown_text = f"아까 보여드린 {', '.join(shown)}" if shown else "아까 보여드린 이름들"
+        lead_msg = (
+            f"결제해 주셔서 감사합니다! 이제 본격적인 이름 탐색을 시작해 볼게요.\n\n"
+            f"{shown_text}은(는) 맛보기였어요. "
+            f"지금부터 {direction} 방향으로 더 많은 이름들을 찾아드릴게요.\n\n"
+            f"마음에 드는 이름엔 좋아요를, 아닌 이름엔 별로를 눌러주시면 취향에 맞게 더 잘 찾아드릴 수 있어요. "
+            f"방향이나 조건을 바꾸고 싶으시면 언제든지 말씀해 주세요. 준비되셨으면 시작해 볼까요?"
+        )
+        lead_block = {"type": "TEXT", "data": {"text": lead_msg}}
+        return {
+            "messages": [AIMessage(content=lead_msg)],
+            "stage": "candidate_exploration",
+            "stage_turn_count": 1,
+            "_content_blocks": [lead_block],
+        }
+
     user_info = state.get("user_info", {})
     사주 = state.get("사주_summary") or {}
     preference = state.get("preference_profile", {})
