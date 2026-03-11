@@ -312,6 +312,7 @@ def find_name_candidates(
     )
 
     gender_obj = 성별.여 if gender == "여" else 성별.남
+    db_gender = "female" if gender == "여" else "male"
     hanja_repo = HanjaRepository()
     scored_repo = ScoredCombinationsRepository()
     combo_repo = HanjaCombinationsRepository()
@@ -335,7 +336,6 @@ def find_name_candidates(
     use_sc_direct = scored_repo.is_available() and bool(surname_hanja)
 
     if use_sc_direct:
-        db_gender = "female" if gender == "여" else "male"
         required_ohaengs = 부족한_오행_list if 부족한_오행_list else ["_all"]
         sc_rows = scored_repo.get_top_names(
             surname_hanja=surname_hanja,
@@ -545,6 +545,7 @@ def find_name_candidates(
             surname_hanja=surname_hanja,
             names=pool_names,
             required_ohaengs=required_ohaengs_fb,
+            gender=db_gender,
         )
         covered = set(precomputed_best_fb.keys())
         fallback_names = [n for n in pool_names if n not in covered]

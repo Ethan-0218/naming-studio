@@ -34,7 +34,7 @@ from core.config import (
     SCORED_COMBINATIONS_DB_PATH,
 )
 
-TOP_NAMES = 5000    # 등록명 상위 N개
+TOP_NAMES = 2500    # 등록명 성별별 상위 N개
 TOP_COMBOS = 5      # 오행별 상위 N개 조합
 BATCH_SIZE = 100_000
 
@@ -189,17 +189,22 @@ def build() -> None:
     surname_strokes = sorted(set(s["stroke"] for s in surname_data if s["stroke"]))
     print(f"  성씨: {len(surname_data)}개 (획수 {len(surname_strokes)}종)")
 
-    # 2. 이름 상위 N개 로드 (성별 포함)
+    # 2. 이름 성별별 상위 N개 로드
     rn_conn = sqlite3.connect(REGISTERED_NAME_DB_PATH)
     name_rows = rn_conn.execute(
-        "SELECT name, gender FROM registered_names ORDER BY count DESC LIMIT ?",
+        """
+        SELECT name, gender FROM (
+            SELECT name, gender, ROW_NUMBER() OVER (PARTITION BY gender ORDER BY count DESC) AS rn
+            FROM registered_names
+        ) WHERE rn <= ?
+        """,
         (TOP_NAMES,),
     ).fetchall()
     rn_conn.close()
 
     name_list = [(r[0], r[1]) for r in name_rows]
     name_set = set(n for n, _ in name_list)
-    print(f"  이름: {len(name_list)}개 (상위 {TOP_NAMES}개)")
+    print(f"  이름: {len(name_list)}개 (성별별 상위 {TOP_NAMES}개)")
 
     # 3. Lookup Dict 사전 계산
     print("\n  Lookup Dict 계산 중...")
@@ -257,17 +262,18 @@ def build() -> None:
         CREATE TABLE scored_combinations (
             surname_hanja   TEXT    NOT NULL,
             name            TEXT    NOT NULL,
+            gender          TEXT    NOT NULL,
             required_ohaeng TEXT    NOT NULL,
             rank            INTEGER NOT NULL,
             hanja1_id       INTEGER NOT NULL,
             hanja2_id       INTEGER NOT NULL,
             score           REAL    NOT NULL,
-            PRIMARY KEY (surname_hanja, name, required_ohaeng, rank)
+            PRIMARY KEY (surname_hanja, name, gender, required_ohaeng, rank)
         )
         """
     )
     out_conn.execute(
-        "CREATE INDEX idx_sc_lookup ON scored_combinations(surname_hanja, name, required_ohaeng)"
+        "CREATE INDEX idx_sc_lookup ON scored_combinations(surname_hanja, name, gender, required_ohaeng)"
     )
 
     # 6. 이중 루프: 성씨 × 이름 × 오행 → 상위 5개 조합 INSERT
@@ -317,7 +323,7 @@ def build() -> None:
 
             # '_all': 오행 무관 상위 TOP_COMBOS개 (용신 없거나 커버 안 될 때 폴백용)
             for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(all_scored[:TOP_COMBOS], 1):
-                batch.append((s_hanja, name, "_all", rank, h1_id, h2_id, score))
+                batch.append((s_hanja, name, gender_key, "_all", rank, h1_id, h2_id, score))
 
             # 오행별: 해당 용신을 커버하는 조합만 필터
             for target_ohaeng in OHAENG_LIST:
@@ -331,11 +337,11 @@ def build() -> None:
                 if not filtered_scored:
                     continue
                 for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(filtered_scored[:TOP_COMBOS], 1):
-                    batch.append((s_hanja, name, target_ohaeng, rank, h1_id, h2_id, score))
+                    batch.append((s_hanja, name, gender_key, target_ohaeng, rank, h1_id, h2_id, score))
 
             if len(batch) >= BATCH_SIZE:
                 out_conn.executemany(
-                    "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?)", batch
+                    "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?)", batch
                 )
                 out_conn.commit()
                 total_rows += len(batch)
@@ -345,7 +351,7 @@ def build() -> None:
 
     if batch:
         out_conn.executemany(
-            "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?)", batch
+            "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?)", batch
         )
         out_conn.commit()
         total_rows += len(batch)

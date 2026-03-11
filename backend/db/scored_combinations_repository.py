@@ -45,6 +45,7 @@ class ScoredCombinationsRepository:
         surname_hanja: str,
         names: list[str],
         required_ohaengs: list[str],
+        gender: str = "male",  # "male" | "female"
     ) -> dict[str, tuple["Hanja", "Hanja", float, bool]]:
         """(성씨, 이름 목록, 용신오행 목록)으로 이름별 최고점 한자 조합을 반환합니다.
 
@@ -70,12 +71,13 @@ class ScoredCombinationsRepository:
             # 1단계: 용신 오행 커버 조합 조회
             if required_ohaengs:
                 ohaeng_placeholders = ",".join("?" * len(required_ohaengs))
-                params_ohaeng: list = [surname_hanja] + names + required_ohaengs
+                params_ohaeng: list = [surname_hanja, gender] + names + required_ohaengs
                 ohaeng_rows = conn.execute(
                     f"""
                     SELECT name, hanja1_id, hanja2_id, MAX(score) as score
                     FROM scored_combinations
                     WHERE surname_hanja = ?
+                      AND gender = ?
                       AND name IN ({name_placeholders})
                       AND required_ohaeng IN ({ohaeng_placeholders})
                       AND rank = 1
@@ -93,12 +95,13 @@ class ScoredCombinationsRepository:
             uncovered = [n for n in names if n not in result]
             if uncovered:
                 all_placeholders = ",".join("?" * len(uncovered))
-                params_all: list = [surname_hanja] + uncovered
+                params_all: list = [surname_hanja, gender] + uncovered
                 all_rows = conn.execute(
                     f"""
                     SELECT name, hanja1_id, hanja2_id, score
                     FROM scored_combinations
                     WHERE surname_hanja = ?
+                      AND gender = ?
                       AND name IN ({all_placeholders})
                       AND required_ohaeng = '_all'
                       AND rank = 1
@@ -143,9 +146,9 @@ class ScoredCombinationsRepository:
                     SELECT sc.name, sc.hanja1_id, sc.hanja2_id, MAX(sc.score) AS score,
                            rn.count AS rn_count
                     FROM scored_combinations sc
-                    JOIN registered_names rn ON sc.name = rn.name
+                    JOIN registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
                     WHERE sc.surname_hanja = ?
-                      AND rn.gender = ?
+                      AND sc.gender = ?
                       AND sc.required_ohaeng IN ({ohaeng_placeholders})
                       AND sc.rank = 1
                     GROUP BY sc.name
@@ -176,9 +179,9 @@ class ScoredCombinationsRepository:
                     f"""
                     SELECT sc.name, sc.hanja1_id, sc.hanja2_id, sc.score, rn.count AS rn_count
                     FROM scored_combinations sc
-                    JOIN registered_names rn ON sc.name = rn.name
+                    JOIN registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
                     WHERE sc.surname_hanja = ?
-                      AND rn.gender = ?
+                      AND sc.gender = ?
                       AND sc.required_ohaeng = '_all'
                       AND sc.rank = 1
                       {exclude_clause}
