@@ -46,7 +46,11 @@ score_breakdown 활용:
 {f"- 형제자매 이름({', '.join(sibling_names)})과 계열 연속성 또는 다양성 선호를 파악해 반영하세요." if sibling_names else ""}
 
 응답 구성:
-- content 배열에 TEXT 블록과 NAME 블록을 섞어 자연스러운 대화 흐름을 만드세요. NAME 블록은 최대 3개만 넣으세요.
+- content 배열에 TEXT 블록과 NAME_REF 블록을 섞어 자연스러운 대화 흐름을 만드세요. NAME_REF 블록은 최대 3개만 넣으세요.
+- NAME_REF 블록 작성 규칙:
+  · type은 반드시 "NAME_REF"로 설정하세요.
+  · id는 툴이 반환한 후보 목록의 id 값을 그대로 사용하세요. 한자/의미/음절 등은 직접 생성하지 마세요.
+  · reason에 이름 추천 이유를 쉬운 말로 작성하세요. score_breakdown의 높은 항목을 반영하세요.
 - updated_requirement_summary를 매 턴마다 최신 누적 요약으로 업데이트하세요.
   예: "부드럽고 받침 없는 이름을 선호하며, 너무 흔한 이름은 피하고 싶어함."
 """.strip()

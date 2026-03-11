@@ -476,6 +476,8 @@ def find_name_candidates(
             )
 
         final = [c for _, c in _diversify(scored, limit)]
+        for i, c in enumerate(final):
+            c["id"] = i + 1
         logger.info("[최종] %d개 반환 (SC직접): %s", len(final), [c.get("한글", "") for c in final])
         return final
 
@@ -663,5 +665,7 @@ def find_name_candidates(
         )
 
     final = [c for _, c in _diversify(scored, limit)]
+    for i, c in enumerate(final):
+        c["id"] = i + 1
     logger.info("[최종] %d개 반환: %s", len(final), [c.get("한글", "") for c in final])
     return final

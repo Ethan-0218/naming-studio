@@ -21,13 +21,29 @@ type ContentBlock =
   | { type: 'NAME'; data: NameData }
   | { type: 'FORM_BUTTON' };   // 정보 입력 버튼 블록 (로컬 전용)
 
+interface HanjaOption {
+  한자: string;
+  meaning: string;
+  오행: string;
+  stroke_count: number;
+}
+
 interface NameData {
   한글: string;
   full_name: string;
-  syllables: { 한글: string; 한자: string; meaning: string; 오행: string }[];
+  syllables: { 한글: string; 한자: string; meaning: string; 오행: string; hanja_options?: HanjaOption[] }[];
   발음오행_조화: string;
+  발음오행_조화_이유?: string;
   rarity_signal: string;
   reason: string;
+  score_breakdown?: {
+    용신?: number;
+    자원오행?: number;
+    수리격?: number;
+    발음오행?: number;
+    발음음양?: number;
+    획수음양?: number;
+  };
 }
 
 interface ApiResponse {
@@ -568,6 +584,38 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
         ))}
       </View>
       {data.reason ? <Text style={s.nameReason}>{data.reason}</Text> : null}
+      {data.score_breakdown && Object.keys(data.score_breakdown).length > 0 ? (
+        <View style={s.scoreBreakdown}>
+          {(Object.entries(data.score_breakdown) as [string, number][]).map(([key, val]) => (
+            <View key={key} style={s.scoreRow}>
+              <Text style={s.scoreLabel}>{key}</Text>
+              <View style={s.scoreBarBg}>
+                <View style={[s.scoreBarFill, { width: `${Math.round(val * 100)}%` as any }]} />
+              </View>
+              <Text style={s.scoreValue}>{Math.round(val * 100)}%</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+      {data.syllables.some(syl => syl.hanja_options && syl.hanja_options.length > 0) ? (
+        <View style={s.hanjaOptionsSection}>
+          {data.syllables.map((syl, i) =>
+            syl.hanja_options && syl.hanja_options.length > 0 ? (
+              <View key={i} style={s.hanjaOptionsRow}>
+                <Text style={s.hanjaOptionsLabel}>{syl.한글} 한자 선택:</Text>
+                <View style={s.hanjaOptionsList}>
+                  {syl.hanja_options.map((opt, j) => (
+                    <View key={j} style={s.hanjaOptionItem}>
+                      <Text style={s.hanjaOptionChar}>{opt.한자}</Text>
+                      <Text style={s.hanjaOptionMeaning}>{opt.meaning}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ) : null
+          )}
+        </View>
+      ) : null}
       <View style={s.reactionRow}>
         <Pressable style={[s.reactionBtn, liked && s.reactionLiked]} onPress={onLike}>
           <Text style={[s.reactionText, liked && s.reactionTextActive]}>👍 좋아요</Text>
@@ -1289,6 +1337,21 @@ const s = StyleSheet.create({
   ohaengText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   sylMeaning: { fontSize: 11, color: '#999', textAlign: 'center', marginTop: 3 },
   nameReason: { fontSize: 13, color: '#555', fontStyle: 'italic', marginBottom: 8 },
+
+  scoreBreakdown: { marginBottom: 10, gap: 4 },
+  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  scoreLabel: { fontSize: 11, color: '#888', width: 48 },
+  scoreBarBg: { flex: 1, height: 6, backgroundColor: '#eee', borderRadius: 3, overflow: 'hidden' },
+  scoreBarFill: { height: 6, backgroundColor: PURPLE, borderRadius: 3 },
+  scoreValue: { fontSize: 11, color: '#888', width: 32, textAlign: 'right' },
+
+  hanjaOptionsSection: { marginBottom: 8, gap: 6 },
+  hanjaOptionsRow: { gap: 4 },
+  hanjaOptionsLabel: { fontSize: 11, color: '#888', fontWeight: '600' },
+  hanjaOptionsList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  hanjaOptionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#f5f5f5', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
+  hanjaOptionChar: { fontSize: 14, color: '#333', fontWeight: '700' },
+  hanjaOptionMeaning: { fontSize: 11, color: '#666' },
 
   reactionRow: { flexDirection: 'row', gap: 8 },
   reactionBtn: {

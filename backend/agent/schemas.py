@@ -105,3 +105,18 @@ class ContentBlock(_Strict):
 class CandidatesOutput(_Strict):
     content: list[ContentBlock]
     updated_requirement_summary: str = Field("", description="지금까지 파악된 요구사항 누적 요약")
+
+
+# ── LLM용 경량 이름 선택 스키마 ──────────────────────────────────────────
+
+class LLMContentBlock(_Strict):
+    """LLM이 반환하는 경량 블록. NAME_REF는 id와 reason만 채웁니다."""
+    type: Literal["TEXT", "NAME_REF"] = Field(description="블록 종류: TEXT 또는 NAME_REF")
+    text: str | None = Field(None, description="type=TEXT일 때 표시할 텍스트")
+    id: int | None = Field(None, description="type=NAME_REF일 때 후보 이름의 id (후보 목록에 있는 id 그대로)")
+    reason: str | None = Field(None, description="type=NAME_REF일 때 이름 추천 이유 (부모님께 쉬운 말로)")
+
+
+class LLMCandidatesOutput(_Strict):
+    content: list[LLMContentBlock]
+    updated_requirement_summary: str = Field("", description="지금까지 파악된 요구사항 누적 요약")

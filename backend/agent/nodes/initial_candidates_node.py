@@ -8,7 +8,7 @@ from langchain_core.messages import SystemMessage, AIMessage
 from langchain_openai import ChatOpenAI
 from agent.state import NamingState
 from agent.prompts import build_system_prompt
-from agent.schemas import CandidatesOutput
+from agent.schemas import LLMCandidatesOutput
 from agent import name_store
 from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
@@ -40,7 +40,19 @@ def initial_candidates_node(state: NamingState) -> dict:
             )
             logger.info("[초기후보] DB 검색 완료: %d개 후보", len(current_candidates))
         except Exception:
+            logger.exception("[초기후보] DB 검색 실패")
             current_candidates = []
+
+    if not current_candidates:
+        logger.warning("[초기후보] 후보가 0개 — 에러 메시지 반환")
+        error_block = {"type": "TEXT", "data": {"text": "죄송해요, 조건에 맞는 이름 후보를 찾지 못했어요. 잠시 후 다시 시도해 주세요."}}
+        return {
+            "messages": [AIMessage(content=error_block["data"]["text"])],
+            "current_candidates": [],
+            "stage": "payment_gate",
+            "stage_turn_count": 0,
+            "_content_blocks": [error_block],
+        }
 
     updated_state = dict(state)
     updated_state["current_candidates"] = current_candidates
@@ -48,13 +60,14 @@ def initial_candidates_node(state: NamingState) -> dict:
     emit("이름 후보를 검토하고 있어요...")
     logger.info("[초기후보] LLM 구조화 출력 시작")
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
-    structured_llm = llm.with_structured_output(CandidatesOutput, method="function_calling")
+    structured_llm = llm.with_structured_output(LLMCandidatesOutput, method="function_calling")
     system_prompt = build_system_prompt(updated_state)
     messages = [SystemMessage(content=system_prompt)] + list(state.get("messages", []))
     result = structured_llm.invoke(messages)
 
-    limited = _limit_name_blocks(result.content, max_names=3)
-    content_blocks = [_to_frontend_block(block) for block in limited]
+    candidates_by_id = {c["id"]: c for c in current_candidates if "id" in c}
+    limited = _limit_name_ref_blocks(result.content, max_names=3)
+    content_blocks = _resolve_blocks(limited, candidates_by_id)
 
     shown_names = [b["data"]["한글"] for b in content_blocks if b["type"] == "NAME"]
     logger.info("[초기후보] 최종 추천 %d개: %s", len(shown_names), shown_names)
@@ -69,12 +82,12 @@ def initial_candidates_node(state: NamingState) -> dict:
     }
 
 
-def _limit_name_blocks(content: list, max_names: int = 3) -> list:
-    """content에서 NAME 블록이 최대 max_names개가 되도록 초과분을 제거합니다. 순서 유지."""
+def _limit_name_ref_blocks(content: list, max_names: int = 3) -> list:
+    """content에서 NAME_REF 블록이 최대 max_names개가 되도록 초과분을 제거합니다."""
     name_count = 0
     out = []
     for block in content:
-        if getattr(block, "type", None) == "NAME":
+        if getattr(block, "type", None) == "NAME_REF":
             if name_count >= max_names:
                 continue
             name_count += 1
@@ -82,18 +95,28 @@ def _limit_name_blocks(content: list, max_names: int = 3) -> list:
     return out
 
 
-def _to_frontend_block(block) -> dict:
-    """평탄한 ContentBlock을 프론트엔드가 기대하는 중첩 형식으로 변환."""
-    if block.type == "TEXT":
-        return {"type": "TEXT", "data": {"text": block.text or ""}}
-    return {"type": "NAME", "data": {
-        "한글": block.한글 or "",
-        "full_name": block.full_name or "",
-        "syllables": [s.model_dump() for s in (block.syllables or [])],
-        "발음오행_조화": block.발음오행_조화,
-        "rarity_signal": block.rarity_signal,
-        "reason": block.reason,
-    }}
+def _resolve_blocks(content: list, candidates_by_id: dict) -> list[dict]:
+    """LLM의 경량 블록을 후보 데이터로 조회해 프론트엔드 형식으로 조립."""
+    result = []
+    for block in content:
+        if block.type == "TEXT":
+            result.append({"type": "TEXT", "data": {"text": block.text or ""}})
+        elif block.type == "NAME_REF":
+            cand = candidates_by_id.get(block.id)
+            if cand:
+                result.append({"type": "NAME", "data": {
+                    "한글": cand["한글"],
+                    "full_name": cand["full_name"],
+                    "syllables": cand["syllables"],
+                    "발음오행_조화": cand["발음오행_조화"],
+                    "발음오행_조화_이유": cand.get("발음오행_조화_이유", ""),
+                    "rarity_signal": cand["rarity_signal"],
+                    "score_breakdown": cand.get("score_breakdown", {}),
+                    "reason": block.reason or "",
+                }})
+            else:
+                logger.warning("[초기후보] NAME_REF id=%s 미매칭 (candidates_by_id keys=%s)", block.id, list(candidates_by_id.keys()))
+    return result
 
 
 def _blocks_to_text(blocks: list[dict]) -> str:

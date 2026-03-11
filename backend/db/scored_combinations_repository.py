@@ -3,7 +3,7 @@
 import sqlite3
 from pathlib import Path
 
-from core.config import HANJA_DB_PATH, SCORED_COMBINATIONS_DB_PATH
+from core.config import HANJA_DB_PATH, SCORED_COMBINATIONS_DB_PATH, REGISTERED_NAME_DB_PATH
 from db.hanja_model import Hanja
 from db.hanja_repository import _row_to_hanja
 
@@ -21,9 +21,11 @@ class ScoredCombinationsRepository:
         self,
         scored_db_path: Path | None = None,
         hanja_db_path: Path | None = None,
+        registered_name_db_path: Path | None = None,
     ) -> None:
         self._scored_db_path = scored_db_path or SCORED_COMBINATIONS_DB_PATH
         self._hanja_db_path = hanja_db_path or HANJA_DB_PATH
+        self._registered_name_db_path = registered_name_db_path or REGISTERED_NAME_DB_PATH
 
     @classmethod
     def _ensure_hanja_cache(cls, hanja_db_path: Path) -> dict[int, Hanja]:
@@ -135,6 +137,8 @@ class ScoredCombinationsRepository:
 
         with sqlite3.connect(self._scored_db_path) as conn:
             conn.row_factory = sqlite3.Row
+            # registered_names 테이블이 별도 DB에 있으므로 ATTACH해서 JOIN 가능하게 함
+            conn.execute(f"ATTACH DATABASE ? AS rn_db", (str(self._registered_name_db_path),))
 
             # 1단계: 용신 커버 조합 조회
             use_ohaeng = required_ohaengs and required_ohaengs != ["_all"]
@@ -144,9 +148,9 @@ class ScoredCombinationsRepository:
                 rows = conn.execute(
                     f"""
                     SELECT sc.name, sc.hanja1_id, sc.hanja2_id, MAX(sc.score) AS score,
-                           rn.count AS rn_count
+                           COALESCE(rn.count, 0) AS rn_count
                     FROM scored_combinations sc
-                    JOIN registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
+                    LEFT JOIN rn_db.registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
                     WHERE sc.surname_hanja = ?
                       AND sc.gender = ?
                       AND sc.required_ohaeng IN ({ohaeng_placeholders})
@@ -177,9 +181,10 @@ class ScoredCombinationsRepository:
                 params_all: list = [surname_hanja, gender] + exclude_params + [remaining, offset]
                 all_rows = conn.execute(
                     f"""
-                    SELECT sc.name, sc.hanja1_id, sc.hanja2_id, sc.score, rn.count AS rn_count
+                    SELECT sc.name, sc.hanja1_id, sc.hanja2_id, sc.score,
+                           COALESCE(rn.count, 0) AS rn_count
                     FROM scored_combinations sc
-                    JOIN registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
+                    LEFT JOIN rn_db.registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
                     WHERE sc.surname_hanja = ?
                       AND sc.gender = ?
                       AND sc.required_ohaeng = '_all'
