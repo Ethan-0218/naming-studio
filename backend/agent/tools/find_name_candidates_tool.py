@@ -436,7 +436,6 @@ def find_name_candidates(
             best_score = (
                 pre_score
                 + 용신_val * 0.40
-                + 발음오행_norm * 0.12
                 + rarity_tiebreak * 0.001
                 + sibling_penalty
             )
@@ -587,12 +586,11 @@ def find_name_candidates(
             # 사전 계산 경로: score 재계산 없이 precomputed_score + 발음오행/용신 가산
             h1, h2, pre_score, ohaeng_covered = precomputed_best_fb[name]
             best_name_hanjas: list[Hanja | None] = [h1, h2]
-            # precomputed_score = 자원오행(0.18) + 수리격(0.15) + 발음음양(0.08) + 획수음양(0.07)
+            # precomputed_score = 자원오행(0.18) + 발음오행(0.12) + 수리격(0.15) + 발음음양(0.08) + 획수음양(0.07)
             용신_val = 1.0 if ohaeng_covered else 0.0
             best_score = (
                 pre_score
                 + 용신_val * 0.40
-                + 발음오행_norm * 0.12
                 + rarity_tiebreak * 0.001
                 + sibling_penalty
             )

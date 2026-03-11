@@ -13,10 +13,11 @@
 
 사전 계산 점수 항목 (용신 제외):
   - 자원오행 조화: 0.18
+  - 발음오행 조화: 0.12
   - 수리격:       0.15
   - 발음음양:     0.08
   - 획수음양:     0.07
-  합계 가중치:    0.48 (정규화 없이 합산, 비교 목적)
+  합계 가중치:    0.60 (정규화 없이 합산, 비교 목적)
 """
 
 import sqlite3
@@ -124,10 +125,13 @@ def _build_numerology_lookup(
 
 def _compute_score(
     s_char_fe: str,
+    s_pron_fe: str,
     s_sound_yin: str,
     s_stroke_yin: str,
     s_stroke: int | None,
     gender_key: str,
+    n1_pron_fe: str,
+    n2_pron_fe: str,
     h1_char_fe: str,
     h1_sound_yin: str,
     h1_stroke_yin: str,
@@ -142,6 +146,7 @@ def _compute_score(
 ) -> float:
     score = (
         char_fe_lut.get((s_char_fe, h1_char_fe, h2_char_fe), 0.5) * 0.18
+        + char_fe_lut.get((s_pron_fe, n1_pron_fe, n2_pron_fe), 0.5) * 0.12
         + yin_lut.get((s_sound_yin, h1_sound_yin, h2_sound_yin), 0.5) * 0.08
         + yin_lut.get((s_stroke_yin, h1_stroke_yin, h2_stroke_yin), 0.5) * 0.07
     )
@@ -163,7 +168,7 @@ def build() -> None:
     hanja_conn.row_factory = sqlite3.Row
     surname_rows = hanja_conn.execute(
         "SELECT hanja, original_stroke_count, dictionary_stroke_count, "
-        "character_five_elements, sound_based_yin_yang, stroke_based_yin_yang "
+        "character_five_elements, pronunciation_five_elements, sound_based_yin_yang, stroke_based_yin_yang "
         "FROM hanja WHERE is_family_hanja = 1 AND usage_count > 0"
     ).fetchall()
 
@@ -175,13 +180,19 @@ def build() -> None:
     name_strokes = sorted(set(r["s"] for r in name_stroke_rows))
     hanja_conn.close()
 
+    from domain.jakmyeong.발음오행 import 발음오행_from_초성
+    from domain.saju.오행 import 오행 as 오행_cls
+
     surname_data = []
     for r in surname_rows:
         stroke = r["original_stroke_count"] or r["dictionary_stroke_count"]
+        pron_fe_raw = r["pronunciation_five_elements"] or ""
+        pron_fe_o = 오행_cls.from_string(pron_fe_raw)
         surname_data.append({
             "hanja": r["hanja"],
             "stroke": stroke,
             "char_fe": r["character_five_elements"] or "",
+            "pron_fe": pron_fe_o.value if pron_fe_o else "",
             "sound_yin": r["sound_based_yin_yang"] or "",
             "stroke_yin": r["stroke_based_yin_yang"] or "",
         })
@@ -286,6 +297,7 @@ def build() -> None:
     for sdata in surname_data:
         s_hanja = sdata["hanja"]
         s_char_fe = sdata["char_fe"]
+        s_pron_fe = sdata["pron_fe"]
         s_sound_yin = sdata["sound_yin"]
         s_stroke_yin = sdata["stroke_yin"]
         s_stroke = sdata["stroke"]
@@ -297,13 +309,17 @@ def build() -> None:
                 skipped_pairs += 1
                 continue
 
-            # 발음오행 목록 (이름 음절 기준, 용신 포함 여부 판단용)
-            from domain.jakmyeong.발음오행 import 발음오행_from_초성
+            # 발음오행 목록 (이름 음절 기준)
             name_pron_fes = set()
+            syllable_pron_fe_list: list[str] = []
             for ch in name:
                 o = 발음오행_from_초성(ch)
-                if o:
-                    name_pron_fes.add(o.value)
+                val = o.value if o else ""
+                syllable_pron_fe_list.append(val)
+                if val:
+                    name_pron_fes.add(val)
+            n1_pron_fe = syllable_pron_fe_list[0] if len(syllable_pron_fe_list) >= 1 else ""
+            n2_pron_fe = syllable_pron_fe_list[1] if len(syllable_pron_fe_list) >= 2 else ""
 
             # 전체 조합에 대해 점수 계산 (오행 무관)
             all_scored: list[tuple[float, int, int, object, object]] = []
@@ -311,7 +327,8 @@ def build() -> None:
                 h1_stroke = h1.original_stroke_count or h1.dictionary_stroke_count
                 h2_stroke = h2.original_stroke_count or h2.dictionary_stroke_count
                 score = _compute_score(
-                    s_char_fe, s_sound_yin, s_stroke_yin, s_stroke, gender_key,
+                    s_char_fe, s_pron_fe, s_sound_yin, s_stroke_yin, s_stroke, gender_key,
+                    n1_pron_fe, n2_pron_fe,
                     h1.character_five_elements or "", h1.sound_based_yin_yang or "",
                     h1.stroke_based_yin_yang or "", h1_stroke,
                     h2.character_five_elements or "", h2.sound_based_yin_yang or "",
