@@ -32,4 +32,5 @@ def direction_confirm_node(state: NamingState) -> dict:
         "naming_direction": result.naming_direction,
         "stage": next_stage,
         "stage_turn_count": 0,
+        "_content_blocks": [{"type": "TEXT", "data": {"text": result.message}}],
     }

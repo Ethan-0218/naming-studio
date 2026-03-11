@@ -20,4 +20,5 @@ def direction_briefing_node(state: NamingState) -> dict:
         "naming_direction": result.naming_direction,
         "stage": "direction_confirm",
         "stage_turn_count": 0,
+        "_content_blocks": [{"type": "TEXT", "data": {"text": result.message}}],
     }

@@ -59,6 +59,12 @@ def candidate_exploration_node(state: NamingState) -> dict:
         name_feel_preference: soft(ㅅㄴㅁㅇㅎㄹ)/strong(ㅂㄱㄷㅈㅊ)/null."""
         from agent.tools.find_name_candidates_tool import find_name_candidates
         pool_size = 200
+        # rarity_preference: LLM이 per-call로 지정하거나, 없으면 profile 저장값 사용
+        effective_rarity = rarity_preference or preference.get("rarity_preference")
+        # rarity_preference 값 매핑 (인터뷰 저장값 → 도구 파라미터 형식)
+        _rarity_map = {"독특한": "희귀", "평범한": "흔한", "상관없음": None}
+        if effective_rarity in _rarity_map:
+            effective_rarity = _rarity_map[effective_rarity]
         candidates = find_name_candidates(
             surname=user_info.get("surname", ""),
             surname_hanja=user_info.get("surname_hanja", ""),
@@ -67,7 +73,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
             부족한_오행=사주.get("부족한_오행", []),
             preferred_오행=preferred_오행,
             max_받침_count=max_받침_count,
-            rarity_preference=rarity_preference,
+            rarity_preference=effective_rarity,
             name_feel_preference=name_feel_preference,
             name_length=preference.get("name_length"),
             sibling_names=preference.get("sibling_names"),
@@ -136,8 +142,6 @@ def candidate_exploration_node(state: NamingState) -> dict:
         preference_profile["max_받침_count"] = pf.max_받침_count
     if pf.name_length is not None:
         preference_profile["name_length"] = pf.name_length
-    if pf.name_feel is not None:
-        preference_profile["name_feel"] = pf.name_feel
 
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],

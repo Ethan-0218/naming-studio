@@ -16,9 +16,19 @@ import {
 const BACKEND_URL = 'http://localhost:8000';
 
 // ── Types ──────────────────────────────────────────────────────────────
+interface ChoiceGroupData {
+  question: string;
+  choices: string[];
+  multi: boolean;
+  allow_custom: boolean;
+  field_key: string;
+  follow_up?: { trigger: string; placeholder: string };
+}
+
 type ContentBlock =
   | { type: 'TEXT'; data: { text: string } }
   | { type: 'NAME'; data: NameData }
+  | { type: 'CHOICE_GROUP'; data: ChoiceGroupData }
   | { type: 'FORM_BUTTON' };   // 정보 입력 버튼 블록 (로컬 전용)
 
 interface HanjaOption {
@@ -627,8 +637,110 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
   );
 }
 
+// ── ChoiceGroupBlock ────────────────────────────────────────────────────
+function ChoiceGroupBlock({ data, onSend, submitted }: {
+  data: ChoiceGroupData;
+  onSend: (text: string) => void;
+  submitted: boolean;
+}) {
+  const [selected, setSelected] = useState<string[]>([]);
+  const [customText, setCustomText] = useState('');
+  const [showFollowUp, setShowFollowUp] = useState(false);
+  const [followUpText, setFollowUpText] = useState('');
+  const [done, setDone] = useState(submitted);
+
+  function toggleChoice(choice: string) {
+    if (done) return;
+    if (data.multi) {
+      setSelected(prev =>
+        prev.includes(choice) ? prev.filter(c => c !== choice) : [...prev, choice]
+      );
+    } else {
+      // 단일 선택: follow_up 트리거 체크
+      if (data.follow_up && choice === data.follow_up.trigger) {
+        setSelected([choice]);
+        setShowFollowUp(true);
+      } else {
+        setSelected([choice]);
+        setDone(true);
+        onSend(choice);
+      }
+    }
+  }
+
+  function submitMulti() {
+    if (done) return;
+    const parts = [...selected];
+    if (customText.trim()) parts.push(customText.trim());
+    const msg = parts.length > 0 ? parts.join(', ') : '상관없어요';
+    setDone(true);
+    onSend(msg);
+  }
+
+  function submitFollowUp() {
+    if (done) return;
+    const msg = followUpText.trim()
+      ? `${selected[0]}: ${followUpText.trim()}`
+      : selected[0];
+    setDone(true);
+    onSend(msg);
+  }
+
+  return (
+    <View style={[s.choiceGroup, done && s.choiceGroupDone]}>
+      <Text style={s.choiceQuestion}>{data.question}</Text>
+      <View style={s.choiceChips}>
+        {data.choices.map(choice => (
+          <Pressable
+            key={choice}
+            style={[s.chip, selected.includes(choice) && s.chipSelected, done && s.chipDisabled]}
+            onPress={() => toggleChoice(choice)}
+          >
+            <Text style={[s.chipText, selected.includes(choice) && s.chipTextSelected]}>{choice}</Text>
+          </Pressable>
+        ))}
+        {data.allow_custom && !done && (
+          <View style={s.chipCustomRow}>
+            <TextInput
+              style={s.chipCustomInput}
+              value={customText}
+              onChangeText={setCustomText}
+              placeholder="직접 입력"
+              placeholderTextColor="#aaa"
+            />
+          </View>
+        )}
+      </View>
+      {showFollowUp && !done && data.follow_up && (
+        <View style={s.followUpRow}>
+          <TextInput
+            style={s.followUpInput}
+            value={followUpText}
+            onChangeText={setFollowUpText}
+            placeholder={data.follow_up.placeholder}
+            placeholderTextColor="#aaa"
+            autoFocus
+          />
+          <Pressable style={s.followUpBtn} onPress={submitFollowUp}>
+            <Text style={s.followUpBtnText}>완료</Text>
+          </Pressable>
+        </View>
+      )}
+      {data.multi && !done && (
+        <Pressable style={s.multiSubmitBtn} onPress={submitMulti}>
+          <Text style={s.multiSubmitBtnText}>선택 완료</Text>
+        </Pressable>
+      )}
+      {done && selected.length > 0 && (
+        <Text style={s.choiceDoneText}>선택: {selected.join(', ')}</Text>
+      )}
+    </View>
+  );
+}
+
+
 // ── MessageBubble ──────────────────────────────────────────────────────
-function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, formSubmitted, showDebug }: {
+function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, formSubmitted, showDebug, onSend }: {
   msg: ChatMessage;
   liked: string[];
   disliked: string[];
@@ -637,6 +749,7 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
   onOpenForm: () => void;
   formSubmitted: boolean;
   showDebug: boolean;
+  onSend: (text: string) => void;
 }) {
   if (msg.role === 'user') {
     const text = msg.content
@@ -666,6 +779,16 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
             <View key={i} style={s.aiBubble}>
               <Text style={s.aiText}>{block.data.text}</Text>
             </View>
+          );
+        }
+        if (block.type === 'CHOICE_GROUP') {
+          return (
+            <ChoiceGroupBlock
+              key={i}
+              data={block.data}
+              onSend={onSend}
+              submitted={false}
+            />
           );
         }
         if (block.type === 'FORM_BUTTON') {
@@ -819,10 +942,8 @@ export default function App() {
     }
   }
 
-  async function handleSend() {
-    const text = input.trim();
+  async function sendMessage(text: string) {
     if (!text || loading) return;
-    setInput('');
     setMessages(prev => [...prev, {
       id: Date.now().toString(),
       role: 'user',
@@ -856,6 +977,13 @@ export default function App() {
       setLoading(false);
       setProgressMessage(null);
     }
+  }
+
+  async function handleSend() {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput('');
+    await sendMessage(text);
   }
 
   async function handleLike(name: string) {
@@ -1017,6 +1145,7 @@ export default function App() {
               onOpenForm={() => setFormOpen(true)}
               formSubmitted={formSubmitted}
               showDebug={showDebug}
+              onSend={sendMessage}
             />
           ))}
           {loading && (
@@ -1316,6 +1445,46 @@ const s = StyleSheet.create({
     marginTop: 2,
   },
   formOpenBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+
+  // ── ChoiceGroup ───────────────────────────────────────────────────────
+  choiceGroup: {
+    backgroundColor: '#f3f0ff',
+    borderRadius: 14, padding: 14, marginBottom: 8, width: '100%',
+    borderWidth: 1, borderColor: '#d8d0f5',
+  },
+  choiceGroupDone: { opacity: 0.6 },
+  choiceQuestion: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 10 },
+  choiceChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: {
+    backgroundColor: '#fff', borderRadius: 20,
+    paddingHorizontal: 14, paddingVertical: 8,
+    borderWidth: 1.5, borderColor: '#d0c8f0',
+  },
+  chipSelected: { backgroundColor: PURPLE, borderColor: PURPLE },
+  chipDisabled: { opacity: 0.5 },
+  chipText: { fontSize: 13, color: '#555', fontWeight: '500' },
+  chipTextSelected: { color: '#fff', fontWeight: '700' },
+  chipCustomRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, width: '100%' },
+  chipCustomInput: {
+    flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 6, fontSize: 13, backgroundColor: '#fff',
+  },
+  followUpRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8 },
+  followUpInput: {
+    flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, backgroundColor: '#fff',
+  },
+  followUpBtn: {
+    backgroundColor: PURPLE, borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 8,
+  },
+  followUpBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  multiSubmitBtn: {
+    marginTop: 12, backgroundColor: PURPLE, borderRadius: 10,
+    paddingHorizontal: 20, paddingVertical: 10, alignSelf: 'flex-end',
+  },
+  multiSubmitBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  choiceDoneText: { fontSize: 12, color: '#888', marginTop: 8, fontStyle: 'italic' },
 
   nameCard: {
     backgroundColor: CARD_BG, borderRadius: 14, padding: 14, marginBottom: 8,

@@ -39,22 +39,18 @@ class InfoCollectionOutput(_Strict):
 # ── 취향 인터뷰 ───────────────────────────────────────────────────────────
 
 class PreferenceProfile(BaseModel):
+    """DB 필터로 사용되는 구조화 취향 필드만 저장. 서술형 취향은 naming_direction으로 통합."""
     model_config = ConfigDict(extra="ignore")
-    name_feel: str | None = Field(None, description="이름의 느낌. 예: 부드러운, 강한, 중성적")
-    받침_preference: str | None = Field(None, description="받침 선호를 유저 표현 그대로 저장. 예: '받침 없는 이름 선호', '두 글자 모두 받침 있는 건 피함', '한 글자만 받침 허용', '상관없음'")
-    max_받침_count: int | None = Field(None, description="이름에서 받침 있는 글자 수 상한. 0=받침 없음 선호, 1=최대 1글자만 받침 허용, 2=둘 다 받침 허용, null=제한 없음")
-    liked_sounds: str | None = Field(None, description="좋아하는 발음")
-    disliked_sounds: str | None = Field(None, description="싫어하는 발음")
-    values: str | None = Field(None, description="이름에 담고 싶은 의미나 가치")
-    avoid: str | None = Field(None, description="피하고 싶은 이름의 특징")
-    extra: str | None = Field(None, description="기타 취향 정보")
+    max_받침_count: int | None = Field(None, description="받침 있는 글자 수 상한. 0=받침없음, 1=최대1개, null=제한없음")
     name_length: str | None = Field(None, description="이름 글자 수 선호. 외자/두글자/상관없음")
     sibling_names: list[str] | None = Field(None, description="형제자매 이름 목록. 예: ['서윤', '서준']")
+    rarity_preference: str | None = Field(None, description="이름 희귀도 선호. 독특한/평범한/상관없음")
+    hanja_preference: str | None = Field(None, description="한자이름선호/순우리말/둘다")
 
 
-class PreferenceInterviewOutput(_Strict):
-    message: str
-    preference_profile: PreferenceProfile = Field(default_factory=PreferenceProfile)
+class NamingDirectionDraftOutput(_Strict):
+    """취향 인터뷰 완료 후 naming_direction 초안 생성용."""
+    naming_direction: str = Field(description="수집된 느낌·의미·조건을 종합한 작명 방향 초안 (한 문장)")
 
 
 # ── 방향 브리핑 ───────────────────────────────────────────────────────────
@@ -121,7 +117,6 @@ class UpdatedPreferenceFields(_Strict):
     """탐색 중 유저 요청으로 변경된 취향 필드. 변경 없는 필드는 None."""
     max_받침_count: int | None = Field(None, description="변경 시에만. 0=받침없음, 1=최대1개, 2=제한없음")
     name_length: str | None = Field(None, description="변경 시에만. 예: '외자', '두글자', '상관없음'")
-    name_feel: str | None = Field(None, description="변경 시에만. 예: '부드러운', '강한', '중성적'")
 
 
 class LLMCandidatesOutput(_Strict):

@@ -17,6 +17,23 @@ def build_stage_prompt(state: NamingState) -> str:
     돌림자_한자 = user_info.get("돌림자_한자", "")
     돌림자_text = f"{돌림자_한자}({돌림자})자" if 돌림자 else "없음"
 
+    # 구조화 취향만 표시 (서술형 필드는 naming_direction으로 통합됨)
+    pref_lines = []
+    if preference.get("name_length"):
+        pref_lines.append(f"이름 길이: {preference['name_length']}")
+    if preference.get("hanja_preference"):
+        pref_lines.append(f"한자/순우리말: {preference['hanja_preference']}")
+    if preference.get("rarity_preference") and preference["rarity_preference"] != "상관없음":
+        pref_lines.append(f"희귀도: {preference['rarity_preference']}")
+    if preference.get("sibling_names"):
+        pref_lines.append(f"형제자매 이름: {', '.join(preference['sibling_names'])}")
+    if preference.get("max_받침_count") is not None:
+        pref_lines.append(f"받침 제한: 최대 {preference['max_받침_count']}개")
+    pref_text = "\n".join(f"  - {l}" for l in pref_lines) if pref_lines else "  - (없음)"
+
+    naming_direction = state.get("naming_direction") or ""
+    direction_text = f"\n이미 수집된 방향 초안: {naming_direction}" if naming_direction else ""
+
     return f"""
 [현재 단계: 작명 방향 브리핑]
 
@@ -24,7 +41,8 @@ def build_stage_prompt(state: NamingState) -> str:
 - 성씨: {user_info.get('surname_hanja', '')}{surname}씨 / 성별: {'아들' if gender == '남' else '딸'}
 - 돌림자: {돌림자_text}
 - {사주_text}
-- 취향 프로필: {preference}
+- 구조화 취향:
+{pref_text}{direction_text}
 
 지금까지 파악한 정보를 종합해 작명 방향성을 새롭게 정리해 설명하세요.
 방향성이란 취향 정보를 단순 나열하는 게 아니라, 어떤 느낌·에너지·의미의 이름을 찾을 것인지 전문가적 시각으로 해석한 접근법입니다.

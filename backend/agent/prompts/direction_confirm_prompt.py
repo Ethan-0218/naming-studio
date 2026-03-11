@@ -18,23 +18,17 @@ def build_stage_prompt(state: NamingState) -> str:
 
     돌림자_text = f"\n- 돌림자: {돌림자_한자}({돌림자})" if 돌림자 else ""
 
-    # 취향 프로필을 사람이 읽기 좋게 정리
+    # 구조화 취향만 표시 (서술형 취향은 naming_direction으로 통합됨)
     pref_lines = []
-    pref_labels = {
-        "name_feel": "이름 느낌",
-        "받침_preference": "받침 선호",
-        "values": "담고 싶은 의미",
-        "liked_sounds": "좋아하는 발음",
-        "disliked_sounds": "피하는 발음",
-        "avoid": "피하고 싶은 특징",
-        "name_length": "글자 수",
-        "extra": "기타",
-    }
-    for key, label in pref_labels.items():
-        val = preference.get(key)
-        if val:
-            pref_lines.append(f"  · {label}: {val}")
-    pref_text = "\n".join(pref_lines) if pref_lines else "  · (수집된 취향 없음)"
+    if preference.get("name_length"):
+        pref_lines.append(f"글자 수: {preference['name_length']}")
+    if preference.get("hanja_preference"):
+        pref_lines.append(f"한자/순우리말: {preference['hanja_preference']}")
+    if preference.get("rarity_preference") and preference["rarity_preference"] != "상관없음":
+        pref_lines.append(f"희귀도: {preference['rarity_preference']}")
+    if preference.get("max_받침_count") is not None:
+        pref_lines.append(f"받침 제한: 최대 {preference['max_받침_count']}개")
+    pref_text = "\n".join(f"  · {l}" for l in pref_lines) if pref_lines else "  · (없음)"
 
     sibling_names = preference.get("sibling_names")
     sibling_text = f"\n  · 형제자매 이름: {', '.join(sibling_names)}" if sibling_names else ""
