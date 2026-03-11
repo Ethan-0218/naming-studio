@@ -113,16 +113,18 @@ class LLMContentBlock(_Strict):
     reason: str | None = Field(None, description="type=NAME_REF일 때 이름 추천 이유 (부모님께 쉬운 말로)")
 
 
-class UpdatedPreferenceFields(_Strict):
-    """탐색 중 유저 요청으로 변경된 취향 필드. 변경 없는 필드는 None."""
-    max_받침_count: int | None = Field(None, description="변경 시에만. 0=받침없음, 1=최대1개, 2=제한없음")
-    name_length: str | None = Field(None, description="변경 시에만. 예: '외자', '두글자', '상관없음'")
-
-
 class LLMCandidatesOutput(_Strict):
     content: list[LLMContentBlock]
-    updated_naming_direction: str = Field("", description="변경된 작명 방향. 변경 없으면 빈 문자열.")
-    updated_preference_fields: UpdatedPreferenceFields = Field(
-        default_factory=UpdatedPreferenceFields,
-        description="유저가 이번 턴에 변경 요청한 취향 필드만 채우세요. 변경 없는 필드는 null.",
-    )
+
+
+# ── 취향 변경 감지 ────────────────────────────────────────────────────────
+
+class PreferenceUpdateOutput(_Strict):
+    """유저 메시지 취향 변경 감지 결과."""
+    naming_direction: str = Field(description=(
+        "현재 유효한 작명 방향 한 문장. "
+        "유저가 취향을 언급했으면 기존 방향에 통합해 갱신. "
+        "반응(좋아요/싫어요/재추천)만 한 경우 기존 방향 그대로."
+    ))
+    max_받침_count: int | None = Field(None, description="받침 조건 변경 시. 0=없음, 1=최대1개, 2=제한없음")
+    name_length: str | None = Field(None, description="길이 변경 시. '외자'/'두글자'/'상관없음'")

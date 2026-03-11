@@ -12,6 +12,7 @@ from agent.nodes.direction_briefing_node import direction_briefing_node
 from agent.nodes.direction_confirm_node import direction_confirm_node
 from agent.nodes.initial_candidates_node import initial_candidates_node
 from agent.nodes.payment_gate_node import payment_gate_node
+from agent.nodes.preference_update_node import preference_update_node
 from agent.nodes.candidate_exploration_node import candidate_exploration_node
 
 
@@ -39,6 +40,7 @@ def create_agent_graph():
     graph.add_node("direction_confirm", direction_confirm_node)
     graph.add_node("initial_candidates", initial_candidates_node)
     graph.add_node("payment_gate", payment_gate_node)
+    graph.add_node("preference_update", preference_update_node)
     graph.add_node("candidate_exploration", candidate_exploration_node)
 
     # 시작 → router
@@ -56,13 +58,16 @@ def create_agent_graph():
             "direction_confirm": "direction_confirm",
             "initial_candidates": "initial_candidates",
             "payment_gate": "payment_gate",
-            "candidate_exploration": "candidate_exploration",
+            "candidate_exploration": "preference_update",  # preference_update 먼저 체인
         },
     )
 
     # 단순 END 노드
     for node in ["welcome", "info_collection", "direction_briefing", "payment_gate", "candidate_exploration"]:
         graph.add_edge(node, END)
+
+    # preference_update → candidate_exploration 항상 체인
+    graph.add_edge("preference_update", "candidate_exploration")
 
     # preference_interview → 완료 시 direction_confirm 자동 체인
     graph.add_conditional_edges(
