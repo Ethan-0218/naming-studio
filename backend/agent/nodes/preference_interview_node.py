@@ -119,21 +119,32 @@ def _get_초성(char: str) -> str | None:
     return _초성_table[code // 588] if 0 <= code <= 11171 else None
 
 
-def _compute_anchor_syllables(sibling_names: list[str]) -> list[str]:
-    """형제자매 이름에서 공유할 앵커 음절을 계산한다."""
+def _compute_anchor_syllables(sibling_names: list[str]) -> tuple[list[str], list[str]]:
+    """형제자매 이름에서 위치 기반 앵커 음절과 LIKE 패턴을 계산한다.
+
+    Returns:
+        (syllables, patterns)
+        - syllables: 앵커 음절 목록 (표시용). 예: ["은", "우"] 또는 ["서"]
+        - patterns:  LIKE 패턴 목록 (SQL/Python 매칭용). 예: ["은%", "%우"] 또는 ["서%"]
+    """
     names = [n for n in sibling_names if n]
     if not names:
-        return []
+        return [], []
     if len(names) == 1:
-        return list(names[0])   # "은우" → ["은", "우"]
-    # 2명 이상: 가장 많이 등장하는 음절 중 모든 이름에 등장하는 것 우선
-    from collections import Counter
-    counter: Counter = Counter(s for name in names for s in name)
-    common = [s for s, c in counter.items() if c >= len(names)]
-    if common:
-        return common
-    max_c = max(counter.values())
-    return [s for s, c in counter.items() if c == max_c]
+        name = names[0]
+        syllables = list(name)
+        patterns = [f"{syl}%" if i == 0 else f"%{syl}" for i, syl in enumerate(name)]
+        return syllables, patterns
+    # 2명 이상: 위치별로 공통 음절 추출
+    min_len = min(len(n) for n in names)
+    syllables, patterns = [], []
+    for pos in range(min_len):
+        chars = [n[pos] for n in names]
+        if len(set(chars)) == 1:
+            syl = chars[0]
+            syllables.append(syl)
+            patterns.append(f"{syl}%" if pos == 0 else f"%{syl}")
+    return syllables, patterns
 
 
 # ── 응답 파싱 ────────────────────────────────────────────────────────────
@@ -157,10 +168,12 @@ def _parse_answer(question_key: str, user_msg: str, profile: dict | None = None)
         updates["sibling_style_match"] = match
         if match:
             sibling_names = (profile or {}).get("sibling_names") or []
-            anchors = _compute_anchor_syllables(sibling_names)
+            anchors, anchor_patterns = _compute_anchor_syllables(sibling_names)
             updates["sibling_anchor_syllables"] = anchors if anchors else None
+            updates["sibling_anchor_patterns"] = anchor_patterns if anchor_patterns else None
         else:
             updates["sibling_anchor_syllables"] = None
+            updates["sibling_anchor_patterns"] = None
 
     elif question_key == "name_length":
         if "외자" in msg:

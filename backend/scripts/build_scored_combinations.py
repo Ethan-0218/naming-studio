@@ -39,6 +39,11 @@ TOP_NAMES = 2500    # 등록명 성별별 상위 N개
 TOP_COMBOS = 5      # 오행별 상위 N개 조합
 BATCH_SIZE = 100_000
 
+
+def _받침_count(name: str) -> int:
+    """이름에서 받침 있는 음절 수를 반환한다."""
+    return sum(1 for ch in name if '\uAC00' <= ch <= '\uD7A3' and (ord(ch) - 0xAC00) % 28 != 0)
+
 OHAENG_LIST = ["목", "화", "토", "금", "수"]
 
 
@@ -200,7 +205,7 @@ def build() -> None:
     surname_strokes = sorted(set(s["stroke"] for s in surname_data if s["stroke"]))
     print(f"  성씨: {len(surname_data)}개 (획수 {len(surname_strokes)}종)")
 
-    # 2. 이름 성별별 상위 N개 로드
+    # 2. 이름 성별별 상위 N개 로드 + rn_count 딕셔너리 구성
     rn_conn = sqlite3.connect(REGISTERED_NAME_DB_PATH)
     name_rows = rn_conn.execute(
         """
@@ -211,6 +216,9 @@ def build() -> None:
         """,
         (TOP_NAMES,),
     ).fetchall()
+    rn_count_map: dict[tuple[str, str], int] = {}
+    for row in rn_conn.execute("SELECT name, gender, count FROM registered_names").fetchall():
+        rn_count_map[(row[0], row[1])] = row[2]
     rn_conn.close()
 
     name_list = [(r[0], r[1]) for r in name_rows]
@@ -279,6 +287,9 @@ def build() -> None:
             hanja1_id       INTEGER NOT NULL,
             hanja2_id       INTEGER NOT NULL,
             score           REAL    NOT NULL,
+            rn_count        INTEGER NOT NULL DEFAULT 0,
+            받침_count       INTEGER NOT NULL DEFAULT 0,
+            name_length     INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY (surname_hanja, name, gender, required_ohaeng, rank)
         )
         """
@@ -338,9 +349,13 @@ def build() -> None:
                 all_scored.append((score, h1.id, h2.id, h1, h2))
             all_scored.sort(key=lambda x: x[0], reverse=True)
 
+            rn_cnt = rn_count_map.get((name, db_gender), 0)
+            bc = _받침_count(name)
+            nl = len(name)
+
             # '_all': 오행 무관 상위 TOP_COMBOS개 (용신 없거나 커버 안 될 때 폴백용)
             for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(all_scored[:TOP_COMBOS], 1):
-                batch.append((s_hanja, name, gender_key, "_all", rank, h1_id, h2_id, score))
+                batch.append((s_hanja, name, gender_key, "_all", rank, h1_id, h2_id, score, rn_cnt, bc, nl))
 
             # 오행별: 해당 용신을 커버하는 조합만 필터
             for target_ohaeng in OHAENG_LIST:
@@ -354,11 +369,11 @@ def build() -> None:
                 if not filtered_scored:
                     continue
                 for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(filtered_scored[:TOP_COMBOS], 1):
-                    batch.append((s_hanja, name, gender_key, target_ohaeng, rank, h1_id, h2_id, score))
+                    batch.append((s_hanja, name, gender_key, target_ohaeng, rank, h1_id, h2_id, score, rn_cnt, bc, nl))
 
             if len(batch) >= BATCH_SIZE:
                 out_conn.executemany(
-                    "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?)", batch
+                    "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?,?,?,?)", batch
                 )
                 out_conn.commit()
                 total_rows += len(batch)
@@ -368,7 +383,7 @@ def build() -> None:
 
     if batch:
         out_conn.executemany(
-            "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?)", batch
+            "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?,?,?,?)", batch
         )
         out_conn.commit()
         total_rows += len(batch)

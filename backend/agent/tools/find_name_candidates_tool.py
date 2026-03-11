@@ -306,6 +306,7 @@ def find_name_candidates(
     name_length: str | None = None,  # "외자" | "두글자" | "상관없음" | None
     sibling_names: list[str] | None = None,
     sibling_anchor_syllables: list[str] | None = None,
+    sibling_anchor_patterns: list[str] | None = None,
     limit: int = 8,
     pool_size: int = 500,
     offset: int = 0,
@@ -347,44 +348,25 @@ def find_name_candidates(
 
     if use_sc_direct:
         required_ohaengs = 부족한_오행_list if 부족한_오행_list else ["_all"]
+        rn_floor = _get_rn_floor(rarity_preference)
         sc_rows = scored_repo.get_top_names(
             surname_hanja=surname_hanja,
             gender=db_gender,
             required_ohaengs=required_ohaengs,
             limit=pool_size,
             offset=sc_cursor,
+            min_rn_count=rn_floor,
+            max_받침_count=max_받침_count,
+            name_length=name_length if name_length != "상관없음" else None,
+            anchor_patterns=sibling_anchor_patterns,
+            exclude_names=exclude,
         )
         logger.debug("[SC직접조회] %d개 조회 (cursor=%d)", len(sc_rows), sc_cursor)
 
-        # Python 하드 필터
+        # preferred_오행 Python 필터 (hanja 속성 참조 필요)
         filtered_sc: list[tuple[str, int, int, float, bool, int]] = []
-        filter_stats = {"제외": 0, "받침": 0, "길이": 0, "오행": 0, "희귀도": 0, "앵커": 0}
-        rn_floor = _get_rn_floor(rarity_preference)
+        filter_stats = {"오행": 0}
         for name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count in sc_rows:
-            if name in exclude:
-                filter_stats["제외"] += 1
-                continue
-
-            if rn_count < rn_floor:
-                filter_stats["희귀도"] += 1
-                continue
-
-            if max_받침_count is not None:
-                받침_개수 = sum(
-                    1 for c in name
-                    if 0xAC00 <= ord(c) <= 0xD7A3 and (ord(c) - 0xAC00) % 28 != 0
-                )
-                if 받침_개수 > max_받침_count:
-                    filter_stats["받침"] += 1
-                    continue
-
-            if name_length == "외자" and len(name) != 1:
-                filter_stats["길이"] += 1
-                continue
-            elif name_length == "두글자" and len(name) != 2:
-                filter_stats["길이"] += 1
-                continue
-
             if preferred_오행:
                 syllable_오행s = [발음오행_from_초성(c) for c in name]
                 has_preferred = any(
@@ -394,20 +376,11 @@ def find_name_candidates(
                 if not has_preferred:
                     filter_stats["오행"] += 1
                     continue
-
-            if sibling_anchor_syllables:
-                if not any(syl in name for syl in sibling_anchor_syllables):
-                    filter_stats["앵커"] += 1
-                    continue
-
             filtered_sc.append((name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count))
 
         logger.info(
-            "[필터] %d→%d개 통과 (제외=%d 받침=%d 길이=%d 오행=%d 희귀도=%d 앵커=%d)",
-            len(sc_rows), len(filtered_sc),
-            filter_stats["제외"], filter_stats["받침"],
-            filter_stats["길이"], filter_stats["오행"],
-            filter_stats["희귀도"], filter_stats["앵커"],
+            "[필터] SQL필터 후 %d개, 오행필터 후 %d개 (오행제외=%d)",
+            len(sc_rows), len(filtered_sc), filter_stats["오행"],
         )
 
         if not filtered_sc:
@@ -549,8 +522,15 @@ def find_name_candidates(
                 filter_stats["오행"] += 1
                 continue
 
-        if sibling_anchor_syllables:
-            if not any(syl in name for syl in sibling_anchor_syllables):
+        if sibling_anchor_patterns:
+            def _match_pattern(n: str, patterns: list[str]) -> bool:
+                for p in patterns:
+                    if p.endswith("%") and n.startswith(p[:-1]):
+                        return True
+                    if p.startswith("%") and n.endswith(p[1:]):
+                        return True
+                return False
+            if not _match_pattern(name, sibling_anchor_patterns):
                 filter_stats["앵커"] += 1
                 continue
 
@@ -616,10 +596,9 @@ def find_name_candidates(
         elif rarity_preference == "흔한":
             rarity_tiebreak = rn.count
 
-        if sibling_anchor_syllables:
-            sibling_penalty = -1.0 if name in (sibling_names or []) else 0.0
-        else:
-            sibling_penalty = -0.03 if sibling_first_syllables and name[0] in sibling_first_syllables else 0.0
+        sibling_penalty = 0.0 if sibling_anchor_patterns else (
+            -0.03 if sibling_first_syllables and name[0] in sibling_first_syllables else 0.0
+        )
 
         if name in precomputed_best_fb:
             # 사전 계산 경로: score 재계산 없이 precomputed_score + 발음오행/용신 가산

@@ -118,6 +118,44 @@ class ScoredCombinationsRepository:
 
         return result
 
+    @staticmethod
+    def _build_filter_clauses(
+        min_rn_count: int,
+        max_받침_count: int | None,
+        name_length: str | None,
+        anchor_patterns: list[str] | None,
+        exclude_names: set[str] | None,
+    ) -> tuple[str, list]:
+        """동적 WHERE 절과 파라미터를 반환한다."""
+        clauses: list[str] = []
+        params: list = []
+
+        if min_rn_count > 0:
+            clauses.append("sc.rn_count >= ?")
+            params.append(min_rn_count)
+
+        if max_받침_count is not None:
+            clauses.append("sc.받침_count <= ?")
+            params.append(max_받침_count)
+
+        if name_length == "외자":
+            clauses.append("sc.name_length = 1")
+        elif name_length == "두글자":
+            clauses.append("sc.name_length = 2")
+
+        if anchor_patterns:
+            like_parts = ["sc.name LIKE ?" for _ in anchor_patterns]
+            clauses.append(f"({' OR '.join(like_parts)})")
+            params.extend(anchor_patterns)
+
+        if exclude_names:
+            placeholders = ",".join("?" * len(exclude_names))
+            clauses.append(f"sc.name NOT IN ({placeholders})")
+            params.extend(list(exclude_names))
+
+        sql = (" AND " + " AND ".join(clauses)) if clauses else ""
+        return sql, params
+
     def get_top_names(
         self,
         surname_hanja: str,
@@ -125,36 +163,42 @@ class ScoredCombinationsRepository:
         required_ohaengs: list[str],  # 부족한 오행 리스트, 없으면 ["_all"]
         limit: int = 200,
         offset: int = 0,
+        min_rn_count: int = 0,
+        max_받침_count: int | None = None,
+        name_length: str | None = None,      # "외자" | "두글자" | None
+        anchor_patterns: list[str] | None = None,
+        exclude_names: set[str] | None = None,
     ) -> list[tuple[str, int, int, float, bool, int]]:
-        """scored_combinations JOIN registered_names로 점수 내림차순 상위 이름 목록 반환.
+        """scored_combinations에서 필터 조건을 적용해 점수 내림차순 상위 이름 목록 반환.
 
         반환: [(name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count), ...]
         """
         cache = self._ensure_hanja_cache(self._hanja_db_path)
+        filter_sql, filter_params = self._build_filter_clauses(
+            min_rn_count, max_받침_count, name_length, anchor_patterns, exclude_names
+        )
 
         covered_rows: list[tuple[str, int, int, float, bool, int]] = []
         covered_names: set[str] = set()
 
         with sqlite3.connect(self._scored_db_path) as conn:
             conn.row_factory = sqlite3.Row
-            # registered_names 테이블이 별도 DB에 있으므로 ATTACH해서 JOIN 가능하게 함
-            conn.execute(f"ATTACH DATABASE ? AS rn_db", (str(self._registered_name_db_path),))
 
             # 1단계: 용신 커버 조합 조회
             use_ohaeng = required_ohaengs and required_ohaengs != ["_all"]
             if use_ohaeng:
                 ohaeng_placeholders = ",".join("?" * len(required_ohaengs))
-                params: list = [surname_hanja, gender] + required_ohaengs + [limit, offset]
+                params: list = [surname_hanja, gender] + required_ohaengs + filter_params + [limit, offset]
                 rows = conn.execute(
                     f"""
                     SELECT sc.name, sc.hanja1_id, sc.hanja2_id, MAX(sc.score) AS score,
-                           COALESCE(rn.count, 0) AS rn_count
+                           sc.rn_count
                     FROM scored_combinations sc
-                    LEFT JOIN rn_db.registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
                     WHERE sc.surname_hanja = ?
                       AND sc.gender = ?
                       AND sc.required_ohaeng IN ({ohaeng_placeholders})
                       AND sc.rank = 1
+                      {filter_sql}
                     GROUP BY sc.name
                     ORDER BY score DESC
                     LIMIT ? OFFSET ?
@@ -171,25 +215,25 @@ class ScoredCombinationsRepository:
             # 2단계: 커버 안 된 이름은 _all 폴백
             remaining = limit - len(covered_rows)
             if remaining > 0:
-                exclude_clause = ""
-                exclude_params: list = []
+                excl_clause = ""
+                excl_params: list = []
                 if covered_names:
                     excl_placeholders = ",".join("?" * len(covered_names))
-                    exclude_clause = f"AND sc.name NOT IN ({excl_placeholders})"
-                    exclude_params = list(covered_names)
+                    excl_clause = f"AND sc.name NOT IN ({excl_placeholders})"
+                    excl_params = list(covered_names)
 
-                params_all: list = [surname_hanja, gender] + exclude_params + [remaining, offset]
+                params_all: list = [surname_hanja, gender] + excl_params + filter_params + [remaining, offset]
                 all_rows = conn.execute(
                     f"""
                     SELECT sc.name, sc.hanja1_id, sc.hanja2_id, sc.score,
-                           COALESCE(rn.count, 0) AS rn_count
+                           sc.rn_count
                     FROM scored_combinations sc
-                    LEFT JOIN rn_db.registered_names rn ON sc.name = rn.name AND rn.gender = sc.gender
                     WHERE sc.surname_hanja = ?
                       AND sc.gender = ?
                       AND sc.required_ohaeng = '_all'
                       AND sc.rank = 1
-                      {exclude_clause}
+                      {excl_clause}
+                      {filter_sql}
                     ORDER BY sc.score DESC
                     LIMIT ? OFFSET ?
                     """,

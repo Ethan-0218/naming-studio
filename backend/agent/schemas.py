@@ -46,6 +46,7 @@ class PreferenceProfile(BaseModel):
     sibling_names: list[str] | None = Field(None, description="형제자매 이름 목록. 예: ['서윤', '서준']")
     sibling_style_match: bool | None = Field(None, description="형제자매와 이름 계열 맞추기 여부")
     sibling_anchor_syllables: list[str] | None = Field(None, description="공유할 앵커 음절. 예: ['은', '우'] 또는 ['서']")
+    sibling_anchor_patterns: list[str] | None = Field(None, description="앵커 음절 SQL LIKE 패턴. 예: ['은%', '%우'] 또는 ['서%']")
     rarity_preference: str | None = Field(None, description="이름 희귀도 선호. 독특한/평범한/상관없음")
     hanja_preference: str | None = Field(None, description="한자이름선호/순우리말/둘다")
 
