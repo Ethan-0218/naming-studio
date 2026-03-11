@@ -30,3 +30,4 @@ class NamingState(TypedDict):
     current_candidates: list[dict]
     payment_status: str  # "pending" | "completed"
     sc_cursor: int  # scored_combinations SQL OFFSET 커서 (세션 전반에 누적)
+    _content_blocks: list[dict]  # 현재 응답의 콘텐츠 블록 (TEXT / NAME)
