@@ -47,6 +47,11 @@ def candidate_exploration_node(state: NamingState) -> dict:
     sc_cursor_ref = [state.get("sc_cursor", 0)]
     id_offset_ref = [0]
 
+    reason_profile = state.get("reason_taste_profile") or {}
+    _dominant_likes = reason_profile.get("dominant_like", [])
+    _dominant_dislikes = reason_profile.get("dominant_dislike", [])
+    _total_reactions = reason_profile.get("total_reactions_with_reasons", 0)
+
     # section3 feel 칩에서 DB 필터 초기값 결정
     # 발음 느낌이 명확한 경우에만 soft/strong 적용, 그 외는 None(필터 없음)
     _FEEL_TO_DB = {
@@ -104,6 +109,9 @@ def candidate_exploration_node(state: NamingState) -> dict:
             limit=12,
             pool_size=pool_size,
             sc_cursor=sc_cursor_ref[0],
+            dominant_like_reasons=_dominant_likes,
+            dominant_dislike_reasons=_dominant_dislikes,
+            total_reactions=_total_reactions,
         )
         sc_cursor_ref[0] += pool_size
         for c in candidates:

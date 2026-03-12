@@ -23,6 +23,7 @@ def initial_candidates_node(state: NamingState) -> dict:
             user_info = state.get("user_info", {})
             사주 = state.get("사주_summary") or {}
             preference = state.get("preference_profile", {})
+            reason_profile = state.get("reason_taste_profile") or {}
             logger.info(
                 "[초기후보] DB 검색 시작 (성=%s 성별=%s)",
                 user_info.get("surname", ""), user_info.get("gender", "남"),
@@ -38,6 +39,9 @@ def initial_candidates_node(state: NamingState) -> dict:
                 sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
                 sibling_anchor_patterns=preference.get("sibling_anchor_patterns"),
                 limit=8,
+                dominant_like_reasons=reason_profile.get("dominant_like", []),
+                dominant_dislike_reasons=reason_profile.get("dominant_dislike", []),
+                total_reactions=reason_profile.get("total_reactions_with_reasons", 0),
             )
             logger.info("[초기후보] DB 검색 완료: %d개 후보", len(current_candidates))
         except Exception:

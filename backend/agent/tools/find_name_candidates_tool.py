@@ -38,6 +38,92 @@ def _get_feel(name: str) -> str:
     return "neutral"
 
 
+def _count_받침(name: str) -> int:
+    return sum(1 for c in name if 0xAC00 <= ord(c) <= 0xD7A3 and (ord(c) - 0xAC00) % 28 != 0)
+
+
+def _compute_preference_score(
+    name: str,
+    rarity_signal: str,
+    trad_components: dict,
+    name_feel_preference: str | None,
+    rarity_preference: str | None,
+    max_받침_count: int | None,
+    dominant_like_reasons: list[str],
+    dominant_dislike_reasons: list[str],
+) -> tuple[float, dict]:
+    """취향 적합도 점수를 계산합니다. (aggregate 점수, 차원별 dict) 반환."""
+    score = 0.5
+    dims: dict = {}
+
+    if name_feel_preference:
+        feel = _get_feel(name)
+        if feel == name_feel_preference:
+            score += 0.15
+            dims["취향_발음느낌"] = 1.0
+        elif feel != "neutral":
+            score -= 0.15
+            dims["취향_발음느낌"] = 0.0
+
+    if rarity_preference and rarity_signal:
+        _rarity_map = {"희귀": "희귀", "보통": "보통", "흔한": "흔한"}
+        pref_norm = _rarity_map.get(rarity_preference)
+        if pref_norm:
+            match = rarity_signal == pref_norm
+            score += 0.15 if match else -0.10
+            dims["취향_희귀도"] = 1.0 if match else 0.0
+
+    if max_받침_count is not None:
+        받침수 = _count_받침(name)
+        if 받침수 <= max_받침_count:
+            score += 0.10
+            dims["취향_받침수"] = 1.0
+        else:
+            score -= 0.15
+            dims["취향_받침수"] = 0.0
+
+    if "pronunciation" in dominant_like_reasons:
+        comp = trad_components.get("발음오행", 0.5)
+        score += (comp - 0.5) * 0.15
+        dims["취향_발음이유"] = round(comp, 3)
+    if "meaning" in dominant_like_reasons:
+        comp = trad_components.get("자원오행", 0.5)
+        score += (comp - 0.5) * 0.15
+        dims["취향_의미이유"] = round(comp, 3)
+    if "rarity" in dominant_like_reasons and rarity_signal == "희귀":
+        score += 0.05
+
+    if "pronunciation" in dominant_dislike_reasons:
+        comp = trad_components.get("발음오행", 0.5)
+        score -= (comp - 0.5) * 0.10
+    if "meaning" in dominant_dislike_reasons:
+        comp = trad_components.get("자원오행", 0.5)
+        score -= (comp - 0.5) * 0.10
+
+    return max(0.0, min(1.0, score)), dims
+
+
+def _pref_weight(
+    name_feel_preference: str | None,
+    rarity_preference: str | None,
+    max_받침_count: int | None,
+    dominant_like_reasons: list[str],
+    dominant_dislike_reasons: list[str],
+    total_reactions: int = 0,
+) -> float:
+    """취향 신호 개수와 반응 수에 따라 취향 점수 가중치 결정 (0–0.35)."""
+    signals = sum([
+        name_feel_preference is not None,
+        rarity_preference is not None and rarity_preference != "상관없음",
+        max_받침_count is not None,
+        len(dominant_like_reasons) > 0,
+        len(dominant_dislike_reasons) > 0,
+    ])
+    signal_w = min(0.25, signals * 0.05)
+    reaction_w = min(0.10, total_reactions * 0.01)
+    return signal_w + reaction_w
+
+
 def _diversify(scored: list[tuple[float, dict]], limit: int) -> list[tuple[float, dict]]:
     pool = scored[:limit * 3]
     result = []
@@ -310,6 +396,9 @@ def find_name_candidates(
     pool_size: int = 500,
     offset: int = 0,
     sc_cursor: int = 0,
+    dominant_like_reasons: list[str] | None = None,
+    dominant_dislike_reasons: list[str] | None = None,
+    total_reactions: int = 0,
 ) -> list[dict]:
     """이름 후보를 가져와 종합 점수 계산 후 상위 후보를 반환합니다.
 
@@ -320,6 +409,21 @@ def find_name_candidates(
         "[후보검색] 성=%s 성별=%s pool=%d sc_cursor=%d 제약={max_받침=%s, 선호오행=%s}",
         surname, gender, pool_size, sc_cursor, max_받침_count, preferred_오행,
     )
+
+    _dominant_likes = dominant_like_reasons or []
+    _dominant_dislikes = dominant_dislike_reasons or []
+    w = _pref_weight(
+        name_feel_preference=name_feel_preference,
+        rarity_preference=rarity_preference,
+        max_받침_count=max_받침_count,
+        dominant_like_reasons=_dominant_likes,
+        dominant_dislike_reasons=_dominant_dislikes,
+        total_reactions=total_reactions,
+    )
+    logger.debug("[취향가중치] w=%.2f (반응수=%d, 선호신호=%s)", w, total_reactions, {
+        "feel": name_feel_preference, "rarity": rarity_preference,
+        "받침": max_받침_count, "like_reasons": _dominant_likes,
+    })
 
     gender_obj = 성별.여 if gender == "여" else 성별.남
     db_gender = "female" if gender == "여" else "male"
@@ -455,7 +559,22 @@ def find_name_candidates(
                 combos_by_name={name: [(h1, h2)]},
                 용신_override=용신_val,
             )
-            scored.append((best_score, candidate))
+            pref_score, pref_dims = _compute_preference_score(
+                name=name,
+                rarity_signal=candidate["rarity_signal"],
+                trad_components=candidate["score_breakdown"],
+                name_feel_preference=name_feel_preference,
+                rarity_preference=rarity_preference,
+                max_받침_count=max_받침_count,
+                dominant_like_reasons=_dominant_likes,
+                dominant_dislike_reasons=_dominant_dislikes,
+            )
+            final_score = best_score * (1 - w) + pref_score * w
+            candidate["score_breakdown"].update(pref_dims)
+            candidate["score_breakdown"]["취향_적합도"] = round(pref_score, 3)
+            if w > 0:
+                candidate["score_breakdown"]["pref_weight"] = round(w, 2)
+            scored.append((final_score, candidate))
 
         scored.sort(key=lambda x: x[0], reverse=True)
 
@@ -653,7 +772,22 @@ def find_name_candidates(
             combos_by_name=combos_for_options,
             용신_override=용신_override_val,
         )
-        scored.append((best_score, candidate))
+        pref_score, pref_dims = _compute_preference_score(
+            name=name,
+            rarity_signal=candidate["rarity_signal"],
+            trad_components=candidate["score_breakdown"],
+            name_feel_preference=name_feel_preference,
+            rarity_preference=rarity_preference,
+            max_받침_count=max_받침_count,
+            dominant_like_reasons=_dominant_likes,
+            dominant_dislike_reasons=_dominant_dislikes,
+        )
+        final_score = best_score * (1 - w) + pref_score * w
+        candidate["score_breakdown"].update(pref_dims)
+        candidate["score_breakdown"]["취향_적합도"] = round(pref_score, 3)
+        if w > 0:
+            candidate["score_breakdown"]["pref_weight"] = round(w, 2)
+        scored.append((final_score, candidate))
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
