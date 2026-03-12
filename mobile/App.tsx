@@ -818,6 +818,64 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
   );
 }
 
+// ── SessionRestoreModal ────────────────────────────────────────────────
+function SessionRestoreModal({ visible, onClose, onRestore }: {
+  visible: boolean;
+  onClose: () => void;
+  onRestore: (id: string) => void;
+}) {
+  const [inputId, setInputId] = useState('');
+
+  function handleConfirm() {
+    const trimmed = inputId.trim();
+    if (!trimmed) return;
+    onRestore(trimmed);
+    setInputId('');
+  }
+
+  function handleClose() {
+    setInputId('');
+    onClose();
+  }
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
+      <Pressable style={fm.backdrop} onPress={handleClose} />
+      <View style={[fm.sheet, { maxHeight: '40%' }]}>
+        <View style={fm.handle} />
+        <View style={fm.header}>
+          <Text style={fm.title}>세션 불러오기</Text>
+          <Pressable style={fm.closeBtn} onPress={handleClose}>
+            <Text style={fm.closeBtnText}>✕</Text>
+          </Pressable>
+        </View>
+        <Text style={fm.subtitle}>이전 대화의 session_id를 입력하면 해당 세션을 이어서 진행합니다</Text>
+        <View style={fm.field}>
+          <TextInput
+            style={fm.input}
+            value={inputId}
+            onChangeText={setInputId}
+            placeholder="session_id를 붙여넣으세요"
+            placeholderTextColor="#bbb"
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="done"
+            onSubmitEditing={handleConfirm}
+          />
+        </View>
+        <Pressable
+          style={[fm.submitBtn, !inputId.trim() && fm.submitBtnOff]}
+          onPress={handleConfirm}
+          disabled={!inputId.trim()}
+        >
+          <Text style={fm.submitText}>불러오기 →</Text>
+        </Pressable>
+        <View style={{ height: 32 }} />
+      </View>
+    </Modal>
+  );
+}
+
 // ── Main App ──────────────────────────────────────────────────────────
 export default function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
@@ -834,6 +892,7 @@ export default function App() {
   const [showLiked, setShowLiked] = useState(false);
   const [dolrimjaModalOpen, setDolrimjaModalOpen] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [restoreModalOpen, setRestoreModalOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -1079,6 +1138,75 @@ export default function App() {
     setShowLiked(false);
   }
 
+  async function handleSessionRestore(id: string) {
+    setRestoreModalOpen(false);
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/session/${encodeURIComponent(id)}`);
+      if (!res.ok) throw new Error(`서버 오류 ${res.status}`);
+      const data = await res.json();
+
+      if (!data.found) {
+        alert(`세션을 찾을 수 없어요.\n(session_id: ${id.slice(0, 8)}...)`);
+        return;
+      }
+
+      // 상태 복원
+      setSessionId(data.session_id);
+      setStage(data.stage ?? 'welcome');
+      setLikedNames(data.liked_names ?? []);
+      setDislikedNames(data.disliked_names ?? []);
+      setPaymentRequired(data.payment_required ?? false);
+
+      // 복원된 메시지 이력 재구성
+      if (data.messages && data.messages.length > 0) {
+        const restored: ChatMessage[] = data.messages.map(
+          (
+            m: { role: string; content_blocks: ContentBlock[]; stage?: string },
+            i: number
+          ) => ({
+            id: `restored-${i}`,
+            role: m.role as 'user' | 'assistant',
+            content: m.content_blocks,
+            stage: m.stage,
+          })
+        );
+        setMessages([WELCOME_MESSAGE, ...restored]);
+      } else {
+        // 저장된 메시지가 없으면 복원 요약 표시
+        const userInfoText = data.user_info
+          ? `${data.user_info.surname ?? ''} | ${data.user_info.gender ?? ''} | ${data.user_info.birth_date ?? ''}`
+          : '';
+        const directionText = data.naming_direction ? `\n작명 방향: ${data.naming_direction}` : '';
+        const likedText = data.liked_names?.length > 0 ? `\n좋아요: ${data.liked_names.join(', ')}` : '';
+
+        const restoreMsg =
+          `세션을 불러왔어요 ✅\n` +
+          `ID: ${id.slice(0, 8)}...\n` +
+          `단계: ${stageLabel[data.stage] ?? data.stage}` +
+          (userInfoText ? `\n아이 정보: ${userInfoText}` : '') +
+          directionText +
+          likedText;
+
+        setMessages([
+          WELCOME_MESSAGE,
+          {
+            id: 'restored',
+            role: 'assistant',
+            content: [{ type: 'TEXT', data: { text: restoreMsg } }],
+            stage: data.stage,
+          },
+        ]);
+      }
+
+      setFormSubmitted(!['welcome', 'info_collection'].includes(data.stage ?? 'welcome'));
+    } catch (e: unknown) {
+      alert(`세션 불러오기 실패: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={s.root}>
       <StatusBar style="light" />
@@ -1101,11 +1229,23 @@ export default function App() {
           <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={() => setShowLiked(v => !v)}>
             <Text style={s.headerBtnText}>👍 {likedNames.length}</Text>
           </Pressable>
+          <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={() => setRestoreModalOpen(true)}>
+            <Text style={s.headerBtnText}>불러오기</Text>
+          </Pressable>
           <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={handleReset}>
             <Text style={s.headerBtnText}>↺</Text>
           </Pressable>
         </View>
       </View>
+
+      {/* Session ID chip — 세션이 있을 때만 표시 */}
+      {sessionId && (
+        <View style={s.sessionChip}>
+          <Text style={s.sessionChipText} numberOfLines={1}>
+            🔑 {sessionId}
+          </Text>
+        </View>
+      )}
 
       {/* Liked panel */}
       {showLiked && (
@@ -1203,6 +1343,13 @@ export default function App() {
         onClose={() => setDolrimjaModalOpen(false)}
         onSubmit={handleDolrimjaUpdate}
         loading={loading}
+      />
+
+      {/* Session Restore Modal */}
+      <SessionRestoreModal
+        visible={restoreModalOpen}
+        onClose={() => setRestoreModalOpen(false)}
+        onRestore={handleSessionRestore}
       />
     </View>
   );
@@ -1555,4 +1702,17 @@ const s = StyleSheet.create({
   sendBtn: { backgroundColor: PURPLE, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
   sendBtnOff: { backgroundColor: '#ccc' },
   sendBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+
+  sessionChip: {
+    backgroundColor: '#1a1a2e',
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  sessionChipText: {
+    color: '#7c7cff',
+    fontSize: 11,
+    fontFamily: 'monospace',
+  },
 });

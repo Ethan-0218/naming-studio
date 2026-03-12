@@ -1,5 +1,7 @@
 """LangGraph 작명 에이전트 그래프."""
 
+from __future__ import annotations
+
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -26,9 +28,14 @@ def _after_direction_confirm(state: NamingState) -> str:
     return "initial_candidates" if state.get("stage") == "initial_candidates" else END
 
 
-def create_agent_graph():
-    """NamingState 기반 StateGraph를 컴파일해 반환합니다."""
-    memory = MemorySaver()
+def create_agent_graph(checkpointer=None):
+    """NamingState 기반 StateGraph를 컴파일해 반환합니다.
+
+    checkpointer가 None이면 MemorySaver를 사용합니다 (개발용 fallback).
+    프로덕션에서는 PostgresSaver 인스턴스를 전달하세요.
+    """
+    if checkpointer is None:
+        checkpointer = MemorySaver()
     graph = StateGraph(NamingState)
 
     # 노드 등록
@@ -86,4 +93,4 @@ def create_agent_graph():
     # initial_candidates → END (payment_gate는 API routes에서 처리)
     graph.add_edge("initial_candidates", END)
 
-    return graph.compile(checkpointer=memory)
+    return graph.compile(checkpointer=checkpointer)

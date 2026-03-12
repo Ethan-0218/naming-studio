@@ -4,25 +4,84 @@ import asyncio
 import contextvars
 import json
 import uuid
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from langchain_core.messages import HumanMessage
 
 from agent import name_store
 from agent import progress as _progress
+from core.config import DATABASE_URL
 
 router = APIRouter()
 
-_agent_graph = None
+
+def _get_agent_graph(request: Request):
+    """app.state에 등록된 그래프 인스턴스를 반환합니다.
+
+    lifespan에서 초기화된 그래프(Postgres 또는 MemorySaver)를 사용합니다.
+    """
+    return request.app.state.agent_graph
 
 
-def _get_agent_graph():
-    global _agent_graph
-    if _agent_graph is None:
-        from agent.graph import create_agent_graph
-        _agent_graph = create_agent_graph()
-    return _agent_graph
+def _get_session_repo(request: Request):
+    """Postgres가 활성화된 경우 NamingSessionRepository를 반환합니다."""
+    if not DATABASE_URL:
+        return None
+    from db.postgres_pool import _pool_instance
+    from db.naming_session_repository import NamingSessionRepository
+    if _pool_instance is None:
+        return None
+    return NamingSessionRepository(_pool_instance)
+
+
+def _sync_session(request: Request, session_id: str, result: dict) -> None:
+    """graph.invoke() 결과의 주요 필드를 naming_sessions 테이블에 동기화합니다."""
+    repo = _get_session_repo(request)
+    if repo is None:
+        return
+    try:
+        repo.upsert_session(
+            session_id=session_id,
+            stage=result.get("stage"),
+            payment_status=result.get("payment_status"),
+            naming_direction=result.get("naming_direction"),
+            user_info=result.get("user_info") or None,
+        )
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("naming_sessions upsert 실패", exc_info=True)
+
+
+def _save_messages(
+    session_id: str,
+    user_text: str | None,
+    ai_content_blocks: list[dict],
+    stage: str | None,
+) -> None:
+    """user 메시지와 AI 응답 content_blocks를 session_messages 테이블에 저장합니다.
+
+    DATABASE_URL이 없거나 pool이 준비되지 않은 경우 조용히 건너뜁니다.
+    """
+    if not DATABASE_URL:
+        return
+    try:
+        from db.postgres_pool import _pool_instance
+        from db.session_message_repository import SessionMessageRepository
+        if _pool_instance is None:
+            return
+        repo = SessionMessageRepository(_pool_instance)
+        if user_text:
+            repo.add_message(
+                session_id, "user",
+                [{"type": "TEXT", "data": {"text": user_text}}],
+                stage,
+            )
+        if ai_content_blocks:
+            repo.add_message(session_id, "assistant", ai_content_blocks, stage)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("session_messages 저장 실패", exc_info=True)
 
 
 class NamingRequest(BaseModel):
@@ -41,6 +100,64 @@ class NamingResponse(BaseModel):
     payment_required: bool = False
     naming_direction: str | None = None
     debug: dict | None = None
+
+
+@router.get("/session/{session_id}")
+async def get_session_state(session_id: str, req: Request):
+    """session_id로 세션 현재 상태를 조회합니다. LLM 호출 없음."""
+    graph = _get_agent_graph(req)
+    config = {"configurable": {"thread_id": session_id}}
+
+    try:
+        current_state = graph.get_state(config)
+        state_values = current_state.values if current_state else {}
+    except Exception:
+        state_values = {}
+
+    found = bool(state_values and state_values.get("stage"))
+    stage = state_values.get("stage", "welcome") if found else None
+    payment_status = state_values.get("payment_status", "pending") if found else "pending"
+    naming_direction = state_values.get("naming_direction") if found else None
+    user_info = state_values.get("user_info") if found else None
+
+    messages: list[dict] = []
+    if DATABASE_URL:
+        try:
+            from db.postgres_pool import _pool_instance
+            from db.session_message_repository import SessionMessageRepository
+            if _pool_instance is not None:
+                messages = SessionMessageRepository(_pool_instance).get_messages(session_id)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("session_messages 조회 실패", exc_info=True)
+
+    return {
+        "session_id": session_id,
+        "found": found,
+        "stage": stage,
+        "payment_required": (
+            stage == "payment_gate"
+            or (stage == "candidate_exploration" and payment_status != "completed")
+        ),
+        "naming_direction": naming_direction,
+        "user_info": user_info,
+        "liked_names": name_store.get_liked(session_id),
+        "disliked_names": name_store.get_disliked(session_id),
+        "messages": messages,
+    }
+
+
+@router.post("/admin/cleanup-checkpoints")
+async def cleanup_checkpoints(older_than_days: int = 30):
+    """오래된 LangGraph 체크포인트를 정리합니다 (관리자용).
+
+    older_than_days: 이 일수 이상 미활동 세션의 체크포인트를 삭제합니다 (기본 30일).
+    """
+    if not DATABASE_URL:
+        return {"deleted": 0, "message": "Postgres 미사용 모드"}
+    from db.postgres_pool import run_checkpoint_cleanup
+    deleted = run_checkpoint_cleanup(older_than_days=older_than_days)
+    return {"deleted": deleted, "older_than_days": older_than_days}
 
 
 @router.get("/surname-search")
@@ -70,17 +187,19 @@ def hanja_search(q: str = "", limit: int = 20):
 
 
 @router.post("/chat", response_model=NamingResponse)
-async def chat(request: NamingRequest):
+async def chat(request: NamingRequest, req: Request):
     """사용자 메시지를 받아 에이전트를 호출하고 응답을 반환합니다."""
     session_id = request.session_id or str(uuid.uuid4())
 
     try:
-        graph = _get_agent_graph()
+        graph = _get_agent_graph(req)
         config = {"configurable": {"thread_id": session_id}}
 
         # submit_info: 폼 데이터 직접 처리 (LLM 우회)
         if request.action == "submit_info":
-            return _handle_submit_info(session_id, request.message, graph, config)
+            response = _handle_submit_info(session_id, request.message, graph, config)
+            _sync_session(req, session_id, {"stage": response.stage, "user_info": json.loads(request.message)})
+            return response
 
         # update_dolrimja: 돌림자 업데이트 후 AI 응답
         if request.action == "update_dolrimja":
@@ -130,6 +249,13 @@ async def chat(request: NamingRequest):
                 config=config,
             )
 
+        _sync_session(req, session_id, result)
+        _save_messages(
+            session_id,
+            request.message,
+            result.get("_content_blocks", []),
+            result.get("stage"),
+        )
         return _build_naming_response(session_id, result)
 
     except Exception as e:
@@ -175,7 +301,7 @@ def _build_naming_response(session_id: str, result: dict) -> NamingResponse:
 
 
 @router.post("/chat/stream")
-async def chat_stream(request: NamingRequest):
+async def chat_stream(request: NamingRequest, req: Request):
     """LLM 호출이 있는 액션을 SSE로 스트리밍합니다."""
     session_id = request.session_id or str(uuid.uuid4())
 
@@ -189,11 +315,13 @@ async def chat_stream(request: NamingRequest):
         token = _progress.set_callback(_on_progress)
 
         def _run() -> NamingResponse:
-            graph = _get_agent_graph()
+            graph = _get_agent_graph(req)
             config = {"configurable": {"thread_id": session_id}}
 
             if request.action == "submit_info":
-                return _handle_submit_info(session_id, request.message, graph, config)
+                response = _handle_submit_info(session_id, request.message, graph, config)
+                _sync_session(req, session_id, {"stage": response.stage, "user_info": json.loads(request.message)})
+                return response
             if request.action == "update_dolrimja":
                 return _handle_update_dolrimja(session_id, request.message, graph, config)
             if request.action == "payment_complete":
@@ -229,6 +357,13 @@ async def chat_stream(request: NamingRequest):
                 invoke_arg = {"messages": [HumanMessage(content=request.message)]}
 
             result = graph.invoke(invoke_arg, config=config)
+            _sync_session(req, session_id, result)
+            _save_messages(
+                session_id,
+                request.message,
+                result.get("_content_blocks", []),
+                result.get("stage"),
+            )
             return _build_naming_response(session_id, result)
 
         try:
@@ -287,8 +422,7 @@ def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> N
             gender=user_info["gender"],
             is_lunar=user_info.get("is_lunar", False),
         )
-    except Exception as e:
-        # 사주 계산 실패해도 진행 (사주_summary=None)
+    except Exception:
         pass
 
     # 폼 요약 텍스트 (사용자 메시지 대신 표시용)
@@ -327,6 +461,7 @@ def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> N
             text = last.content if hasattr(last, "content") else str(last)
             content_blocks = [{"type": "TEXT", "data": {"text": text}}]
 
+    _save_messages(session_id, summary_text, content_blocks, stage)
     return NamingResponse(
         session_id=session_id,
         stage=stage,
@@ -372,6 +507,7 @@ def _handle_update_dolrimja(session_id: str, message: str, graph, config: dict) 
             text = last.content if hasattr(last, "content") else str(last)
             content_blocks = [{"type": "TEXT", "data": {"text": text}}]
 
+    _save_messages(session_id, ack_text, content_blocks, stage)
     return NamingResponse(
         session_id=session_id,
         stage=stage,

@@ -118,6 +118,7 @@ class LLMContentBlock(_Strict):
 
 class LLMCandidatesOutput(_Strict):
     content: list[LLMContentBlock]
+    updated_naming_direction: str = Field("", description="변경된 작명 방향. 변경 없으면 빈 문자열.")
 
 
 # ── 취향 변경 감지 ────────────────────────────────────────────────────────
