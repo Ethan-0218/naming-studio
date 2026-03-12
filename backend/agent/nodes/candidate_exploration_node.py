@@ -188,6 +188,11 @@ def candidate_exploration_node(state: NamingState) -> dict:
     limited = _limit_name_ref_blocks(result.content, max_names=3)
     content_blocks = _resolve_blocks(limited, candidates_by_id)
 
+    # 전문가 해설 블록을 맨 앞에 삽입
+    if result.expert_commentary:
+        commentary_block = {"type": "TEXT", "data": {"text": result.expert_commentary}}
+        content_blocks = [commentary_block] + content_blocks
+
     # shown 기록
     shown_names = [b["data"]["한글"] for b in content_blocks if b["type"] == "NAME"]
     logger.info("[탐색노드] 최종 추천 %d개: %s", len(shown_names), shown_names)

@@ -120,6 +120,7 @@ def build_stage_prompt(state: NamingState) -> str:
     narrative_hints = reason_profile.get("narrative_hints", [])
     other_like_texts: list[str] = reason_profile.get("other_like_texts", [])
     other_dislike_texts: list[str] = reason_profile.get("other_dislike_texts", [])
+    total_reactions = reason_profile.get("total_reactions_with_reasons", 0)
 
     reason_parts: list[str] = []
     if narrative_hints:
@@ -196,6 +197,19 @@ score_breakdown 활용:
 {f"- 형제자매 이름({', '.join(sibling_names)})과 계열 연속성 또는 다양성 선호를 파악해 반영하세요." if sibling_names else ""}
 {("- 부모님 취향 메모의 '원하는 이름 느낌', '담고 싶은 의미', '피하고 싶은 조건'을 이름 선택과 reason 작성 시 반영하세요." if section3_lines else "")}
 
+expert_commentary 작성 규칙:
+- content 블록과 별개로, 세션 흐름을 해석하는 전문가 해설입니다. 응답 맨 앞에 표시됩니다.
+- 포함해야 할 내용 (2~4문장):
+  1. 취향 패턴: 지금까지 좋아요/싫어요에서 읽히는 패턴 (반응이 없으면 생략)
+  2. 이번 방향 이유: 왜 이번에 이 방향으로 이름을 찾았는지
+  3. 모드 전환이 있었다면: 전환 이유와 새 전략
+- 신뢰도 조정 (현재 반응 수: {total_reactions}회):
+  · 1~3회: "~인 것 같아요", "~처럼 보여요"
+  · 4~7회: "~하시는 것 같아요", "~를 선호하시는 편이에요"
+  · 8회 이상: "~을 확실히 좋아하세요", "지금까지 보면 분명히 ~"
+- 반응이 없으면: 작명 방향 소개에 집중하세요. 예: "{direction} 방향으로 찾아봤어요. 마음에 드시는 이름엔 좋아요를 눌러주세요."
+- 금지: 이름 직접 나열, 기계적 항목 반복, content 블록에 나올 이름을 미리 언급
+
 응답 구성:
 - content 배열에 TEXT 블록과 NAME_REF 블록을 섞어 자연스러운 대화 흐름을 만드세요. NAME_REF 블록은 최대 3개만 넣으세요.
 - NAME_REF 블록 작성 규칙:
@@ -213,11 +227,6 @@ score_breakdown 활용:
 - score_breakdown 높은 항목 외에, 부모님이 원하는 느낌·의미와 어떻게 연결되는지도 포함하세요.
   예: "맑고 자연스러운 느낌을 원하셨는데, 소리가 부드럽고 받침이 없어 딱 맞아요."
   예: "강인하고 또렷한 느낌을 좋아하신다고 하셨는데, 초성이 힘차고 뜻도 '굳세다'는 의미예요."
-
-취향 요약:
-- 이유 기반 취향이 충분히 쌓이면 (5회 이상 반응), 자연스러운 시점에 한 줄로 요약하세요.
-  예: "지금까지 보면 부드러운 발음과 뜻이 좋은 이름을 선호하시는 것 같아요. 그 방향으로 계속 찾아볼게요."
-- 이미 요약했다면 반복하지 마세요.
 
 마지막 CTA:
 - NAME_REF 블록 이후 마지막 TEXT 블록에 반드시 다음 행동을 한 문장으로 제안하세요.

@@ -115,6 +115,14 @@ class LLMContentBlock(_Strict):
 
 
 class LLMCandidatesOutput(_Strict):
+    expert_commentary: str = Field(description=(
+        "세션 전체 흐름을 해석하는 전문가 해설 (2~4문장). "
+        "취향 패턴 요약, 이번 추천 방향의 이유, 모드 전환 설명을 포함하세요. "
+        "반응이 1~3회면 조심스럽게('~인 것 같아요'), "
+        "4~7회면 자신감 있게('~하시는 것 같아요'), "
+        "8회 이상이면 확신 있게('분명히 ~하세요') 표현하세요. "
+        "초기 추천(반응 없음)이면 작명 방향 소개에 집중하세요."
+    ))
     content: list[LLMContentBlock]
     updated_naming_direction: str = Field("", description="변경된 작명 방향. 변경 없으면 빈 문자열.")
 
