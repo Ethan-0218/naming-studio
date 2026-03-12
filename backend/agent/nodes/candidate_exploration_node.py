@@ -45,6 +45,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
     inferred = state.get("inferred_preferences") or {}
     session_id = state.get("session_id", "")
     sc_cursor_ref = [state.get("sc_cursor", 0)]
+    id_offset_ref = [0]
 
     # section3 feel 칩에서 DB 필터 초기값 결정
     # 발음 느낌이 명확한 경우에만 soft/strong 적용, 그 외는 None(필터 없음)
@@ -75,7 +76,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
         name_feel_preference: str | None = None,
     ) -> str:
         """이름 후보를 DB에서 검색합니다.
-        preferred_오행: 목/화/토/금/수 중 선호 오행.
+        preferred_오행: 한자 자원오행 기준 선호 오행 (목/화/토/금/수). 이름 한자의 오행이 해당 오행을 포함하는 이름만 반환.
         max_받침_count: 0=받침 없음, 1=최대 1글자 받침, null=제한 없음.
         rarity_preference: 희귀/보통/흔한.
         name_feel_preference: soft(ㅅㄴㅁㅇㅎㄹ)/strong(ㅂㄱㄷㅈㅊ)/null."""
@@ -106,6 +107,9 @@ def candidate_exploration_node(state: NamingState) -> dict:
             sc_cursor=sc_cursor_ref[0],
         )
         sc_cursor_ref[0] += pool_size
+        for c in candidates:
+            c["id"] = c["id"] + id_offset_ref[0]
+        id_offset_ref[0] += len(candidates)
         return json.dumps(candidates, ensure_ascii=False)
 
     llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
@@ -134,7 +138,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
     emit("최종 이름을 다듬고 있어요...")
     structured_llm = llm.with_structured_output(LLMCandidatesOutput, method="function_calling")
     result = structured_llm.invoke(
-        loop_messages + [HumanMessage(content="위 후보들을 바탕으로 최종 추천을 structured output으로 작성하세요.")]
+        loop_messages + [HumanMessage(content="위 모든 툴 호출 결과에 있는 후보들 중에서 가장 적합한 3개를 선택해 최종 추천을 structured output으로 작성하세요. 여러 번 툴을 호출했다면 첫 번째 호출 결과도 포함해 전체 후보를 고려하세요.")]
     )
 
     # 툴 결과에서 후보 수집해 id 조회 맵 구성

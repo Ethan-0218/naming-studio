@@ -367,15 +367,6 @@ def find_name_candidates(
         filtered_sc: list[tuple[str, int, int, float, bool, int]] = []
         filter_stats = {"오행": 0}
         for name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count in sc_rows:
-            if preferred_오행:
-                syllable_오행s = [발음오행_from_초성(c) for c in name]
-                has_preferred = any(
-                    o is not None and o.value == preferred_오행
-                    for o in syllable_오행s
-                )
-                if not has_preferred:
-                    filter_stats["오행"] += 1
-                    continue
             filtered_sc.append((name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count))
 
         logger.info(
@@ -402,6 +393,11 @@ def find_name_candidates(
             if name not in precomputed_best:
                 continue
             h1, h2, pre_score, ohaeng_covered = precomputed_best[name]
+            if preferred_오행:
+                hanja_오행s = [h.character_five_elements for h in [h1, h2] if h]
+                if not any(o and o.value == preferred_오행 for o in hanja_오행s):
+                    filter_stats["오행"] += 1
+                    continue
             syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
 
             harmony_score = 0
@@ -511,16 +507,6 @@ def find_name_candidates(
         elif name_length == "두글자" and len(name) != 2:
             filter_stats["길이"] += 1
             continue
-
-        if preferred_오행:
-            syllable_오행s = [발음오행_from_초성(c) for c in name]
-            has_preferred = any(
-                o is not None and o.value == preferred_오행
-                for o in syllable_오행s
-            )
-            if not has_preferred:
-                filter_stats["오행"] += 1
-                continue
 
         if sibling_anchor_patterns:
             def _match_pattern(n: str, patterns: list[str]) -> bool:
@@ -651,6 +637,12 @@ def find_name_candidates(
                     best_score *= 0.7
             combos_for_options = {name: name_combos}
             용신_override_val = None
+
+        if preferred_오행:
+            hanja_오행s = [h.character_five_elements for h in best_name_hanjas if h]
+            if not any(o and o.value == preferred_오행 for o in hanja_오행s):
+                filter_stats["오행"] += 1
+                continue
 
         candidate = _build_candidate_from_combo(
             name=name,
