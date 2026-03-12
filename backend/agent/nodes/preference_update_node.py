@@ -38,8 +38,18 @@ def preference_update_node(state: NamingState) -> dict:
     update: dict = {
         "naming_direction": result.naming_direction,
         "preference_profile": preference_profile,
+        "_exploration_mode_reason": None,
     }
     if direction_changed and old_direction:
         update["sc_cursor"] = 0
+
+    # 탐색 모드 전환 처리
+    if result.exploration_mode is not None:
+        old_mode = state.get("exploration_mode") or "안정형"
+        if result.exploration_mode != old_mode:
+            update["exploration_mode"] = result.exploration_mode
+            update["_exploration_mode_reason"] = result.exploration_mode_reason
+            # 모드 전환 시 새 방향으로 탐색 재시작
+            update["sc_cursor"] = 0
 
     return update

@@ -131,3 +131,5 @@ class PreferenceUpdateOutput(_Strict):
     max_받침_count: int | None = Field(None, description="받침 조건 변경 시. 0=없음, 1=최대1개, null=제한없음")
     rarity_preference: str | None = Field(None, description="희귀도 변경 시. '독특한'/'평범한'/'상관없음'. 변경 없으면 null.")
     name_feel_preference: str | None = Field(None, description="발음 느낌 변경 시. 'soft'(부드러운 초성) 또는 'strong'(강한 초성). 변경 없으면 null.")
+    exploration_mode: str | None = Field(None, description="탐색 모드 전환이 필요하면 새 모드('안정형'/'확장형'/'발음형'/'의미형'/'가족조화형'). 변경 없으면 null.")
+    exploration_mode_reason: str | None = Field(None, description="모드 전환 시 사용자에게 자연스럽게 전달할 한 문장 제안. exploration_mode가 null이면 반드시 null.")

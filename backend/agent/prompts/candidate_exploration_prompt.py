@@ -38,6 +38,15 @@ def _format_score_breakdown(name: str, breakdown: dict) -> str:
     return f"{name} ({score_str})"
 
 
+_MODE_GUIDE = {
+    "안정형": "익숙하고 수용도 높은 이름 중심. 등록 빈도 보통~높은 이름, 친숙한 한자 구성 우선.",
+    "확장형": "세련되고 개성 있는 이름 탐색. 등록 빈도 낮은 희귀 이름, 독특하고 신선한 조합 우선.",
+    "발음형": "소리 흐름과 부르기 편한 발음 중심. 성씨와 발음 조화가 좋고, 소리 기운 점수 높은 이름 우선. reason에 발음 흐름 구체적으로 설명 필수.",
+    "의미형": "한자 뜻과 사주 기운 중심. 사주 균형이 좋고 한자 의미가 뚜렷한 이름 우선. reason에 한자 뜻 반드시 설명 필수.",
+    "가족조화형": "형제자매 이름, 성씨와의 조화 중심. 계열 연속성 또는 보완 관계를 고려한 이름 우선. reason에 가족 연결성 설명 필수.",
+}
+
+
 def build_stage_prompt(state: NamingState) -> str:
     from agent import name_store
 
@@ -48,6 +57,10 @@ def build_stage_prompt(state: NamingState) -> str:
     preference = state.get("preference_profile", {})
     sibling_names = preference.get("sibling_names") if preference else None
     shown_name_scores: dict = state.get("shown_name_scores") or {}
+
+    exploration_mode = state.get("exploration_mode") or "안정형"
+    mode_guide = _MODE_GUIDE.get(exploration_mode, "")
+    mode_reason = state.get("_exploration_mode_reason")
 
     사주 = state.get("사주_summary") or {}
     사주_text = ""
@@ -129,10 +142,16 @@ def build_stage_prompt(state: NamingState) -> str:
     else:
         reason_taste_text = ""
 
+    mode_context = f"\n현재 탐색 모드: {exploration_mode} — {mode_guide}"
+    mode_transition_instruction = (
+        f"\n⚡ 탐색 모드가 방금 전환되었습니다. 첫 번째 TEXT 블록에 다음 문장을 자연스럽게 포함하세요: \"{mode_reason}\""
+        if mode_reason else ""
+    )
+
     return f"""
 [현재 단계: 이름 탐색]
 
-현재 작명 방향: {direction}{사주_text}{pref_text}{section3_text}{reason_taste_text}
+현재 작명 방향: {direction}{사주_text}{pref_text}{section3_text}{mode_context}{mode_transition_instruction}{reason_taste_text}
 {liked_text}
 {disliked_text}{sibling_text}
 

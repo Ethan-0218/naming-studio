@@ -73,6 +73,31 @@ def candidate_exploration_node(state: NamingState) -> dict:
     _inferred_rarity = inferred.get("rarity_preference")
     _default_rarity = _profile_rarity or _inferred_rarity
 
+    # 탐색 모드별 기본값 (우선순위: LLM per-call > preference_profile > 모드 기본값 > inferred)
+    _exploration_mode = state.get("exploration_mode") or "안정형"
+    _MODE_RARITY_DEFAULTS: dict[str, str | None] = {
+        "안정형": "흔한",
+        "확장형": "희귀",
+        "발음형": None,
+        "의미형": None,
+        "가족조화형": None,
+    }
+    _MODE_FEEL_DEFAULTS: dict[str, str | None] = {
+        "안정형": None,
+        "확장형": None,
+        "발음형": _default_feel or "soft",
+        "의미형": None,
+        "가족조화형": None,
+    }
+    # preference_profile이 없을 때만 모드 기본값 적용
+    _default_rarity = _profile_rarity or _MODE_RARITY_DEFAULTS.get(_exploration_mode) or _inferred_rarity
+    _default_feel = (
+        preference.get("name_feel_preference")
+        or _FEEL_TO_DB.get(section3_feel)
+        or _MODE_FEEL_DEFAULTS.get(_exploration_mode)
+        or inferred.get("name_feel_preference")
+    )
+
     @lc_tool
     def get_name_candidates(
         preferred_오행: str | None = None,
@@ -186,6 +211,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
         "sc_cursor": sc_cursor_ref[0],
         "shown_name_scores": shown_name_scores,
         "_content_blocks": content_blocks,
+        "_exploration_mode_reason": None,  # 소비 후 클리어
     }
 
 
