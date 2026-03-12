@@ -303,7 +303,6 @@ def find_name_candidates(
     max_받침_count: int | None = None,  # 0/1/2, None=제한 없음
     rarity_preference: str | None = None,  # "희귀" | "보통" | "흔한"
     name_feel_preference: str | None = None,  # "soft" | "strong" | None
-    name_length: str | None = None,  # "외자" | "두글자" | "상관없음" | None
     sibling_names: list[str] | None = None,
     sibling_anchor_syllables: list[str] | None = None,
     sibling_anchor_patterns: list[str] | None = None,
@@ -318,8 +317,8 @@ def find_name_candidates(
     없으면 registered_names 기반 기존 로직으로 fallback한다.
     """
     logger.info(
-        "[후보검색] 성=%s 성별=%s pool=%d sc_cursor=%d 제약={max_받침=%s, 길이=%s, 선호오행=%s}",
-        surname, gender, pool_size, sc_cursor, max_받침_count, name_length, preferred_오행,
+        "[후보검색] 성=%s 성별=%s pool=%d sc_cursor=%d 제약={max_받침=%s, 선호오행=%s}",
+        surname, gender, pool_size, sc_cursor, max_받침_count, preferred_오행,
     )
 
     gender_obj = 성별.여 if gender == "여" else 성별.남
@@ -343,6 +342,9 @@ def find_name_candidates(
     성_hanja_obj = _get_surname_hanja(surname_hanja, hanja_repo)
     부족한_오행_list = 부족한_오행 or []
 
+    # preferred_오행을 enum으로 정규화 (한글 "수" ↔ 한자 "水" 불일치 방지)
+    _preferred_오행_obj = 오행.from_string(preferred_오행) if preferred_오행 else None
+
     # ── scored_combinations 직접 조회 경로 (surname_hanja 있는 경우) ─────────
     use_sc_direct = scored_repo.is_available() and bool(surname_hanja)
 
@@ -357,7 +359,6 @@ def find_name_candidates(
             offset=sc_cursor,
             min_rn_count=rn_floor,
             max_받침_count=max_받침_count,
-            name_length=name_length if name_length != "상관없음" else None,
             anchor_patterns=sibling_anchor_patterns,
             exclude_names=exclude,
         )
@@ -393,9 +394,9 @@ def find_name_candidates(
             if name not in precomputed_best:
                 continue
             h1, h2, pre_score, ohaeng_covered = precomputed_best[name]
-            if preferred_오행:
-                hanja_오행s = [h.character_five_elements for h in [h1, h2] if h]
-                if not any(o and o.value == preferred_오행 for o in hanja_오행s):
+            if _preferred_오행_obj:
+                hanja_오행_objs = [오행.from_string(h.character_five_elements) for h in [h1, h2] if h]
+                if not any(o == _preferred_오행_obj for o in hanja_오행_objs):
                     filter_stats["오행"] += 1
                     continue
             syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
@@ -480,7 +481,7 @@ def find_name_candidates(
 
     # 하드 필터링
     filtered_pool = []
-    filter_stats = {"제외(shown/liked/disliked)": 0, "받침": 0, "길이": 0, "오행": 0, "희귀도": 0, "앵커": 0}
+    filter_stats = {"제외(shown/liked/disliked)": 0, "받침": 0, "오행": 0, "희귀도": 0, "앵커": 0}
     rn_floor = _get_rn_floor(rarity_preference)
     for rn in pool:
         name = rn.name
@@ -501,13 +502,6 @@ def find_name_candidates(
                 filter_stats["받침"] += 1
                 continue
 
-        if name_length == "외자" and len(name) != 1:
-            filter_stats["길이"] += 1
-            continue
-        elif name_length == "두글자" and len(name) != 2:
-            filter_stats["길이"] += 1
-            continue
-
         if sibling_anchor_patterns:
             def _match_pattern(n: str, patterns: list[str]) -> bool:
                 for p in patterns:
@@ -523,10 +517,10 @@ def find_name_candidates(
         filtered_pool.append(rn)
 
     logger.info(
-        "[필터] %d→%d개 통과 (제외=%d 받침=%d 길이=%d 오행=%d 희귀도=%d 앵커=%d)",
+        "[필터] %d→%d개 통과 (제외=%d 받침=%d 오행=%d 희귀도=%d 앵커=%d)",
         len(pool), len(filtered_pool),
         filter_stats["제외(shown/liked/disliked)"], filter_stats["받침"],
-        filter_stats["길이"], filter_stats["오행"],
+        filter_stats["오행"],
         filter_stats["희귀도"], filter_stats["앵커"],
     )
 
@@ -640,7 +634,7 @@ def find_name_candidates(
 
         if preferred_오행:
             hanja_오행s = [h.character_five_elements for h in best_name_hanjas if h]
-            if not any(o and o.value == preferred_오행 for o in hanja_오행s):
+            if not any(o and o == preferred_오행 for o in hanja_오행s):
                 filter_stats["오행"] += 1
                 continue
 

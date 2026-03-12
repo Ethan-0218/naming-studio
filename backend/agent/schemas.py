@@ -42,7 +42,6 @@ class PreferenceProfile(BaseModel):
     """DB 필터로 사용되는 구조화 취향 필드만 저장. 서술형 취향은 naming_direction으로 통합."""
     model_config = ConfigDict(extra="ignore")
     max_받침_count: int | None = Field(None, description="받침 있는 글자 수 상한. 0=받침없음, 1=최대1개, null=제한없음")
-    name_length: str | None = Field(None, description="이름 글자 수 선호. 외자/두글자/상관없음")
     sibling_names: list[str] | None = Field(None, description="형제자매 이름 목록. 예: ['서윤', '서준']")
     sibling_style_match: bool | None = Field(None, description="형제자매와 이름 계열 맞추기 여부")
     sibling_anchor_syllables: list[str] | None = Field(None, description="공유할 앵커 음절. 예: ['은', '우'] 또는 ['서']")
@@ -68,10 +67,9 @@ class DirectionBriefingOutput(_Strict):
 class DirectionConfirmOutput(_Strict):
     message: str = Field(description=(
         "부모님께 전달할 작명 방향 설명 및 확인 질문. "
-        "반드시 3~5문장 이상으로 충분히 작성하세요: "
-        "(1) 대화 내용 자연스럽게 요약, "
-        "(2) 아이의 에너지·취향을 반영한 구체적 작명 방향 설명 — 왜 이 방향인지 부모님이 납득할 수 있도록, "
-        "(3) '이 방향으로 진행할까요?' 확인 질문으로 마무리."
+        "마크다운 형식으로 작성: (1) '### 파악한 취향' 헤더 + 불릿 포인트로 취향 정리, "
+        "(2) 빈 줄 후 아이의 에너지·취향을 반영한 구체적 작명 방향 설명 2~3문장, "
+        "(3) 빈 줄 후 '이 방향으로 진행할까요?' 확인 질문으로 마무리."
     ))
     naming_direction: str = Field(description="이번에 제안하는 작명 방향 한 문장 요약")
     confirmed: bool = Field(description="방향에 동의하면 True, 수정을 원하면 False")
@@ -131,6 +129,5 @@ class PreferenceUpdateOutput(_Strict):
         "반응(좋아요/싫어요/재추천)만 한 경우 기존 방향 그대로."
     ))
     max_받침_count: int | None = Field(None, description="받침 조건 변경 시. 0=없음, 1=최대1개, null=제한없음")
-    name_length: str | None = Field(None, description="길이 변경 시. '외자'/'두글자'/'상관없음'")
     rarity_preference: str | None = Field(None, description="희귀도 변경 시. '독특한'/'평범한'/'상관없음'. 변경 없으면 null.")
     name_feel_preference: str | None = Field(None, description="발음 느낌 변경 시. 'soft'(부드러운 초성) 또는 'strong'(강한 초성). 변경 없으면 null.")

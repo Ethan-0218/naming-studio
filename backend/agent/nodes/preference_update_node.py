@@ -25,8 +25,6 @@ def preference_update_node(state: NamingState) -> dict:
     preference_profile = dict(state.get("preference_profile", {}))
     if result.max_받침_count is not None:
         preference_profile["max_받침_count"] = result.max_받침_count
-    if result.name_length is not None:
-        preference_profile["name_length"] = result.name_length
     if result.rarity_preference is not None:
         preference_profile["rarity_preference"] = result.rarity_preference
     if result.name_feel_preference is not None:

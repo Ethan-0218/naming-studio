@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -22,6 +22,7 @@ interface ChoiceGroupData {
   multi: boolean;
   allow_custom: boolean;
   field_key: string;
+  max_select?: number;
   follow_up?: { trigger: string; placeholder: string };
 }
 
@@ -637,6 +638,49 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
   );
 }
 
+// ── SimpleMarkdown ───────────────────────────────────────────────────────
+function renderInlineBold(text: string, baseStyle: object): React.ReactNode[] {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <Text key={i} style={[baseStyle, { fontWeight: 'bold' }]}>{part.slice(2, -2)}</Text>;
+    }
+    return <Text key={i} style={baseStyle}>{part}</Text>;
+  });
+}
+
+function SimpleMarkdown({ text, baseStyle }: { text: string; baseStyle: object }) {
+  const lines = text.split('\n');
+  return (
+    <View>
+      {lines.map((line, i) => {
+        if (line.startsWith('### ')) {
+          return (
+            <Text key={i} style={[baseStyle, { fontWeight: 'bold', marginTop: 8, marginBottom: 2 }]}>
+              {line.slice(4)}
+            </Text>
+          );
+        }
+        if (line.startsWith('- ')) {
+          return (
+            <Text key={i} style={[baseStyle, { paddingLeft: 8 }]}>
+              {'• '}{renderInlineBold(line.slice(2), baseStyle)}
+            </Text>
+          );
+        }
+        if (line === '') {
+          return <View key={i} style={{ height: 6 }} />;
+        }
+        return (
+          <Text key={i} style={baseStyle}>
+            {renderInlineBold(line, baseStyle)}
+          </Text>
+        );
+      })}
+    </View>
+  );
+}
+
 // ── ChoiceGroupBlock ────────────────────────────────────────────────────
 function ChoiceGroupBlock({ data, onSend, submitted }: {
   data: ChoiceGroupData;
@@ -652,9 +696,12 @@ function ChoiceGroupBlock({ data, onSend, submitted }: {
   function toggleChoice(choice: string) {
     if (done) return;
     if (data.multi) {
-      setSelected(prev =>
-        prev.includes(choice) ? prev.filter(c => c !== choice) : [...prev, choice]
-      );
+      setSelected(prev => {
+        if (prev.includes(choice)) return prev.filter(c => c !== choice);
+        if (data.max_select && prev.length >= data.max_select) return prev;
+        return [...prev, choice];
+      });
+      setCustomText('');
     } else {
       // 단일 선택: follow_up 트리거 체크
       if (data.follow_up && choice === data.follow_up.trigger) {
@@ -704,7 +751,7 @@ function ChoiceGroupBlock({ data, onSend, submitted }: {
             <TextInput
               style={s.chipCustomInput}
               value={customText}
-              onChangeText={setCustomText}
+              onChangeText={text => { setCustomText(text); if (text.trim()) setSelected([]); }}
               placeholder="직접 입력"
               placeholderTextColor="#aaa"
             />
@@ -777,7 +824,7 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
         if (block.type === 'TEXT') {
           return (
             <View key={i} style={s.aiBubble}>
-              <Text style={s.aiText}>{block.data.text}</Text>
+              <SimpleMarkdown text={block.data.text} baseStyle={s.aiText} />
             </View>
           );
         }

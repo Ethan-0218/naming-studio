@@ -122,7 +122,6 @@ class ScoredCombinationsRepository:
     def _build_filter_clauses(
         min_rn_count: int,
         max_받침_count: int | None,
-        name_length: str | None,
         anchor_patterns: list[str] | None,
         exclude_names: set[str] | None,
     ) -> tuple[str, list]:
@@ -137,11 +136,6 @@ class ScoredCombinationsRepository:
         if max_받침_count is not None:
             clauses.append("sc.받침_count <= ?")
             params.append(max_받침_count)
-
-        if name_length == "외자":
-            clauses.append("sc.name_length = 1")
-        elif name_length == "두글자":
-            clauses.append("sc.name_length = 2")
 
         if anchor_patterns:
             like_parts = ["sc.name LIKE ?" for _ in anchor_patterns]
@@ -165,7 +159,6 @@ class ScoredCombinationsRepository:
         offset: int = 0,
         min_rn_count: int = 0,
         max_받침_count: int | None = None,
-        name_length: str | None = None,      # "외자" | "두글자" | None
         anchor_patterns: list[str] | None = None,
         exclude_names: set[str] | None = None,
     ) -> list[tuple[str, int, int, float, bool, int]]:
@@ -175,7 +168,7 @@ class ScoredCombinationsRepository:
         """
         cache = self._ensure_hanja_cache(self._hanja_db_path)
         filter_sql, filter_params = self._build_filter_clauses(
-            min_rn_count, max_받침_count, name_length, anchor_patterns, exclude_names
+            min_rn_count, max_받침_count, anchor_patterns, exclude_names
         )
 
         covered_rows: list[tuple[str, int, int, float, bool, int]] = []

@@ -98,7 +98,6 @@ def candidate_exploration_node(state: NamingState) -> dict:
             max_받침_count=max_받침_count,
             rarity_preference=effective_rarity,
             name_feel_preference=effective_feel,
-            name_length=preference.get("name_length"),
             sibling_names=preference.get("sibling_names"),
             sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
             sibling_anchor_patterns=preference.get("sibling_anchor_patterns"),

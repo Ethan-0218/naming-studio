@@ -22,8 +22,6 @@ def build_stage_prompt(state: NamingState) -> str:
 
     # 구조화 취향
     struct_lines = []
-    if profile.get("name_length"):
-        struct_lines.append(f"이름 길이: {profile['name_length']}")
     if profile.get("hanja_preference"):
         struct_lines.append(f"한자/순우리말: {profile['hanja_preference']}")
     if profile.get("rarity_preference") and profile["rarity_preference"] != "상관없음":

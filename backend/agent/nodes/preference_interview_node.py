@@ -14,7 +14,6 @@ from core.config import OPENAI_API_KEY, OPENAI_MODEL
 _QUESTION_SEQUENCE = [
     "sibling_names",
     "sibling_style_match",   # 형제자매 있을 때만 노출
-    "name_length",
     "rarity_preference",
     "_section3_feel",
     "_section3_values",
@@ -50,16 +49,6 @@ def _make_choice_block(question_key: str) -> dict:
                 "field_key": "sibling_style_match",
             },
         },
-        "name_length": {
-            "type": "CHOICE_GROUP",
-            "data": {
-                "question": "이름은 몇 글자로 하실 건가요?",
-                "choices": ["외자", "두 글자", "상관없어요"],
-                "multi": False,
-                "allow_custom": False,
-                "field_key": "name_length",
-            },
-        },
         "rarity_preference": {
             "type": "CHOICE_GROUP",
             "data": {
@@ -73,7 +62,7 @@ def _make_choice_block(question_key: str) -> dict:
         "_section3_feel": {
             "type": "CHOICE_GROUP",
             "data": {
-                "question": "원하는 이름 느낌을 모두 골라주세요",
+                "question": "원하는 이름 느낌을 골라주세요 (최대 2개)",
                 "choices": [
                     "단정하고 고급스러운",
                     "밝고 사랑스러운",
@@ -83,6 +72,7 @@ def _make_choice_block(question_key: str) -> dict:
                     "중성적인",
                 ],
                 "multi": True,
+                "max_select": 2,
                 "allow_custom": True,
                 "field_key": "_section3_feel",
             },
@@ -90,9 +80,10 @@ def _make_choice_block(question_key: str) -> dict:
         "_section3_values": {
             "type": "CHOICE_GROUP",
             "data": {
-                "question": "이름에 담고 싶은 의미를 모두 골라주세요",
-                "choices": ["건강", "지혜", "따뜻함", "총명함", "품격", "밝음", "부드러움", "리더십"],
+                "question": "아이가 어떤 아이로 컸으면 좋겠나요? (최대 2개)",
+                "choices": ["건강하게", "지혜롭게", "따뜻하게", "총명하게", "품격 있게", "밝게", "부드럽게", "리더십 있게"],
                 "multi": True,
+                "max_select": 2,
                 "allow_custom": True,
                 "field_key": "_section3_values",
             },
@@ -175,14 +166,6 @@ def _parse_answer(question_key: str, user_msg: str, profile: dict | None = None)
             updates["sibling_anchor_syllables"] = None
             updates["sibling_anchor_patterns"] = None
 
-    elif question_key == "name_length":
-        if "외자" in msg:
-            updates["name_length"] = "외자"
-        elif "두 글자" in msg or "두글자" in msg:
-            updates["name_length"] = "두글자"
-        else:
-            updates["name_length"] = "상관없음"
-
     elif question_key == "rarity_preference":
         if "독특" in msg:
             updates["rarity_preference"] = "독특한"
@@ -226,7 +209,6 @@ def _get_ack_text(question_key: str | None, user_msg: str) -> str:
     acks = {
         "sibling_names": "확인했어요!",
         "sibling_style_match": "형제자매 이름 계열 선호를 기억했어요.",
-        "name_length": "이름 길이를 기억했어요.",
         "rarity_preference": "이제 이름의 느낌과 의미에 대해 여쭤볼게요.",
         "_section3_feel": "느낌 취향을 기억했어요.",
         "_section3_values": "담고 싶은 의미를 기억했어요.",

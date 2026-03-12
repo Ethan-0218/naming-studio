@@ -19,8 +19,6 @@ def build_stage_prompt(state: NamingState) -> str:
 
     # 구조화 취향만 표시 (서술형 필드는 naming_direction으로 통합됨)
     pref_lines = []
-    if preference.get("name_length"):
-        pref_lines.append(f"이름 길이: {preference['name_length']}")
     if preference.get("hanja_preference"):
         pref_lines.append(f"한자/순우리말: {preference['hanja_preference']}")
     if preference.get("rarity_preference") and preference["rarity_preference"] != "상관없음":

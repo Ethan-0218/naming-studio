@@ -34,7 +34,6 @@ def initial_candidates_node(state: NamingState) -> dict:
                 session_id=state.get("session_id", ""),
                 부족한_오행=사주.get("부족한_오행", []),
                 max_받침_count=preference.get("max_받침_count"),
-                name_length=preference.get("name_length"),
                 sibling_names=preference.get("sibling_names"),
                 sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
                 sibling_anchor_patterns=preference.get("sibling_anchor_patterns"),

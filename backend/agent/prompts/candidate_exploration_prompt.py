@@ -76,8 +76,6 @@ def build_stage_prompt(state: NamingState) -> str:
     pref_lines = []
     if preference.get("max_받침_count") is not None:
         pref_lines.append(f"받침 제한: 최대 {preference['max_받침_count']}개")
-    if preference.get("name_length"):
-        pref_lines.append(f"이름 길이: {preference['name_length']}")
     if preference.get("rarity_preference") and preference["rarity_preference"] != "상관없음":
         pref_lines.append(f"희귀도: {preference['rarity_preference']}")
     if preference.get("name_feel_preference"):

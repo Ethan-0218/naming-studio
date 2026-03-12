@@ -7,8 +7,6 @@ def build_stage_prompt(state: NamingState) -> str:
     preference = state.get("preference_profile", {})
 
     pref_lines = []
-    if preference.get("name_length"):
-        pref_lines.append(f"이름 길이: {preference['name_length']}")
     if preference.get("max_받침_count") is not None:
         pref_lines.append(f"받침 제한: 최대 {preference['max_받침_count']}개")
     if preference.get("rarity_preference") and preference["rarity_preference"] != "상관없음":
@@ -35,7 +33,6 @@ def build_stage_prompt(state: NamingState) -> str:
 
 【구조화 조건 갱신 규칙】
 - 받침 조건 변경 요청 → max_받침_count 설정
-- 이름 길이 변경 요청 → name_length 설정
 - "희귀한", "독특한", "특이한" 등 요청 → rarity_preference: "독특한"
 - "흔한", "평범한", "친숙한" 등 요청 → rarity_preference: "평범한"
 - "부드러운 발음", "부드러운 느낌의 이름" 등 발음 자체가 부드럽길 요청 → name_feel_preference: "soft"
