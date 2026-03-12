@@ -43,6 +43,15 @@ def build_stage_prompt(state: NamingState) -> str:
     sibling_names = preference.get("sibling_names") if preference else None
     shown_name_scores: dict = state.get("shown_name_scores") or {}
 
+    사주 = state.get("사주_summary") or {}
+    사주_text = ""
+    if 사주:
+        부족한 = 사주.get("부족한_오행", [])
+        일간 = 사주.get("일간_오행", "")
+        신강신약 = 사주.get("신강신약", "")
+        if 부족한:
+            사주_text = f"\n아이 사주: {일간} 계열({신강신약}), 보완 필요 기운: {', '.join(부족한)}"
+
     # liked/disliked 이름의 score_breakdown 포함
     if liked:
         liked_lines = [
@@ -92,7 +101,7 @@ def build_stage_prompt(state: NamingState) -> str:
     return f"""
 [현재 단계: 이름 탐색]
 
-현재 작명 방향: {direction}{pref_text}{section3_text}
+현재 작명 방향: {direction}{사주_text}{pref_text}{section3_text}
 {liked_text}
 {disliked_text}{sibling_text}
 
@@ -128,4 +137,19 @@ score_breakdown 활용:
   · type은 반드시 "NAME_REF"로 설정하세요.
   · id는 툴이 반환한 후보 목록의 id 값을 그대로 사용하세요. 한자/의미/음절 등은 직접 생성하지 마세요.
   · reason에 이름 추천 이유를 쉬운 말로 작성하세요. score_breakdown의 높은 항목을 반영하세요.
+
+사주 기운 프레이밍 (이름을 처음 추천할 때 첫 TEXT 블록에 포함):
+- 사주 정보(보완 필요 기운)가 있으면, 이름 소개 전에 1~2문장으로 사주 맥락을 짚어주세요.
+  예: "아이의 사주를 보면 금(金) 기운이 조금 부족한 편이라, 이름에서 금 기운을 담은 한자를 포함하는 쪽으로 찾아봤어요."
+- 매 턴마다 반복하지 말고, 첫 추천이나 방향이 크게 바뀐 경우에만 언급하세요.
+- 사주 정보가 없으면 생략하세요.
+
+이름 reason 작성:
+- score_breakdown 높은 항목 외에, 부모님이 원하는 느낌·의미와 어떻게 연결되는지도 포함하세요.
+  예: "맑고 자연스러운 느낌을 원하셨는데, 소리가 부드럽고 받침이 없어 딱 맞아요."
+  예: "강인하고 또렷한 느낌을 좋아하신다고 하셨는데, 초성이 힘차고 뜻도 '굳세다'는 의미예요."
+
+마지막 CTA:
+- NAME_REF 블록 이후 마지막 TEXT 블록에 반드시 다음 행동을 한 문장으로 제안하세요.
+  예: "비슷한 느낌의 이름을 더 찾아드릴 수도 있고, 아예 새로운 방향으로 다시 찾아드릴 수도 있어요. 어떻게 해드릴까요?"
 """.strip()
