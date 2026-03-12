@@ -207,7 +207,7 @@ async def chat(request: NamingRequest, req: Request):
 
         # like/dislike/unlike/undislike: name_store 직접 업데이트
         if request.action and ":" in request.action:
-            result = _handle_name_action(session_id, request.action)
+            result = _handle_name_action(session_id, request.action, req)
             if result is not None:
                 return result
 
@@ -241,6 +241,8 @@ async def chat(request: NamingRequest, req: Request):
                 "current_candidates": [],
                 "payment_status": "pending",
                 "sc_cursor": 0,
+                "shown_name_scores": {},
+                "inferred_preferences": {},
             }
             result = graph.invoke(initial_state, config=config)
         else:
@@ -352,6 +354,8 @@ async def chat_stream(request: NamingRequest, req: Request):
                     "current_candidates": [],
                     "payment_status": "pending",
                     "sc_cursor": 0,
+                    "shown_name_scores": {},
+                    "inferred_preferences": {},
                 }
             else:
                 invoke_arg = {"messages": [HumanMessage(content=request.message)]}
@@ -449,6 +453,8 @@ def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> N
         "current_candidates": [],
         "payment_status": "pending",
         "sc_cursor": 0,
+        "shown_name_scores": {},
+        "inferred_preferences": {},
     }
     result = graph.invoke(initial_state, config=config)
 
@@ -517,7 +523,7 @@ def _handle_update_dolrimja(session_id: str, message: str, graph, config: dict) 
     )
 
 
-def _handle_name_action(session_id: str, action: str) -> NamingResponse | None:
+def _handle_name_action(session_id: str, action: str, req: "Request | None" = None) -> "NamingResponse | None":
     """like/dislike/unlike/undislike action을 처리합니다."""
     op, name = action.split(":", 1)
     name = name.strip()
@@ -533,6 +539,10 @@ def _handle_name_action(session_id: str, action: str) -> NamingResponse | None:
     else:
         return None
 
+    # like/dislike 변경 후 취향 자동 추론 및 state 업데이트
+    if op in ("like", "dislike", "unlike", "undislike") and req is not None:
+        _update_inferred_preferences(session_id, req)
+
     return NamingResponse(
         session_id=session_id,
         stage="candidate_exploration",
@@ -540,3 +550,25 @@ def _handle_name_action(session_id: str, action: str) -> NamingResponse | None:
         liked_names=name_store.get_liked(session_id),
         disliked_names=name_store.get_disliked(session_id),
     )
+
+
+def _update_inferred_preferences(session_id: str, req: "Request") -> None:
+    """like/dislike 현황을 바탕으로 inferred_preferences를 추론하고 graph state에 저장합니다."""
+    try:
+        from agent.preference_inferrer import infer_preferences
+        graph = _get_agent_graph(req)
+        config = {"configurable": {"thread_id": session_id}}
+        current_state = graph.get_state(config)
+        state_values = current_state.values if current_state else {}
+
+        liked = name_store.get_liked(session_id)
+        disliked = name_store.get_disliked(session_id)
+        shown_name_scores: dict = state_values.get("shown_name_scores") or {}
+        current_inferred: dict = state_values.get("inferred_preferences") or {}
+
+        new_inferred = infer_preferences(liked, disliked, shown_name_scores, current_inferred)
+        if new_inferred != current_inferred:
+            graph.update_state(config, {"inferred_preferences": new_inferred})
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("inferred_preferences 갱신 실패", exc_info=True)

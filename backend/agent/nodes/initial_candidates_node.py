@@ -75,11 +75,23 @@ def initial_candidates_node(state: NamingState) -> dict:
     logger.info("[초기후보] 최종 추천 %d개: %s", len(shown_names), shown_names)
     name_store.add_shown(state.get("session_id", ""), shown_names)
 
+    # shown_name_scores 갱신: score_breakdown + rarity_signal 캐시
+    shown_name_scores = dict(state.get("shown_name_scores") or {})
+    for b in content_blocks:
+        if b["type"] == "NAME":
+            d = b["data"]
+            entry: dict = dict(d.get("score_breakdown") or {})
+            if d.get("rarity_signal"):
+                entry["rarity_signal"] = d["rarity_signal"]
+            if entry:
+                shown_name_scores[d["한글"]] = entry
+
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
         "current_candidates": current_candidates,
         "stage": "payment_gate",
         "stage_turn_count": 0,
+        "shown_name_scores": shown_name_scores,
         "_content_blocks": content_blocks,
     }
 

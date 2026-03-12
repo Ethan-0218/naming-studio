@@ -29,4 +29,6 @@ class NamingState(TypedDict):
     current_candidates: list[dict]
     payment_status: str  # "pending" | "completed"
     sc_cursor: int  # scored_combinations SQL OFFSET 커서 (세션 전반에 누적)
+    shown_name_scores: dict  # {한글이름: score_breakdown} — 보여준 이름의 점수 분포 캐시
+    inferred_preferences: dict  # like/dislike 패턴에서 자동 추론된 취향 (취향 영역만)
     _content_blocks: list[dict]  # 현재 응답의 콘텐츠 블록 (TEXT / NAME)

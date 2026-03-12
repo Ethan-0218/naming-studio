@@ -27,8 +27,21 @@ def preference_update_node(state: NamingState) -> dict:
         preference_profile["max_받침_count"] = result.max_받침_count
     if result.name_length is not None:
         preference_profile["name_length"] = result.name_length
+    if result.rarity_preference is not None:
+        preference_profile["rarity_preference"] = result.rarity_preference
+    if result.name_feel_preference is not None:
+        preference_profile["name_feel_preference"] = result.name_feel_preference
 
-    return {
+    # naming_direction이 실질적으로 변경된 경우 sc_cursor 리셋
+    old_direction = (state.get("naming_direction") or "").strip()
+    new_direction = (result.naming_direction or "").strip()
+    direction_changed = old_direction != new_direction
+
+    update: dict = {
         "naming_direction": result.naming_direction,
         "preference_profile": preference_profile,
     }
+    if direction_changed and old_direction:
+        update["sc_cursor"] = 0
+
+    return update

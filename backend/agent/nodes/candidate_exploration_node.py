@@ -42,8 +42,30 @@ def candidate_exploration_node(state: NamingState) -> dict:
     user_info = state.get("user_info", {})
     사주 = state.get("사주_summary") or {}
     preference = state.get("preference_profile", {})
+    inferred = state.get("inferred_preferences") or {}
     session_id = state.get("session_id", "")
     sc_cursor_ref = [state.get("sc_cursor", 0)]
+
+    # section3 feel 칩에서 DB 필터 초기값 결정
+    # 발음 느낌이 명확한 경우에만 soft/strong 적용, 그 외는 None(필터 없음)
+    _FEEL_TO_DB = {
+        "강인한": "strong",
+        "밝고 사랑스러운": "soft",
+        "맑고 자연스러운": "soft",
+    }
+    section3_feel = preference.get("_section3_feel", "")
+    # preference_profile에 명시적으로 저장된 name_feel_preference 우선,
+    # 없으면 section3_feel 칩 매핑, 없으면 inferred, 없으면 None
+    _default_feel = (
+        preference.get("name_feel_preference")
+        or _FEEL_TO_DB.get(section3_feel)
+        or inferred.get("name_feel_preference")
+    )
+    # rarity 초기값: preference_profile 우선, 없으면 inferred
+    _rarity_map = {"독특한": "희귀", "평범한": "흔한", "상관없음": None}
+    _profile_rarity = preference.get("rarity_preference")
+    _inferred_rarity = inferred.get("rarity_preference")
+    _default_rarity = _profile_rarity or _inferred_rarity
 
     @lc_tool
     def get_name_candidates(
@@ -59,12 +81,12 @@ def candidate_exploration_node(state: NamingState) -> dict:
         name_feel_preference: soft(ㅅㄴㅁㅇㅎㄹ)/strong(ㅂㄱㄷㅈㅊ)/null."""
         from agent.tools.find_name_candidates_tool import find_name_candidates
         pool_size = 200
-        # rarity_preference: LLM이 per-call로 지정하거나, 없으면 profile 저장값 사용
-        effective_rarity = rarity_preference or preference.get("rarity_preference")
-        # rarity_preference 값 매핑 (인터뷰 저장값 → 도구 파라미터 형식)
-        _rarity_map = {"독특한": "희귀", "평범한": "흔한", "상관없음": None}
+        # rarity: LLM이 per-call로 지정하면 우선, 없으면 profile/inferred 초기값
+        effective_rarity = rarity_preference or _default_rarity
         if effective_rarity in _rarity_map:
             effective_rarity = _rarity_map[effective_rarity]
+        # feel: LLM이 per-call로 지정하면 우선, 없으면 section3/inferred 초기값
+        effective_feel = name_feel_preference or _default_feel
         candidates = find_name_candidates(
             surname=user_info.get("surname", ""),
             surname_hanja=user_info.get("surname_hanja", ""),
@@ -74,7 +96,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
             preferred_오행=preferred_오행,
             max_받침_count=max_받침_count,
             rarity_preference=effective_rarity,
-            name_feel_preference=name_feel_preference,
+            name_feel_preference=effective_feel,
             name_length=preference.get("name_length"),
             sibling_names=preference.get("sibling_names"),
             sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
@@ -135,11 +157,23 @@ def candidate_exploration_node(state: NamingState) -> dict:
     logger.info("[탐색노드] 최종 추천 %d개: %s", len(shown_names), shown_names)
     name_store.add_shown(session_id, shown_names)
 
+    # shown_name_scores 갱신: 이번 추천 이름들의 score_breakdown + rarity_signal 캐시
+    shown_name_scores = dict(state.get("shown_name_scores") or {})
+    for b in content_blocks:
+        if b["type"] == "NAME":
+            d = b["data"]
+            entry: dict = dict(d.get("score_breakdown") or {})
+            if d.get("rarity_signal"):
+                entry["rarity_signal"] = d["rarity_signal"]
+            if entry:
+                shown_name_scores[d["한글"]] = entry
+
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
         "stage": "candidate_exploration",
         "stage_turn_count": state.get("stage_turn_count", 0) + 1,
         "sc_cursor": sc_cursor_ref[0],
+        "shown_name_scores": shown_name_scores,
         "_content_blocks": content_blocks,
     }
 

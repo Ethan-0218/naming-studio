@@ -130,5 +130,7 @@ class PreferenceUpdateOutput(_Strict):
         "유저가 취향을 언급했으면 기존 방향에 통합해 갱신. "
         "반응(좋아요/싫어요/재추천)만 한 경우 기존 방향 그대로."
     ))
-    max_받침_count: int | None = Field(None, description="받침 조건 변경 시. 0=없음, 1=최대1개, 2=제한없음")
+    max_받침_count: int | None = Field(None, description="받침 조건 변경 시. 0=없음, 1=최대1개, null=제한없음")
     name_length: str | None = Field(None, description="길이 변경 시. '외자'/'두글자'/'상관없음'")
+    rarity_preference: str | None = Field(None, description="희귀도 변경 시. '독특한'/'평범한'/'상관없음'. 변경 없으면 null.")
+    name_feel_preference: str | None = Field(None, description="발음 느낌 변경 시. 'soft'(부드러운 초성) 또는 'strong'(강한 초성). 변경 없으면 null.")
