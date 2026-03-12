@@ -96,10 +96,37 @@ def build_stage_prompt(state: NamingState) -> str:
         section3_lines.append(f"피하고 싶은 조건: {avoid}")
     section3_text = ("\n부모님 취향 메모:\n" + "\n".join(f"  · {l}" for l in section3_lines)) if section3_lines else ""
 
+    # 명시적 이유 기반 취향 분석
+    reason_profile = state.get("reason_taste_profile") or {}
+    narrative_hints = reason_profile.get("narrative_hints", [])
+    other_like_texts: list[str] = reason_profile.get("other_like_texts", [])
+    other_dislike_texts: list[str] = reason_profile.get("other_dislike_texts", [])
+
+    reason_parts: list[str] = []
+    if narrative_hints:
+        hints_text = "\n".join(f"  · {h}" for h in narrative_hints)
+        reason_parts.append(f"취향 분석 (이유 기반):\n{hints_text}")
+    if other_like_texts:
+        texts = ", ".join(f'"{t}"' for t in other_like_texts)
+        reason_parts.append(f"기타 좋아요 의견: {texts}")
+    if other_dislike_texts:
+        texts = ", ".join(f'"{t}"' for t in other_dislike_texts)
+        reason_parts.append(f"기타 싫어요 의견: {texts}")
+
+    if reason_parts:
+        body = "\n".join(reason_parts)
+        reason_taste_text = (
+            f"\n{body}\n"
+            "[이름 추천 시 위 취향을 자연스럽게 언급하세요. "
+            "예: \"발음이 중요하다고 하셨는데, 이 이름은 ㄴ·ㅇ·ㄹ이 이어져서 굉장히 부드럽게 느껴져요.\"]"
+        )
+    else:
+        reason_taste_text = ""
+
     return f"""
 [현재 단계: 이름 탐색]
 
-현재 작명 방향: {direction}{사주_text}{pref_text}{section3_text}
+현재 작명 방향: {direction}{사주_text}{pref_text}{section3_text}{reason_taste_text}
 {liked_text}
 {disliked_text}{sibling_text}
 
@@ -146,6 +173,11 @@ score_breakdown 활용:
 - score_breakdown 높은 항목 외에, 부모님이 원하는 느낌·의미와 어떻게 연결되는지도 포함하세요.
   예: "맑고 자연스러운 느낌을 원하셨는데, 소리가 부드럽고 받침이 없어 딱 맞아요."
   예: "강인하고 또렷한 느낌을 좋아하신다고 하셨는데, 초성이 힘차고 뜻도 '굳세다'는 의미예요."
+
+취향 요약:
+- 이유 기반 취향이 충분히 쌓이면 (5회 이상 반응), 자연스러운 시점에 한 줄로 요약하세요.
+  예: "지금까지 보면 부드러운 발음과 뜻이 좋은 이름을 선호하시는 것 같아요. 그 방향으로 계속 찾아볼게요."
+- 이미 요약했다면 반복하지 마세요.
 
 마지막 CTA:
 - NAME_REF 블록 이후 마지막 TEXT 블록에 반드시 다음 행동을 한 문장으로 제안하세요.

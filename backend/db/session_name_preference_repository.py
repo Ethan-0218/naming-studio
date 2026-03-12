@@ -80,6 +80,43 @@ class SessionNamePreferenceRepository:
     def remove_disliked(self, session_id: str, name: str) -> None:
         self.remove(session_id, "disliked", name)
 
+    # ── 이유 수집 ──────────────────────────────────────────────────────────
+
+    def update_reasons(
+        self,
+        session_id: str,
+        preference_type: PreferenceType,
+        name: str,
+        reasons: list[str],
+    ) -> None:
+        """좋아요/싫어요 행의 reasons 배열을 갱신합니다. 행이 없으면 no-op."""
+        with self._pool.connection() as conn:
+            conn.execute(
+                "UPDATE session_name_preferences SET reasons = %s "
+                "WHERE session_id = %s AND preference_type = %s AND name = %s",
+                (reasons, session_id, preference_type, name),
+            )
+
+    def get_reasons_for_session(self, session_id: str) -> list[dict]:
+        """이유가 하나 이상 기록된 좋아요/싫어요 행을 반환합니다.
+
+        Returns:
+            [{'preference_type': 'liked'|'disliked', 'name': str, 'reasons': list[str]}, ...]
+        """
+        with self._pool.connection() as conn:
+            rows = conn.execute(
+                "SELECT preference_type, name, reasons "
+                "FROM session_name_preferences "
+                "WHERE session_id = %s AND preference_type IN ('liked', 'disliked') "
+                "AND array_length(reasons, 1) > 0 "
+                "ORDER BY created_at",
+                (session_id,),
+            ).fetchall()
+        return [
+            {"preference_type": r["preference_type"], "name": r["name"], "reasons": list(r["reasons"])}
+            for r in rows
+        ]
+
     # ── 내부 헬퍼 ─────────────────────────────────────────────────────────
 
     def _ensure_session(self, session_id: str) -> None:

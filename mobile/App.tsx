@@ -865,6 +865,110 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
   );
 }
 
+// ── ReasonPicker ──────────────────────────────────────────────────────
+const LIKE_REASONS = [
+  { key: 'pronunciation',   label: '발음이 좋아요' },
+  { key: 'vibe',            label: '분위기가 좋아요' },
+  { key: 'meaning',         label: '뜻이 좋아요' },
+  { key: 'surname_harmony', label: '성과 잘 어울려요' },
+  { key: 'rarity',          label: '너무 흔하지 않아요' },
+  { key: 'other',           label: '기타' },
+];
+const DISLIKE_REASONS = [
+  { key: 'pronunciation',   label: '발음이 별로예요' },
+  { key: 'rarity',          label: '너무 흔해요' },
+  { key: 'vibe',            label: '너무 낯설어요' },
+  { key: 'meaning',         label: '뜻이 마음에 안 들어요' },
+  { key: 'surname_harmony', label: '성과 어울리지 않아요' },
+  { key: 'other',           label: '기타' },
+];
+
+function ReasonPicker({ visible, name, type, onSubmit, onSkip }: {
+  visible: boolean;
+  name: string;
+  type: 'liked' | 'disliked';
+  onSubmit: (keys: string[]) => void;
+  onSkip: () => void;
+}) {
+  const [selected, setSelected] = React.useState<string[]>([]);
+  const [otherText, setOtherText] = React.useState('');
+  const reasons = type === 'liked' ? LIKE_REASONS : DISLIKE_REASONS;
+  const emoji = type === 'liked' ? '👍' : '👎';
+  const otherSelected = selected.includes('other');
+
+  function toggle(key: string) {
+    setSelected(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+    if (key === 'other') setOtherText('');
+  }
+
+  function handleSubmit() {
+    // "기타" 선택 시 텍스트가 있으면 'other:텍스트' 형태로 인코딩
+    const keys = selected.map(k =>
+      k === 'other' && otherText.trim() ? `other:${otherText.trim()}` : k
+    );
+    onSubmit(keys);
+    setSelected([]);
+    setOtherText('');
+  }
+
+  function handleSkip() {
+    setSelected([]);
+    setOtherText('');
+    onSkip();
+  }
+
+  const canSubmit = selected.length > 0 && (!otherSelected || otherText.trim().length > 0 || selected.length > 1);
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleSkip}>
+      <Pressable style={fm.backdrop} onPress={handleSkip} />
+      <View style={[fm.sheet, { maxHeight: '65%' }]}>
+        <View style={fm.handle} />
+        <View style={fm.header}>
+          <Text style={fm.title}>{emoji} "{name}" 이름이 {type === 'liked' ? '좋은' : '별로인'} 이유가 있나요?</Text>
+          <Pressable style={fm.closeBtn} onPress={handleSkip}>
+            <Text style={fm.closeBtnText}>건너뛰기</Text>
+          </Pressable>
+        </View>
+        <View style={s.choiceChips}>
+          {reasons.map(r => (
+            <Pressable
+              key={r.key}
+              style={[s.chip, selected.includes(r.key) && s.chipSelected]}
+              onPress={() => toggle(r.key)}
+            >
+              <Text style={[s.chipText, selected.includes(r.key) && s.chipTextSelected]}>
+                {r.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {otherSelected && (
+          <TextInput
+            style={[fm.input, { marginHorizontal: 16, marginTop: 8 }]}
+            placeholder="직접 입력해주세요"
+            placeholderTextColor="#aaa"
+            value={otherText}
+            onChangeText={setOtherText}
+            maxLength={100}
+            returnKeyType="done"
+          />
+        )}
+        <Pressable
+          style={[fm.submitBtn, !canSubmit && fm.submitBtnOff]}
+          onPress={handleSubmit}
+          disabled={!canSubmit}
+        >
+          <Text style={fm.submitText}>
+            {selected.length === 0 ? '선택 후 전달하기' : `이유 전달하기 (${selected.length}개)`}
+          </Text>
+        </Pressable>
+        <View style={{ height: 16 }} />
+      </View>
+    </Modal>
+  );
+}
+
 // ── SessionRestoreModal ────────────────────────────────────────────────
 function SessionRestoreModal({ visible, onClose, onRestore }: {
   visible: boolean;
@@ -940,6 +1044,9 @@ export default function App() {
   const [dolrimjaModalOpen, setDolrimjaModalOpen] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [restoreModalOpen, setRestoreModalOpen] = useState(false);
+  const [reasonPickerVisible, setReasonPickerVisible] = useState(false);
+  const [reasonPickerContext, setReasonPickerContext] = useState<{ name: string; type: 'liked' | 'disliked' } | null>(null);
+  const [reactionCount, setReactionCount] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -1092,6 +1199,26 @@ export default function App() {
     await sendMessage(text);
   }
 
+  function shouldShowReasonPicker(count: number): boolean {
+    if (count <= 5) return true;
+    return count % 3 === 0;
+  }
+
+  function sendReasons(name: string, type: 'liked' | 'disliked', reasonKeys: string[]) {
+    if (!sessionId || reasonKeys.length === 0) return;
+    fetch(`${BACKEND_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: '',
+        session_id: sessionId,
+        reason_keys: reasonKeys,
+        reason_for_name: name,
+        reason_preference_type: type,
+      }),
+    }).catch(() => {});
+  }
+
   async function handleLike(name: string) {
     const op = likedNames.includes(name) ? 'unlike' : 'like';
     const res = await fetch(`${BACKEND_URL}/api/chat`, {
@@ -1102,6 +1229,14 @@ export default function App() {
     const data: ApiResponse = await res.json();
     setLikedNames(data.liked_names);
     setDislikedNames(data.disliked_names);
+    if (op === 'like') {
+      const newCount = reactionCount + 1;
+      setReactionCount(newCount);
+      if (shouldShowReasonPicker(newCount)) {
+        setReasonPickerContext({ name, type: 'liked' });
+        setReasonPickerVisible(true);
+      }
+    }
   }
 
   async function handleDislike(name: string) {
@@ -1114,6 +1249,14 @@ export default function App() {
     const data: ApiResponse = await res.json();
     setLikedNames(data.liked_names);
     setDislikedNames(data.disliked_names);
+    if (op === 'dislike') {
+      const newCount = reactionCount + 1;
+      setReactionCount(newCount);
+      if (shouldShowReasonPicker(newCount)) {
+        setReasonPickerContext({ name, type: 'disliked' });
+        setReasonPickerVisible(true);
+      }
+    }
   }
 
   async function handlePayment() {
@@ -1183,6 +1326,9 @@ export default function App() {
     setFormSubmitted(false);
     setInput('');
     setShowLiked(false);
+    setReasonPickerVisible(false);
+    setReasonPickerContext(null);
+    setReactionCount(0);
   }
 
   async function handleSessionRestore(id: string) {
@@ -1397,6 +1543,20 @@ export default function App() {
         visible={restoreModalOpen}
         onClose={() => setRestoreModalOpen(false)}
         onRestore={handleSessionRestore}
+      />
+
+      {/* Reason Picker */}
+      <ReasonPicker
+        visible={reasonPickerVisible}
+        name={reasonPickerContext?.name ?? ''}
+        type={reasonPickerContext?.type ?? 'liked'}
+        onSubmit={(keys) => {
+          setReasonPickerVisible(false);
+          if (reasonPickerContext) {
+            sendReasons(reasonPickerContext.name, reasonPickerContext.type, keys);
+          }
+        }}
+        onSkip={() => setReasonPickerVisible(false)}
       />
     </View>
   );

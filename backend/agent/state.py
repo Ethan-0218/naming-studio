@@ -31,4 +31,5 @@ class NamingState(TypedDict):
     sc_cursor: int  # scored_combinations SQL OFFSET 커서 (세션 전반에 누적)
     shown_name_scores: dict  # {한글이름: score_breakdown} — 보여준 이름의 점수 분포 캐시
     inferred_preferences: dict  # like/dislike 패턴에서 자동 추론된 취향 (취향 영역만)
+    reason_taste_profile: dict  # 명시적 이유 선택지 집계 기반 취향 프로파일 (reason_taste_profiler.py)
     _content_blocks: list[dict]  # 현재 응답의 콘텐츠 블록 (TEXT / NAME)

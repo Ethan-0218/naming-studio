@@ -88,6 +88,9 @@ class NamingRequest(BaseModel):
     session_id: str | None = None
     message: str
     action: str | None = None
+    reason_keys: list[str] | None = None           # 이유 선택지 키 목록 (예: ['pronunciation', 'vibe'])
+    reason_for_name: str | None = None             # 이유가 적용되는 이름
+    reason_preference_type: str | None = None      # 'liked' | 'disliked'
 
 
 class NamingResponse(BaseModel):
@@ -205,6 +208,10 @@ async def chat(request: NamingRequest, req: Request):
         if request.action == "update_dolrimja":
             return _handle_update_dolrimja(session_id, request.message, graph, config)
 
+        # reason 제출: name_store reasons 갱신 + reason_taste_profile 업데이트
+        if request.reason_keys and request.reason_for_name and request.reason_preference_type:
+            return _handle_reason_submission(session_id, request, req)
+
         # like/dislike/unlike/undislike: name_store 직접 업데이트
         if request.action and ":" in request.action:
             result = _handle_name_action(session_id, request.action, req)
@@ -243,6 +250,7 @@ async def chat(request: NamingRequest, req: Request):
                 "sc_cursor": 0,
                 "shown_name_scores": {},
                 "inferred_preferences": {},
+                "reason_taste_profile": {},
             }
             result = graph.invoke(initial_state, config=config)
         else:
@@ -572,3 +580,59 @@ def _update_inferred_preferences(session_id: str, req: "Request") -> None:
     except Exception:
         import logging
         logging.getLogger(__name__).warning("inferred_preferences 갱신 실패", exc_info=True)
+
+
+def _handle_reason_submission(
+    session_id: str,
+    request: "NamingRequest",
+    req: "Request",
+) -> "NamingResponse":
+    """이유 선택지를 DB에 저장하고 reason_taste_profile을 갱신합니다."""
+    if DATABASE_URL:
+        try:
+            from db.postgres_pool import _pool_instance
+            from db.session_name_preference_repository import SessionNamePreferenceRepository
+            if _pool_instance is not None:
+                repo = SessionNamePreferenceRepository(_pool_instance)
+                repo.update_reasons(
+                    session_id,
+                    request.reason_preference_type,  # type: ignore[arg-type]
+                    request.reason_for_name,          # type: ignore[arg-type]
+                    request.reason_keys or [],
+                )
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("reason update 실패", exc_info=True)
+
+    _update_reason_taste_profile(session_id, req)
+
+    return NamingResponse(
+        session_id=session_id,
+        stage="candidate_exploration",
+        content=[],
+        liked_names=name_store.get_liked(session_id),
+        disliked_names=name_store.get_disliked(session_id),
+    )
+
+
+def _update_reason_taste_profile(session_id: str, req: "Request") -> None:
+    """이유 집계에서 reason_taste_profile을 구축해 graph state에 저장합니다."""
+    if not DATABASE_URL:
+        return
+    try:
+        from db.postgres_pool import _pool_instance
+        from db.session_name_preference_repository import SessionNamePreferenceRepository
+        from agent.reason_taste_profiler import build_reason_taste_profile
+        if _pool_instance is None:
+            return
+        records = SessionNamePreferenceRepository(_pool_instance).get_reasons_for_session(session_id)
+        new_profile = build_reason_taste_profile(records)
+        graph = _get_agent_graph(req)
+        config = {"configurable": {"thread_id": session_id}}
+        current_state = graph.get_state(config)
+        current_profile = (current_state.values or {}).get("reason_taste_profile") or {}
+        if new_profile != current_profile:
+            graph.update_state(config, {"reason_taste_profile": new_profile})
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("reason_taste_profile 갱신 실패", exc_info=True)
