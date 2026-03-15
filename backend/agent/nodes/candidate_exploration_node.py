@@ -15,9 +15,23 @@ from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
 
+def _generate_reflect_confirm(state: NamingState) -> str:
+    """피드백 반문 + 확인 질문 텍스트를 LLM으로 생성합니다."""
+    from agent.prompts.reflect_confirm_prompt import build_stage_prompt as build_reflect_prompt
+    from agent.persona import PERSONA_DESCRIPTION, PERSONA_CONSTRAINTS
+
+    reflect_system = f"{PERSONA_DESCRIPTION}\n\n{PERSONA_CONSTRAINTS}\n\n{build_reflect_prompt(state)}"
+    llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
+    history = list(state.get("messages", []))
+    msgs = [SystemMessage(content=reflect_system)] + history
+    result = llm.invoke(msgs)
+    return result.content if hasattr(result, "content") else str(result)
+
+
 def candidate_exploration_node(state: NamingState) -> dict:
     session_id = state.get("session_id", "")
     stage_turn_count = state.get("stage_turn_count", 0)
+    awaiting_confirm = state.get("_awaiting_confirm", False)
 
     # 결제 직후 첫 턴: 리드 메시지만 반환, 이름 추천 없음
     if stage_turn_count == 0:
@@ -37,6 +51,21 @@ def candidate_exploration_node(state: NamingState) -> dict:
             "stage": "candidate_exploration",
             "stage_turn_count": 1,
             "_content_blocks": [lead_block],
+            "_awaiting_confirm": False,
+        }
+
+    # 반문/확인 모드: 첫 탐색 이후 유저가 피드백을 준 직후 (preference_update 이미 실행됨)
+    if stage_turn_count > 1 and not awaiting_confirm:
+        emit("피드백을 분석하고 있어요...")
+        reflect_text = _generate_reflect_confirm(state)
+        reflect_block = {"type": "TEXT", "data": {"text": reflect_text}}
+        return {
+            "messages": [AIMessage(content=reflect_text)],
+            "stage": "candidate_exploration",
+            "stage_turn_count": stage_turn_count + 1,
+            "_content_blocks": [reflect_block],
+            "_awaiting_confirm": True,
+            "_exploration_mode_reason": None,
         }
 
     user_info = state.get("user_info", {})
@@ -131,7 +160,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
             sibling_names=preference.get("sibling_names"),
             sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
             sibling_anchor_patterns=preference.get("sibling_anchor_patterns"),
-            limit=12,
+            limit=6,
             pool_size=pool_size,
             sc_cursor=sc_cursor_ref[0],
             dominant_like_reasons=_dominant_likes,
@@ -170,7 +199,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
     emit("최종 이름을 다듬고 있어요...")
     structured_llm = llm.with_structured_output(LLMCandidatesOutput, method="function_calling")
     result = structured_llm.invoke(
-        loop_messages + [HumanMessage(content="위 모든 툴 호출 결과에 있는 후보들 중에서 가장 적합한 3개를 선택해 최종 추천을 structured output으로 작성하세요. 여러 번 툴을 호출했다면 첫 번째 호출 결과도 포함해 전체 후보를 고려하세요.")]
+        loop_messages + [HumanMessage(content="위 모든 툴 호출 결과에 있는 후보들 중에서 가장 적합한 이름 1개를 선택해 최종 추천을 structured output으로 작성하세요. 여러 번 툴을 호출했다면 첫 번째 호출 결과도 포함해 전체 후보를 고려하세요.")]
     )
 
     # 툴 결과에서 후보 수집해 id 조회 맵 구성
@@ -185,7 +214,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
                 pass
     candidates_by_id = {c["id"]: c for c in all_tool_candidates if "id" in c}
 
-    limited = _limit_name_ref_blocks(result.content, max_names=3)
+    limited = _limit_name_ref_blocks(result.content, max_names=1)
     content_blocks = _resolve_blocks(limited, candidates_by_id)
 
     # 전문가 해설 블록을 맨 앞에 삽입
@@ -209,6 +238,8 @@ def candidate_exploration_node(state: NamingState) -> dict:
             if entry:
                 shown_name_scores[d["한글"]] = entry
 
+    new_recommendation_count = state.get("recommendation_count", 0) + len(shown_names)
+
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
         "stage": "candidate_exploration",
@@ -217,6 +248,8 @@ def candidate_exploration_node(state: NamingState) -> dict:
         "shown_name_scores": shown_name_scores,
         "_content_blocks": content_blocks,
         "_exploration_mode_reason": None,  # 소비 후 클리어
+        "_awaiting_confirm": False,
+        "recommendation_count": new_recommendation_count,
     }
 
 

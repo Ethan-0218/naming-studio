@@ -38,7 +38,7 @@ def initial_candidates_node(state: NamingState) -> dict:
                 sibling_names=preference.get("sibling_names"),
                 sibling_anchor_syllables=preference.get("sibling_anchor_syllables"),
                 sibling_anchor_patterns=preference.get("sibling_anchor_patterns"),
-                limit=8,
+                limit=4,
                 dominant_like_reasons=reason_profile.get("dominant_like", []),
                 dominant_dislike_reasons=reason_profile.get("dominant_dislike", []),
                 total_reactions=reason_profile.get("total_reactions_with_reasons", 0),
@@ -71,7 +71,7 @@ def initial_candidates_node(state: NamingState) -> dict:
     result = structured_llm.invoke(messages)
 
     candidates_by_id = {c["id"]: c for c in current_candidates if "id" in c}
-    limited = _limit_name_ref_blocks(result.content, max_names=3)
+    limited = _limit_name_ref_blocks(result.content, max_names=1)
     content_blocks = _resolve_blocks(limited, candidates_by_id)
 
     # 전문가 해설 블록을 맨 앞에 삽입
@@ -94,6 +94,8 @@ def initial_candidates_node(state: NamingState) -> dict:
             if entry:
                 shown_name_scores[d["한글"]] = entry
 
+    new_recommendation_count = state.get("recommendation_count", 0) + len(shown_names)
+
     return {
         "messages": [AIMessage(content=_blocks_to_text(content_blocks))],
         "current_candidates": current_candidates,
@@ -101,6 +103,7 @@ def initial_candidates_node(state: NamingState) -> dict:
         "stage_turn_count": 0,
         "shown_name_scores": shown_name_scores,
         "_content_blocks": content_blocks,
+        "recommendation_count": new_recommendation_count,
     }
 
 

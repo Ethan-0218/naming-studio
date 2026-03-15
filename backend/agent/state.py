@@ -37,3 +37,5 @@ class NamingState(TypedDict):
     exploration_mode: ExplorationMode | None  # 현재 탐색 모드 (None = 안정형 기본값)
     _exploration_mode_reason: str | None  # 모드 전환 시 사용자에게 전달할 제안 문장 (임시 필드)
     _content_blocks: list[dict]  # 현재 응답의 콘텐츠 블록 (TEXT / NAME)
+    _awaiting_confirm: bool  # True면 반문 후 유저 확인 대기 중 (새 이름 추천 전 단계)
+    recommendation_count: int  # 지금까지 이름을 추천한 총 횟수 (이름 1개 = 1 카운트)
