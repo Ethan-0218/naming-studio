@@ -28,6 +28,9 @@ def build_stage_prompt(state: NamingState) -> str:
         pref_lines.append(f"받침 제한: 최대 {preference['max_받침_count']}개")
     pref_text = "\n".join(f"  · {l}" for l in pref_lines) if pref_lines else "  · (없음)"
 
+    avoid = preference.get("_section3_avoid", "")
+    avoid_text = f"\n  · 피하고 싶은 조건: {avoid}" if avoid else ""
+
     sibling_names = preference.get("sibling_names")
     sibling_text = f"\n  · 형제자매 이름: {', '.join(sibling_names)}" if sibling_names else ""
 
@@ -47,7 +50,7 @@ def build_stage_prompt(state: NamingState) -> str:
 지금까지 파악한 내용:
 - 아이: {user_info.get('surname_hanja', '')}{surname}씨 {'아들' if gender == '남' else '딸'}{돌림자_text}{사주_text}
 - 이름 취향:
-{pref_text}{sibling_text}
+{pref_text}{avoid_text}{sibling_text}
 {mode_text}
 작명 방향을 제안하고 부모님의 확인을 받으세요.
 
@@ -57,6 +60,7 @@ message 필드는 마크다운을 사용해 아래 구조로 작성하세요:
 1. 먼저 "### 파악한 취향" 헤더와 함께 취향을 불릿 포인트로 정리하세요.
    - 이름 느낌, 아이의 모습, 피하고 싶은 것, 형제자매 이름 등 파악된 항목만 포함하세요.
    - 해당하는 항목이 없으면 그 항목은 생략하세요.
+   ⚠️ "피하고 싶은 조건"({avoid or "없음"})은 반드시 "피하고 싶은 것" 항목으로 분리하세요. 이름 느낌 항목에 절대 포함하지 마세요.
 2. 빈 줄 후, 2~3문장으로 작명 방향을 자연스럽게 설명하세요.
    - 사주·에너지 정보가 있으면: 아이에게 어떤 에너지가 부족하고, 이름이 그걸 어떻게 채워줄 수 있는지 쉬운 말로 설명하세요.
    - 취향 정보가 있으면: 느낌, 받침, 의미 선호가 어떻게 이름에 반영될지 연결해서 설명하세요.

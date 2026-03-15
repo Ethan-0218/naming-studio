@@ -274,7 +274,8 @@ def preference_interview_node(state: NamingState) -> dict:
         # 모든 질문 완료 → LLM으로 naming_direction 초안 생성 → direction_confirm으로
         naming_direction = _generate_naming_direction_draft(state, profile)
         # _section3_* 임시 필드 제거 (naming_direction으로 통합 완료, 이후 stale 충돌 방지)
-        for key in ("_section3_feel", "_section3_values", "_section3_avoid"):
+        # _section3_avoid는 direction_confirm/initial_candidates/candidate_exploration에서도 사용하므로 유지
+        for key in ("_section3_feel", "_section3_values"):
             profile.pop(key, None)
         return {
             "messages": [AIMessage(content="취향을 모두 파악했어요! 작명 방향을 정리해드릴게요.")],
