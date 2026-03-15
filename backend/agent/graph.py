@@ -12,7 +12,6 @@ from agent.nodes.info_collection_node import info_collection_node
 from agent.nodes.preference_interview_node import preference_interview_node
 from agent.nodes.direction_briefing_node import direction_briefing_node
 from agent.nodes.direction_confirm_node import direction_confirm_node
-from agent.nodes.initial_candidates_node import initial_candidates_node
 from agent.nodes.payment_gate_node import payment_gate_node
 from agent.nodes.preference_update_node import preference_update_node
 from agent.nodes.candidate_exploration_node import candidate_exploration_node
@@ -24,8 +23,8 @@ def _after_preference_interview(state: NamingState) -> str:
 
 
 def _after_direction_confirm(state: NamingState) -> str:
-    """방향 확인 완료 시 initial_candidates로 자동 체인, 아니면 END."""
-    return "initial_candidates" if state.get("stage") == "initial_candidates" else END
+    """방향 확인 완료 시 payment_gate로 자동 체인, 아니면 END."""
+    return "payment_gate" if state.get("stage") == "payment_gate" else END
 
 
 def create_agent_graph(checkpointer=None):
@@ -45,7 +44,6 @@ def create_agent_graph(checkpointer=None):
     graph.add_node("preference_interview", preference_interview_node)
     graph.add_node("direction_briefing", direction_briefing_node)
     graph.add_node("direction_confirm", direction_confirm_node)
-    graph.add_node("initial_candidates", initial_candidates_node)
     graph.add_node("payment_gate", payment_gate_node)
     graph.add_node("preference_update", preference_update_node)
     graph.add_node("candidate_exploration", candidate_exploration_node)
@@ -63,7 +61,6 @@ def create_agent_graph(checkpointer=None):
             "preference_interview": "preference_interview",
             "direction_briefing": "direction_briefing",
             "direction_confirm": "direction_confirm",
-            "initial_candidates": "initial_candidates",
             "payment_gate": "payment_gate",
             "candidate_exploration": "preference_update",  # preference_update 먼저 체인
         },
@@ -83,14 +80,11 @@ def create_agent_graph(checkpointer=None):
         {"direction_confirm": "direction_confirm", END: END},
     )
 
-    # direction_confirm → 확인 완료 시 initial_candidates 자동 체인
+    # direction_confirm → 확인 완료 시 payment_gate 자동 체인
     graph.add_conditional_edges(
         "direction_confirm",
         _after_direction_confirm,
-        {"initial_candidates": "initial_candidates", END: END},
+        {"payment_gate": "payment_gate", END: END},
     )
-
-    # initial_candidates → END (payment_gate는 API routes에서 처리)
-    graph.add_edge("initial_candidates", END)
 
     return graph.compile(checkpointer=checkpointer)

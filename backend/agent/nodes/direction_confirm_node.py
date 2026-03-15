@@ -25,7 +25,7 @@ def direction_confirm_node(state: NamingState) -> dict:
     else:
         confirmed = result.confirmed
 
-    next_stage = "initial_candidates" if confirmed else "direction_confirm"
+    next_stage = "payment_gate" if confirmed else "direction_confirm"
 
     return {
         "messages": [AIMessage(content=result.message)],
