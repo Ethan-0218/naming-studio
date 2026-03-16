@@ -24,15 +24,15 @@ function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
   const color = LEVEL_COLOR[entry.level];
   return (
     <View style={styles.suriCard}>
-      <Text style={[textStyles.sectionLabel, { color: palette.inkLight }]}>{label}</Text>
-      <Text style={[textStyles.numerologyNum, { color, marginTop: spacing['1'] }]}>{entry.number}</Text>
-      <Text style={[textStyles.cardTitle, { color: palette.ink, marginTop: spacing['1'] }]}>
+      <Text style={[textStyles.overline, { color: palette.inkLight }]}>{label}</Text>
+      <Text style={[textStyles.numeralMd, { color, marginTop: spacing['1'] }]}>{entry.number}</Text>
+      <Text style={[textStyles.uiSm, { color: palette.ink, marginTop: spacing['1'] }]}>
         {entry.name1}
       </Text>
       <View style={[styles.levelBadge, { borderColor: color }]}>
-        <Text style={[textStyles.sectionLabel, { color }]}>{entry.level}</Text>
+        <Text style={[textStyles.overline, { color }]}>{entry.level}</Text>
       </View>
-      <Text style={[textStyles.body, { color: palette.inkLight, marginTop: spacing['1'] }]} numberOfLines={2}>
+      <Text style={[textStyles.bodySm, { color: palette.inkLight, marginTop: spacing['1'] }]} numberOfLines={2}>
         {entry.easyInterpretation}
       </Text>
     </View>
@@ -63,7 +63,7 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
           <SuriCard label="정격" entry={computed.jeongyeok} />
         </View>
       ) : (
-        <Text style={[textStyles.body, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
           한자의 획수를 모두 입력하면 수리격이 계산됩니다
         </Text>
       )}

@@ -33,12 +33,12 @@ export default function ScoreSummarySection({ score }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        <Text style={[textStyles.sectionLabel, { color: palette.inkLight }]}>종합 점수</Text>
-        <Text style={[textStyles.scoreDisplay, { color: score != null ? scoreColor(score) : palette.inkFaint }]}>
+        <Text style={[textStyles.overline, { color: palette.inkLight }]}>종합 점수</Text>
+        <Text style={[textStyles.numeralLg, { color: score != null ? scoreColor(score) : palette.inkFaint }]}>
           {score != null ? score : '–'}
         </Text>
         {score != null && (
-          <Text style={[textStyles.body, { color: palette.inkLight }]}>
+          <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>
             {ScoreLabel(score)}
           </Text>
         )}
@@ -65,7 +65,7 @@ export default function ScoreSummarySection({ score }: Props) {
 
         {/* 내부 원 (도넛 구멍) */}
         <View style={styles.innerCircle}>
-          <Text style={[textStyles.numerologyNum, { color: palette.inkFaint }]}>
+          <Text style={[textStyles.numeralMd, { color: palette.inkFaint }]}>
             {score != null ? score : '–'}
           </Text>
         </View>

@@ -36,11 +36,11 @@ export default function NamingToolScreen({ onBack }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Text style={[textStyles.body, { color: palette.inkMid }]}>← 채팅</Text>
+          <Text style={[textStyles.bodySm, { color: palette.inkMid }]}>← 채팅</Text>
         </Pressable>
         <View style={styles.headerCenter}>
-          <Text style={[textStyles.appTitle, { color: palette.ink }]}>스스로 이름짓기</Text>
-          <Text style={[textStyles.sectionLabel, { color: palette.inkLight, marginTop: 1 }]}>
+          <Text style={[textStyles.title1, { color: palette.ink }]}>스스로 이름짓기</Text>
+          <Text style={[textStyles.overline, { color: palette.inkLight, marginTop: 1 }]}>
             이름 분석 및 작명
           </Text>
         </View>

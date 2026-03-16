@@ -27,7 +27,7 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
 
   return (
     <View style={styles.wrapper}>
-      <Text style={[textStyles.sectionLabel, styles.label]}>{label}</Text>
+      <Text style={[textStyles.overline, styles.label]}>{label}</Text>
 
       <Pressable
         onPress={() => setSheetOpen(true)}
@@ -44,7 +44,7 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
         {hasHanja ? (
           <>
             {/* 한자 글자 — 자원오행 색상 */}
-            <Text style={[textStyles.hanjaDisplay, { color: oc?.base ?? palette.inkMid }]}>
+            <Text style={[textStyles.hanjaLg, { color: oc?.base ?? palette.inkMid }]}>
               {value.hanja}
             </Text>
             <Text style={[styles.mean, { color: oc?.base ?? palette.inkMid }]} numberOfLines={1}>
@@ -54,7 +54,7 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
         ) : (
           <>
             <Text style={[styles.plusIcon, { color: palette.inkFaint }]}>+</Text>
-            <Text style={[textStyles.sectionLabel, { color: palette.inkLight }]}>한자 선택</Text>
+            <Text style={[textStyles.overline, { color: palette.inkLight }]}>한자 선택</Text>
           </>
         )}
       </Pressable>

@@ -93,9 +93,9 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
 
           {/* 헤더 */}
           <View style={styles.header}>
-            <Text style={[textStyles.sectionTitle, { color: palette.ink }]}>한자 선택</Text>
+            <Text style={[textStyles.heading, { color: palette.ink }]}>한자 선택</Text>
             <Pressable onPress={onClose} style={styles.closeBtn}>
-              <Text style={[textStyles.body, { color: palette.inkMid }]}>닫기</Text>
+              <Text style={[textStyles.bodySm, { color: palette.inkMid }]}>닫기</Text>
             </Pressable>
           </View>
 
@@ -120,7 +120,7 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
           )}
 
           {!loading && results.length === 0 && query.length > 0 && (
-            <Text style={[textStyles.body, { color: palette.inkFaint, textAlign: 'center', marginTop: spacing['5'] }]}>
+            <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', marginTop: spacing['5'] }]}>
               검색 결과가 없습니다
             </Text>
           )}
@@ -142,16 +142,16 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
                         ? { backgroundColor: oc.light, borderColor: oc.border }
                         : { backgroundColor: palette.surface, borderColor: palette.border },
                     ]}>
-                      <Text style={[textStyles.hanjaDisplay, { fontSize: 24, color: oc?.base ?? palette.inkMid }]}>
+                      <Text style={[textStyles.hanjaLg, { fontSize: 24, color: oc?.base ?? palette.inkMid }]}>
                         {r.hanja}
                       </Text>
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <Text style={[textStyles.cardTitle, { color: palette.ink }]}>
+                      <Text style={[textStyles.uiSm, { color: palette.ink }]}>
                         {r.eum} · {r.mean}
                       </Text>
-                      <Text style={[textStyles.body, { color: palette.inkLight }]}>
+                      <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>
                         {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
                         {r.charOhaeng ? ` · 자원오행 ${r.charOhaeng}` : ''}
                       </Text>
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing['3'],
     paddingVertical: spacing['2'],
-    ...textStyles.body,
+    ...textStyles.bodySm,
     color: palette.ink,
     backgroundColor: palette.card,
     marginBottom: spacing['2'],

@@ -28,15 +28,15 @@ export default function HoeksuEumyangSection({ nameInput, result }: Props) {
             const colors = ey ? EUMYANG_COLOR[ey] : null;
             return (
               <View key={i} style={[styles.box, colors && { backgroundColor: colors.bg, borderColor: colors.border }]}>
-                <Text style={[textStyles.cardTitle, { color: colors?.text ?? palette.inkFaint }]}>
+                <Text style={[textStyles.uiSm, { color: colors?.text ?? palette.inkFaint }]}>
                   {slot.hanja || slot.hangul || '?'}
                 </Text>
                 {slot.strokeCount != null && (
-                  <Text style={[textStyles.sectionLabel, { color: palette.inkLight, marginTop: 2 }]}>
+                  <Text style={[textStyles.overline, { color: palette.inkLight, marginTop: 2 }]}>
                     {slot.strokeCount}획
                   </Text>
                 )}
-                <Text style={[textStyles.sectionLabel, { color: colors?.text ?? palette.inkFaint, marginTop: 2 }]}>
+                <Text style={[textStyles.overline, { color: colors?.text ?? palette.inkFaint, marginTop: 2 }]}>
                   {ey ?? '–'}
                 </Text>
               </View>
@@ -44,12 +44,12 @@ export default function HoeksuEumyangSection({ nameInput, result }: Props) {
           })}
         </View>
       ) : (
-        <Text style={[textStyles.body, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
           한자를 선택하면 획수음양이 표시됩니다
         </Text>
       )}
       {result && (
-        <Text style={[textStyles.body, styles.reason]}>{result.reason}</Text>
+        <Text style={[textStyles.bodySm, styles.reason]}>{result.reason}</Text>
       )}
     </SectionCard>
   );

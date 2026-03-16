@@ -27,10 +27,10 @@ export default function SectionCard({ title, badge, badgeColor, children }: Prop
   return (
     <View>
       <View style={styles.titleRow}>
-        <Text style={[textStyles.sectionTitle, { color: palette.ink }]}>{title}</Text>
+        <Text style={[textStyles.heading, { color: palette.ink }]}>{title}</Text>
         {badge && (
           <View style={[styles.badge, { borderColor: badgeColor ?? palette.border }]}>
-            <Text style={[textStyles.labelBadge, { color: badgeColor ?? palette.inkMid }]}>
+            <Text style={[textStyles.label, { color: badgeColor ?? palette.inkMid }]}>
               {badge}
             </Text>
           </View>

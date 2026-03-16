@@ -30,12 +30,12 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
       {elements.some(e => e !== null) ? (
         <OhaengFlowDiagram elements={elements} relations={relations} />
       ) : (
-        <Text style={[textStyles.body, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
           이름을 입력하면 발음오행이 표시됩니다
         </Text>
       )}
       {result && (
-        <Text style={[textStyles.body, styles.reason]}>{result.reason}</Text>
+        <Text style={[textStyles.bodySm, styles.reason]}>{result.reason}</Text>
       )}
     </SectionCard>
   );

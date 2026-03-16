@@ -26,7 +26,7 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
 
   return (
     <SectionCard title="용신 보완">
-      <Text style={[textStyles.body, { color: palette.inkMid, marginBottom: spacing['3'] }]}>
+      <Text style={[textStyles.bodySm, { color: palette.inkMid, marginBottom: spacing['3'] }]}>
         아이의 용신 오행을 선택하면 이름 글자들과의 궁합을 분석합니다.
       </Text>
 
@@ -45,7 +45,7 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
               ]}
               onPress={() => onUpdate({ yongsin: selected ? null : o })}
             >
-              <Text style={[textStyles.cardTitle, { color: selected ? colors.base : palette.inkMid }]}>{o}</Text>
+              <Text style={[textStyles.uiSm, { color: selected ? colors.base : palette.inkMid }]}>{o}</Text>
             </Pressable>
           );
         })}
@@ -60,21 +60,21 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
             const badge = relation ? RELATION_BADGE[relation] : null;
             return (
               <View key={i} style={styles.compatRow}>
-                <Text style={[textStyles.cardTitle, { color: palette.ink, width: 40 }]}>
+                <Text style={[textStyles.uiSm, { color: palette.ink, width: 40 }]}>
                   {slot.hanja || slot.hangul || '?'}
                 </Text>
                 {charOhaeng ? (
                   <View style={[styles.ohaengPill, { backgroundColor: ohaengColors[charOhaeng].light, borderColor: ohaengColors[charOhaeng].border }]}>
-                    <Text style={[textStyles.sectionLabel, { color: ohaengColors[charOhaeng].base }]}>{charOhaeng}</Text>
+                    <Text style={[textStyles.overline, { color: ohaengColors[charOhaeng].base }]}>{charOhaeng}</Text>
                   </View>
                 ) : <View style={{ width: 36 }} />}
-                <Text style={[textStyles.body, { color: palette.inkLight, marginHorizontal: spacing['2'] }]}>→</Text>
+                <Text style={[textStyles.bodySm, { color: palette.inkLight, marginHorizontal: spacing['2'] }]}>→</Text>
                 <View style={[styles.ohaengPill, { backgroundColor: ohaengColors[yongsin].light, borderColor: ohaengColors[yongsin].border }]}>
-                  <Text style={[textStyles.sectionLabel, { color: ohaengColors[yongsin].base }]}>{yongsin} (용신)</Text>
+                  <Text style={[textStyles.overline, { color: ohaengColors[yongsin].base }]}>{yongsin} (용신)</Text>
                 </View>
                 {badge && (
                   <View style={[styles.relationBadge, { borderColor: badge.color }]}>
-                    <Text style={[textStyles.sectionLabel, { color: badge.color }]}>{badge.label}</Text>
+                    <Text style={[textStyles.overline, { color: badge.color }]}>{badge.label}</Text>
                   </View>
                 )}
               </View>
@@ -84,7 +84,7 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
       )}
 
       {!yongsin && (
-        <Text style={[textStyles.body, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['2'] }]}>
+        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['2'] }]}>
           용신 오행을 선택해주세요
         </Text>
       )}

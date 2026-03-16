@@ -22,7 +22,7 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
     <View >
       {/* Title row — outside the card */}
       <View style={styles.outerTitleRow}>
-        <Text style={[textStyles.sectionTitle, { color: palette.ink }]}>이름 입력</Text>
+        <Text style={[textStyles.heading, { color: palette.ink }]}>이름 입력</Text>
         <View style={styles.genderRow}>
           {(['male', 'female'] as Gender[]).map(g => (
             <Pressable
@@ -30,7 +30,7 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
               style={[styles.genderBtn, gender === g && styles.genderBtnActive]}
               onPress={() => onGenderChange(g)}
             >
-              <Text style={[textStyles.labelBadge, { color: gender === g ? palette.bg : palette.inkMid }]}>
+              <Text style={[textStyles.label, { color: gender === g ? palette.bg : palette.inkMid }]}>
                 {g === 'male' ? '남' : '여'}
               </Text>
             </Pressable>
@@ -41,13 +41,13 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
       <View style={styles.card}>
         {/* 한 글 row */}
         <View style={styles.rowGroup}>
-          <Text style={[textStyles.sectionLabel, styles.rowLabel]}>한 글</Text>
+          <Text style={[textStyles.overline, styles.rowLabel]}>한 글</Text>
           <View style={styles.slotRow}>
             {SLOTS.map((slot, i) => (
               <React.Fragment key={slot}>
                 {i > 0 && <View style={styles.colDivider} />}
                 <View style={styles.hangulSlot}>
-                  <Text style={[textStyles.sectionLabel, styles.slotLabel]}>
+                  <Text style={[textStyles.overline, styles.slotLabel]}>
                     {SLOT_LABELS[slot]}
                   </Text>
                   <TextInput
@@ -72,7 +72,7 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
 
         {/* 한 자 row */}
         <View style={styles.rowGroup}>
-          <Text style={[textStyles.sectionLabel, styles.rowLabel]}>한 자</Text>
+          <Text style={[textStyles.overline, styles.rowLabel]}>한 자</Text>
           <View style={styles.slotRow}>
             {SLOTS.map((slot, i) => (
               <React.Fragment key={slot}>
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: palette.border,
     backgroundColor: palette.bg,
-    ...textStyles.hanjaDisplay,
+    ...textStyles.hanjaLg,
     color: palette.ink,
     textAlign: 'center',
   },

@@ -27,7 +27,7 @@ function OhaengNode({ element }: { element: Ohaeng | null }) {
       styles.node,
       colors ? { backgroundColor: colors.light, borderColor: colors.border } : styles.nodeEmpty,
     ]}>
-      <Text style={[textStyles.cardTitle, { color: colors?.base ?? palette.inkFaint }]}>
+      <Text style={[textStyles.uiSm, { color: colors?.base ?? palette.inkFaint }]}>
         {element ?? '?'}
       </Text>
     </View>
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     minWidth: 48,
   },
   arrowLabel: {
-    ...textStyles.sectionLabel,
+    ...textStyles.overline,
     fontSize: 8,
     marginBottom: 2,
   },

@@ -49,7 +49,7 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
   return (
     <View style={[styles.container, disabled && styles.disabled]}>
       {/* Slot header */}
-      <Text style={[textStyles.sectionLabel, styles.slotLabel]}>{label}</Text>
+      <Text style={[textStyles.overline, styles.slotLabel]}>{label}</Text>
 
       {/* Main hanja display */}
       <Pressable
@@ -57,11 +57,11 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
         onPress={() => !disabled && setEditing(e => !e)}
         disabled={disabled}
       >
-        <Text style={[textStyles.hanjaDisplay, { color: ohaengColor?.base ?? palette.inkMid }]}>
+        <Text style={[textStyles.hanjaLg, { color: ohaengColor?.base ?? palette.inkMid }]}>
           {hasHanja ? value.hanja : '?'}
         </Text>
         {value.hangul ? (
-          <Text style={[textStyles.sectionLabel, { color: palette.inkLight, marginTop: 2 }]}>
+          <Text style={[textStyles.overline, { color: palette.inkLight, marginTop: 2 }]}>
             {value.hangul}
           </Text>
         ) : null}
@@ -72,14 +72,14 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
         <View style={styles.pills}>
           {value.strokeCount != null && (
             <View style={styles.pill}>
-              <Text style={[textStyles.sectionLabel, { color: palette.inkMid }]}>
+              <Text style={[textStyles.overline, { color: palette.inkMid }]}>
                 {value.strokeCount}획
               </Text>
             </View>
           )}
           {value.charOhaeng && (
             <View style={[styles.pill, { backgroundColor: ohaengColor!.light, borderColor: ohaengColor!.border }]}>
-              <Text style={[textStyles.sectionLabel, { color: ohaengColor!.base }]}>
+              <Text style={[textStyles.overline, { color: ohaengColor!.base }]}>
                 {value.charOhaeng}
               </Text>
             </View>
@@ -89,7 +89,7 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
 
       {/* Meaning */}
       {value.mean ? (
-        <Text style={[textStyles.body, styles.mean]} numberOfLines={1}>{value.mean}</Text>
+        <Text style={[textStyles.bodySm, styles.mean]} numberOfLines={1}>{value.mean}</Text>
       ) : null}
 
       {/* Edit panel */}
@@ -108,14 +108,14 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
             <ScrollView style={styles.resultList} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
               {results.map((r, i) => (
                 <Pressable key={i} style={styles.resultRow} onPress={() => handleSelectResult(r)}>
-                  <Text style={[textStyles.hanjaDisplay, { fontSize: 20, color: palette.ink, marginRight: spacing['2'] }]}>
+                  <Text style={[textStyles.hanjaLg, { fontSize: 20, color: palette.ink, marginRight: spacing['2'] }]}>
                     {r.hanja}
                   </Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={[textStyles.cardTitle, { color: palette.ink }]}>
+                    <Text style={[textStyles.uiSm, { color: palette.ink }]}>
                       {r.eum} · {r.mean}
                     </Text>
-                    <Text style={[textStyles.body, { color: palette.inkLight }]}>
+                    <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>
                       {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
                       {r.charOhaeng ? ` · ${r.charOhaeng}` : ''}
                     </Text>
@@ -126,7 +126,7 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
           )}
           {/* Manual stroke count input */}
           <View style={styles.manualRow}>
-            <Text style={[textStyles.body, { color: palette.inkMid, marginRight: spacing['2'] }]}>획수 직접입력</Text>
+            <Text style={[textStyles.bodySm, { color: palette.inkMid, marginRight: spacing['2'] }]}>획수 직접입력</Text>
             <TextInput
               style={[styles.searchInput, { flex: 1 }]}
               value={strokeInput}
@@ -137,11 +137,11 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
               onSubmitEditing={handleManualStroke}
             />
             <Pressable style={styles.applyBtn} onPress={handleManualStroke}>
-              <Text style={[textStyles.labelBadge, { color: palette.bg }]}>적용</Text>
+              <Text style={[textStyles.label, { color: palette.bg }]}>적용</Text>
             </Pressable>
           </View>
           <Pressable onPress={() => { setEditing(false); clearResults(); }} style={styles.closeBtn}>
-            <Text style={[textStyles.body, { color: palette.inkLight }]}>닫기</Text>
+            <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>닫기</Text>
           </Pressable>
         </View>
       )}
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingHorizontal: spacing['2'],
     paddingVertical: spacing['1'],
-    ...textStyles.body,
+    ...textStyles.bodySm,
     color: palette.ink,
     backgroundColor: palette.bg,
   },
