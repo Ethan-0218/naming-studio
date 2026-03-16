@@ -64,10 +64,10 @@ function EumyangBalanceBar({
       </Text>
       <View
         className="flex-1 flex-row rounded-full overflow-hidden"
-        style={{ height: 6, backgroundColor: colors.yangSub }}
+        style={{ height: 6, backgroundColor: colors.border }}
       >
         <View style={{ flex: yin, backgroundColor: colors.yin }} />
-        <View style={{ flex: yang, backgroundColor: colors.yangSub }} />
+        <View style={{ flex: yang, backgroundColor: colors.yang }} />
       </View>
       <Text
         className="text-overline"
@@ -112,25 +112,35 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
                 }
               >
                 <Text
-                  className="text-uiSm"
+                  className="text-uiMd"
                   style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
                 >
                   {label}
                 </Text>
-                {subLabel && (
+                <View className="flex-row items-center mt-0.5">
+                  {subLabel && (
+                    <>
+                      <Text
+                        className="text-overline"
+                        style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                      >
+                        {subLabel}
+                      </Text>
+                      <Text
+                        className="text-overline mx-0.5"
+                        style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                      >
+                        ·
+                      </Text>
+                    </>
+                  )}
                   <Text
-                    className="text-overline text-textTertiary mt-0.5"
-                    style={{ fontFamily: fontFamily.sansMedium }}
+                    className="text-overline"
+                    style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
                   >
-                    {subLabel}
+                    {eumyang === '음' ? '음(陰)' : eumyang === '양' ? '양(陽)' : '–'}
                   </Text>
-                )}
-                <Text
-                  className="text-overline mt-0.5"
-                  style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
-                >
-                  {eumyang === '음' ? '음(陰)' : eumyang === '양' ? '양(陽)' : '–'}
-                </Text>
+                </View>
               </View>
             );
           })}

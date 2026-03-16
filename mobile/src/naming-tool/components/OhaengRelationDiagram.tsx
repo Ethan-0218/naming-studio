@@ -26,7 +26,7 @@ const PAIR_INDICES: [number, number][] = [
 
 const PAIR_LABEL_OFFSETS = [
   { dx: -12, dy: -8 },
-  { dx: 0, dy: 50 },
+  { dx: 0, dy: -10 },
   { dx: 12, dy: -8 },
 ];
 
