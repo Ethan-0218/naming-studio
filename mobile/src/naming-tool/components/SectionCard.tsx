@@ -2,8 +2,8 @@
  * Shared section card wrapper used by all analysis sections.
  */
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, textStyles, spacing, radius } from '@/design-system';
+import { Text, View } from 'react-native';
+import { colors, fontFamily } from '@/design-system';
 import { HarmonyLevel } from '../types';
 
 interface Props {
@@ -26,41 +26,33 @@ export function harmonyBadgeColor(level: HarmonyLevel): string {
 export default function SectionCard({ title, badge, badgeColor, children }: Props) {
   return (
     <View>
-      <View style={styles.titleRow}>
-        <Text style={[textStyles.heading, { color: colors.textPrimary }]}>{title}</Text>
+      <View className="flex-row items-center justify-between mb-2">
+        <Text
+          className="text-heading text-textPrimary"
+          style={{ fontFamily: fontFamily.serifMedium }}
+        >
+          {title}
+        </Text>
         {badge && (
-          <View style={[styles.badge, { borderColor: badgeColor ?? colors.border }]}>
-            <Text style={[textStyles.label, { color: badgeColor ?? colors.textSecondary }]}>
+          <View
+            className="px-2 py-0.5 rounded-full border border-solid"
+            style={{ borderColor: badgeColor ?? colors.border }}
+          >
+            <Text
+              className="text-label"
+              style={{
+                fontFamily: fontFamily.sansMedium,
+                color: badgeColor ?? colors.textSecondary,
+              }}
+            >
               {badge}
             </Text>
           </View>
         )}
       </View>
-      <View style={styles.card}>
+      <View className="bg-surfaceRaised rounded-lg p-4 border border-border">
         {children}
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing['2'],
-  },
-  card: {
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: radius.lg,
-    padding: spacing['4'],
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  badge: {
-    paddingHorizontal: spacing['2'],
-    paddingVertical: 2,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
-});

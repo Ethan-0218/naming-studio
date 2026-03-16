@@ -1,6 +1,6 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, ohaengColors, textStyles, spacing, radius } from '@/design-system';
+import { Pressable, Text, View } from 'react-native';
+import { colors, ohaengColors, fontFamily } from '@/design-system';
 import { NameInput, Ohaeng, SajuInput } from '../types';
 import { getRelation } from '../domain/ohaeng';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
@@ -26,55 +26,104 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
 
   return (
     <SectionCard title="용신 보완">
-      <Text style={[textStyles.bodySm, { color: colors.textSecondary, marginBottom: spacing['3'] }]}>
+      <Text
+        className="text-bodySm text-textSecondary mb-3"
+        style={{ fontFamily: fontFamily.sansRegular }}
+      >
         아이의 용신 오행을 선택하면 이름 글자들과의 궁합을 분석합니다.
       </Text>
 
-      {/* 오행 selector */}
-      <View style={styles.selectorRow}>
-        {OHAENG_LIST.map(o => {
+      <View className="flex-row gap-2 mb-3">
+        {OHAENG_LIST.map((o) => {
           const oc = ohaengColors[o];
           const selected = yongsin === o;
           return (
             <Pressable
               key={o}
-              style={[
-                styles.ohaengBtn,
-                { borderColor: oc.border },
-                selected && { backgroundColor: oc.light },
-              ]}
+              className="flex-1 border-[1.5px] rounded-md py-2 items-center"
+              style={{
+                borderColor: oc.border,
+                backgroundColor: selected ? oc.light : undefined,
+              }}
               onPress={() => onUpdate({ yongsin: selected ? null : o })}
             >
-              <Text style={[textStyles.uiSm, { color: selected ? oc.base : colors.textSecondary }]}>{o}</Text>
+              <Text
+                className="text-uiSm"
+                style={{
+                  fontFamily: fontFamily.sansMedium,
+                  color: selected ? oc.base : colors.textSecondary,
+                }}
+              >
+                {o}
+              </Text>
             </Pressable>
           );
         })}
       </View>
 
-      {/* Compatibility grid */}
       {yongsin && (
-        <View style={styles.compatGrid}>
+        <View className="gap-2 pt-2 border-t border-border">
           {slots.map((slot, i) => {
             const charOhaeng = slot.charOhaeng ?? (slot.hangul ? baleumOhaengFromChar(slot.hangul) : null);
             const relation = charOhaeng ? getRelation(charOhaeng, yongsin) : null;
             const badge = relation ? RELATION_BADGE[relation] : null;
             return (
-              <View key={i} style={styles.compatRow}>
-                <Text style={[textStyles.uiSm, { color: colors.textPrimary, width: 40 }]}>
+              <View key={i} className="flex-row items-center">
+                <Text
+                  className="text-uiSm text-textPrimary w-10"
+                  style={{ fontFamily: fontFamily.sansMedium }}
+                >
                   {slot.hanja || slot.hangul || '?'}
                 </Text>
                 {charOhaeng ? (
-                  <View style={[styles.ohaengPill, { backgroundColor: ohaengColors[charOhaeng].light, borderColor: ohaengColors[charOhaeng].border }]}>
-                    <Text style={[textStyles.overline, { color: ohaengColors[charOhaeng].base }]}>{charOhaeng}</Text>
+                  <View
+                    className="px-2 py-0.5 rounded-full border"
+                    style={{
+                      backgroundColor: ohaengColors[charOhaeng].light,
+                      borderColor: ohaengColors[charOhaeng].border,
+                    }}
+                  >
+                    <Text
+                      className="text-overline uppercase"
+                      style={{ fontFamily: fontFamily.sansMedium, color: ohaengColors[charOhaeng].base }}
+                    >
+                      {charOhaeng}
+                    </Text>
                   </View>
-                ) : <View style={{ width: 36 }} />}
-                <Text style={[textStyles.bodySm, { color: colors.textTertiary, marginHorizontal: spacing['2'] }]}>→</Text>
-                <View style={[styles.ohaengPill, { backgroundColor: ohaengColors[yongsin].light, borderColor: ohaengColors[yongsin].border }]}>
-                  <Text style={[textStyles.overline, { color: ohaengColors[yongsin].base }]}>{yongsin} (용신)</Text>
+                ) : (
+                  <View className="w-9" />
+                )}
+                <Text
+                  className="text-bodySm text-textTertiary mx-2"
+                  style={{ fontFamily: fontFamily.sansRegular }}
+                >
+                  →
+                </Text>
+                <View
+                  className="px-2 py-0.5 rounded-full border"
+                  style={{
+                    backgroundColor: ohaengColors[yongsin].light,
+                    borderColor: ohaengColors[yongsin].border,
+                  }}
+                >
+                  <Text
+                    className="text-overline uppercase"
+                    style={{ fontFamily: fontFamily.sansMedium, color: ohaengColors[yongsin].base }}
+                  >
+                    {yongsin} (용신)
+                  </Text>
                 </View>
                 {badge && (
-                  <View style={[styles.relationBadge, { borderColor: badge.color }]}>
-                    <Text style={[textStyles.overline, { color: badge.color }]}>{badge.label}</Text>
+                  <View
+                    className="ml-2 px-2 py-0.5 rounded-full border"
+                    style={{ borderColor: badge.color }}
+                  >
+                    <Text
+                      className="text-overline uppercase"
+                      style={{ fontFamily: fontFamily.sansMedium, color: badge.color }}
+                    >
+                      {badge.label}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -84,48 +133,13 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
       )}
 
       {!yongsin && (
-        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['2'] }]}>
+        <Text
+          className="text-bodySm text-textDisabled text-center py-2"
+          style={{ fontFamily: fontFamily.sansRegular }}
+        >
           용신 오행을 선택해주세요
         </Text>
       )}
     </SectionCard>
   );
 }
-
-const styles = StyleSheet.create({
-  selectorRow: {
-    flexDirection: 'row',
-    gap: spacing['2'],
-    marginBottom: spacing['3'],
-  },
-  ohaengBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderRadius: radius.md,
-    paddingVertical: spacing['2'],
-    alignItems: 'center',
-  },
-  compatGrid: {
-    gap: spacing['2'],
-    paddingTop: spacing['2'],
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  compatRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ohaengPill: {
-    paddingHorizontal: spacing['2'],
-    paddingVertical: 2,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
-  relationBadge: {
-    marginLeft: spacing['2'],
-    paddingHorizontal: spacing['2'],
-    paddingVertical: 2,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
-});

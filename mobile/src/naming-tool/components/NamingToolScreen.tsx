@@ -1,8 +1,13 @@
 import React from 'react';
 import {
-  KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
 } from 'react-native';
-import { colors, textStyles, spacing } from '@/design-system';
+import { colors, fontFamily } from '@/design-system';
 import { useNamingToolState } from '../hooks/useNamingToolState';
 import NameInputSection from './NameInputSection';
 import BaleumOhaengSection from './BaleumOhaengSection';
@@ -18,39 +23,61 @@ interface Props {
 }
 
 function Divider() {
-  return <View style={styles.divider} />;
+  return <View className="h-[1px] bg-border my-4" />;
 }
-
 
 export default function NamingToolScreen({ onBack }: Props) {
   const {
-    nameInput, sajuInput, gender, setGender,
-    analysis, updateSlot, updateSaju,
+    nameInput,
+    sajuInput,
+    gender,
+    setGender,
+    analysis,
+    updateSlot,
+    updateSaju,
   } = useNamingToolState();
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.root}
+      className="bg-bgSubtle flex-1 flex-col"
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 }}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={onBack} style={styles.backBtn}>
-          <Text style={[textStyles.bodySm, { color: colors.textSecondary }]}>← 채팅</Text>
+      <View
+        className="w-full bg-surfaceRaised flex-row items-center justify-between
+        px-4 pb-3 bg-bg border-b border-border border-solid"
+        style={{ paddingTop: Platform.OS === 'ios' ? 56 : 16 }}
+      >
+        <Pressable onPress={onBack} className="w-[60px] py-2">
+          <Text
+            className="text-bodySm text-textSecondary"
+            style={{ fontFamily: fontFamily.sansRegular }}
+          >
+            ← 채팅
+          </Text>
         </Pressable>
-        <View style={styles.headerCenter}>
-          <Text style={[textStyles.title1, { color: colors.textPrimary }]}>스스로 이름짓기</Text>
-          <Text style={[textStyles.overline, { color: colors.textTertiary, marginTop: 1 }]}>
+        <View className="flex-1 items-center justify-center px-2 flex-col gap-1">
+          <Text
+            className="text-title1 text-textPrimary"
+            style={{ fontFamily: fontFamily.serifMedium }}
+          >
+            스스로 이름짓기
+          </Text>
+          <Text
+            className="text-overline text-textTertiary mt-0.5"
+            style={{ fontFamily: fontFamily.sansMedium }}
+          >
             이름 분석 및 작명
           </Text>
         </View>
-        <View style={{ width: 60 }} />
+        <View className="w-[60px]" />
       </View>
 
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.content}
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, paddingBottom: 32, backgroundColor: colors.bg }}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <NameInputSection
           analysis={analysis}
@@ -60,28 +87,17 @@ export default function NamingToolScreen({ onBack }: Props) {
           onGenderChange={setGender}
         />
 
+        <Divider />
+
+        <BaleumOhaengSection nameInput={nameInput} result={analysis.baleumOhaeng} />
 
         <Divider />
 
-        <BaleumOhaengSection
-          nameInput={nameInput}
-          result={analysis.baleumOhaeng}
-        />
+        <BaleumEumyangSection nameInput={nameInput} result={analysis.baleumEumyang} />
 
         <Divider />
 
-        <BaleumEumyangSection
-          nameInput={nameInput}
-          result={analysis.baleumEumyang}
-        />
-
-        <Divider />
-
-        <YongsinSection
-          sajuInput={sajuInput}
-          nameInput={nameInput}
-          onUpdate={updateSaju}
-        />
+        <YongsinSection sajuInput={sajuInput} nameInput={nameInput} onUpdate={updateSaju} />
 
         <Divider />
 
@@ -93,10 +109,7 @@ export default function NamingToolScreen({ onBack }: Props) {
 
         <Divider />
 
-        <JawonOhaengSection
-          nameInput={nameInput}
-          result={analysis.jawonOhaeng}
-        />
+        <JawonOhaengSection nameInput={nameInput} result={analysis.jawonOhaeng} />
 
         <Divider />
 
@@ -105,46 +118,7 @@ export default function NamingToolScreen({ onBack }: Props) {
           result={analysis.hoeksuEumyang}
         />
 
-        <View style={{ height: spacing['10'] }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.bgSubtle,
-    zIndex: 100,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing['4'],
-    paddingTop: Platform.OS === 'ios' ? 56 : spacing['4'],
-    paddingBottom: spacing['3'],
-    backgroundColor: colors.bg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backBtn: {
-    width: 60,
-    paddingVertical: spacing['1'],
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  scroll: {
-    flex: 1,
-  },
-  content: {
-    padding: spacing['4'],
-    backgroundColor: colors.bg,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing['4'],
-  },
-});

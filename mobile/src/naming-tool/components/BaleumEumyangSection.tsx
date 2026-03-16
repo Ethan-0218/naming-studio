@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, textStyles, spacing, radius } from '@/design-system';
+import { Text, View } from 'react-native';
+import { colors, fontFamily } from '@/design-system';
 import { EumyangHarmonyResult, NameInput } from '../types';
 import SectionCard from './SectionCard';
 
@@ -23,17 +23,31 @@ export default function BaleumEumyangSection({ nameInput, result }: Props) {
 
   return (
     <SectionCard title="발음음양" badge={badge} badgeColor={badgeColor}>
-      {slots.some(s => s.soundEumyang !== null) ? (
-        <View style={styles.row}>
+      {slots.some((s) => s.soundEumyang !== null) ? (
+        <View className="flex-row gap-2 mb-2">
           {slots.map((slot, i) => {
             const ey = chars[i] ?? slot.soundEumyang;
             const oc = ey ? EUMYANG_COLOR[ey] : null;
             return (
-              <View key={i} style={[styles.box, oc && { backgroundColor: oc.bg, borderColor: oc.border }]}>
-                <Text style={[textStyles.uiSm, { color: oc?.text ?? colors.textDisabled }]}>
+              <View
+                key={i}
+                className="flex-1 border rounded-md py-3 items-center"
+                style={
+                  oc
+                    ? { backgroundColor: oc.bg, borderColor: oc.border }
+                    : { borderColor: colors.border }
+                }
+              >
+                <Text
+                  className="text-uiSm"
+                  style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                >
                   {slot.hangul || '?'}
                 </Text>
-                <Text style={[textStyles.overline, { color: oc?.text ?? colors.textDisabled, marginTop: 2 }]}>
+                <Text
+                  className="text-overline mt-0.5 uppercase"
+                  style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                >
                   {ey ?? '–'}
                 </Text>
               </View>
@@ -41,33 +55,21 @@ export default function BaleumEumyangSection({ nameInput, result }: Props) {
           })}
         </View>
       ) : (
-        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text
+          className="text-bodySm text-textDisabled text-center py-4"
+          style={{ fontFamily: fontFamily.sansRegular }}
+        >
           한자를 선택하면 발음음양이 표시됩니다
         </Text>
       )}
       {result && (
-        <Text style={[textStyles.bodySm, styles.reason]}>{result.reason}</Text>
+        <Text
+          className="text-bodySm text-textSecondary mt-2"
+          style={{ fontFamily: fontFamily.sansRegular }}
+        >
+          {result.reason}
+        </Text>
       )}
     </SectionCard>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: spacing['2'],
-    marginBottom: spacing['2'],
-  },
-  box: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingVertical: spacing['3'],
-    alignItems: 'center',
-  },
-  reason: {
-    color: colors.textSecondary,
-    marginTop: spacing['2'],
-  },
-});

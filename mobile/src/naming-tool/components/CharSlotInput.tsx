@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import {
-  ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import { colors, ohaengColors, textStyles, spacing, radius } from '@/design-system';
+import clsx from 'clsx';
+import { colors, ohaengColors, textClassNames } from '@/design-system';
 import { CharSlotData } from '../types';
 import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
@@ -19,7 +25,7 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
   const [strokeInput, setStrokeInput] = useState('');
   const { query, results, loading, search, clearResults } = useHanjaSearch(role);
 
-  function handleSelectResult(result: typeof results[0]) {
+  function handleSelectResult(result: (typeof results)[0]) {
     onUpdate({
       hangul: result.eum,
       hanja: result.hanja,
@@ -47,39 +53,50 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
   const ohaengColor = value.charOhaeng ? ohaengColors[value.charOhaeng] : null;
 
   return (
-    <View style={[styles.container, disabled && styles.disabled]}>
-      {/* Slot header */}
-      <Text style={[textStyles.overline, styles.slotLabel]}>{label}</Text>
+    <View className={clsx('flex-1 items-center', disabled && 'opacity-35')}>
+      <Text className={`${textClassNames.overline} text-textTertiary mb-1`}>{label}</Text>
 
-      {/* Main hanja display */}
       <Pressable
-        style={[styles.hanjaBox, ohaengColor && { borderColor: ohaengColor.border, backgroundColor: ohaengColor.light }]}
-        onPress={() => !disabled && setEditing(e => !e)}
+        className="w-[72px] h-20 rounded-md border-[1.5px] items-center justify-center border-border bg-surfaceRaised"
+        style={
+          ohaengColor
+            ? { borderColor: ohaengColor.border, backgroundColor: ohaengColor.light }
+            : undefined
+        }
+        onPress={() => !disabled && setEditing((e) => !e)}
         disabled={disabled}
       >
-        <Text style={[textStyles.hanjaLg, { color: ohaengColor?.base ?? colors.textSecondary }]}>
+        <Text
+          className={textClassNames.hanjaLg}
+          style={{ color: ohaengColor?.base ?? colors.textSecondary }}
+        >
           {hasHanja ? value.hanja : '?'}
         </Text>
         {value.hangul ? (
-          <Text style={[textStyles.overline, { color: colors.textTertiary, marginTop: 2 }]}>
+          <Text className={`${textClassNames.overline} text-textTertiary mt-0.5`}>
             {value.hangul}
           </Text>
         ) : null}
       </Pressable>
 
-      {/* Stroke count & 오행 pills */}
       {hasHanja && (
-        <View style={styles.pills}>
+        <View className="flex-row gap-1 mt-1">
           {value.strokeCount != null && (
-            <View style={styles.pill}>
-              <Text style={[textStyles.overline, { color: colors.textSecondary }]}>
+            <View className="px-1 py-0.5 rounded-sm border border-border bg-surface">
+              <Text className={`${textClassNames.overline} text-textSecondary`}>
                 {value.strokeCount}획
               </Text>
             </View>
           )}
-          {value.charOhaeng && (
-            <View style={[styles.pill, { backgroundColor: ohaengColor!.light, borderColor: ohaengColor!.border }]}>
-              <Text style={[textStyles.overline, { color: ohaengColor!.base }]}>
+          {value.charOhaeng && ohaengColor && (
+            <View
+              className="px-1 py-0.5 rounded-sm border"
+              style={{
+                backgroundColor: ohaengColor.light,
+                borderColor: ohaengColor.border,
+              }}
+            >
+              <Text className={textClassNames.overline} style={{ color: ohaengColor.base }}>
                 {value.charOhaeng}
               </Text>
             </View>
@@ -87,35 +104,64 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
         </View>
       )}
 
-      {/* Meaning */}
       {value.mean ? (
-        <Text style={[textStyles.bodySm, styles.mean]} numberOfLines={1}>{value.mean}</Text>
+        <Text
+          className={`${textClassNames.bodySm} text-textTertiary mt-0.5 max-w-20 text-center`}
+          numberOfLines={1}
+        >
+          {value.mean}
+        </Text>
       ) : null}
 
-      {/* Edit panel */}
       {editing && !disabled && (
-        <View style={styles.editPanel}>
+        <View
+          className="absolute bg-surfaceRaised rounded-lg border border-border p-3 z-[100]"
+          style={{
+            top: 100,
+            left: -40,
+            right: -40,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 8,
+            elevation: 4,
+          }}
+        >
           <TextInput
-            style={styles.searchInput}
+            className="border border-border rounded-sm px-2 py-1 bg-bg text-textPrimary"
+            style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, lineHeight: 19 }}
             value={query}
             onChangeText={search}
             placeholder={role === 'surname' ? '성씨 검색 (예: 김)' : '음 검색 (예: 민)'}
             placeholderTextColor={colors.textDisabled}
             autoFocus
           />
-          {loading && <ActivityIndicator size="small" color={colors.textTertiary} style={{ marginTop: 4 }} />}
+          {loading && (
+            <ActivityIndicator size="small" color={colors.textTertiary} className="mt-2" />
+          )}
           {results.length > 0 && (
-            <ScrollView style={styles.resultList} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+            <ScrollView
+              className="max-h-[180px] mt-2"
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled
+            >
               {results.map((r, i) => (
-                <Pressable key={i} style={styles.resultRow} onPress={() => handleSelectResult(r)}>
-                  <Text style={[textStyles.hanjaLg, { fontSize: 20, color: colors.textPrimary, marginRight: spacing['2'] }]}>
+                <Pressable
+                  key={i}
+                  className="flex-row items-center py-2 border-b border-border"
+                  onPress={() => handleSelectResult(r)}
+                >
+                  <Text
+                    className={textClassNames.hanjaLg}
+                    style={{ fontSize: 20, color: colors.textPrimary, marginRight: 8 }}
+                  >
                     {r.hanja}
                   </Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[textStyles.uiSm, { color: colors.textPrimary }]}>
+                  <View className="flex-1">
+                    <Text className={`${textClassNames.uiSm} text-textPrimary`}>
                       {r.eum} · {r.mean}
                     </Text>
-                    <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>
+                    <Text className={`${textClassNames.bodySm} text-textTertiary`}>
                       {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
                       {r.charOhaeng ? ` · ${r.charOhaeng}` : ''}
                     </Text>
@@ -124,11 +170,13 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
               ))}
             </ScrollView>
           )}
-          {/* Manual stroke count input */}
-          <View style={styles.manualRow}>
-            <Text style={[textStyles.bodySm, { color: colors.textSecondary, marginRight: spacing['2'] }]}>획수 직접입력</Text>
+          <View className="flex-row items-center mt-3 pt-3 border-t border-border">
+            <Text className={`${textClassNames.bodySm} text-textSecondary mr-2`}>
+              획수 직접입력
+            </Text>
             <TextInput
-              style={[styles.searchInput, { flex: 1 }]}
+              className="flex-1 border border-border rounded-sm px-2 py-1 bg-bg text-textPrimary"
+              style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, lineHeight: 19 }}
               value={strokeInput}
               onChangeText={setStrokeInput}
               placeholder="예: 8"
@@ -136,116 +184,24 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
               keyboardType="number-pad"
               onSubmitEditing={handleManualStroke}
             />
-            <Pressable style={styles.applyBtn} onPress={handleManualStroke}>
-              <Text style={[textStyles.label, { color: colors.textInverse }]}>적용</Text>
+            <Pressable
+              className="bg-textSecondary rounded-sm px-2 py-1 ml-2"
+              onPress={handleManualStroke}
+            >
+              <Text className={`${textClassNames.label} text-textInverse`}>적용</Text>
             </Pressable>
           </View>
-          <Pressable onPress={() => { setEditing(false); clearResults(); }} style={styles.closeBtn}>
-            <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>닫기</Text>
+          <Pressable
+            className="self-center mt-2 py-1"
+            onPress={() => {
+              setEditing(false);
+              clearResults();
+            }}
+          >
+            <Text className={`${textClassNames.bodySm} text-textTertiary`}>닫기</Text>
           </Pressable>
         </View>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  disabled: {
-    opacity: 0.35,
-  },
-  slotLabel: {
-    color: colors.textTertiary,
-    marginBottom: spacing['1'],
-  },
-  hanjaBox: {
-    width: 72,
-    height: 80,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceRaised,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pills: {
-    flexDirection: 'row',
-    gap: 4,
-    marginTop: spacing['1'],
-  },
-  pill: {
-    paddingHorizontal: spacing['1'],
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  mean: {
-    color: colors.textTertiary,
-    marginTop: 2,
-    maxWidth: 80,
-    textAlign: 'center',
-  },
-  editPanel: {
-    position: 'absolute',
-    top: 100,
-    left: -40,
-    right: -40,
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing['3'],
-    zIndex: 100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing['2'],
-    paddingVertical: spacing['1'],
-    ...textStyles.bodySm,
-    color: colors.textPrimary,
-    backgroundColor: colors.bg,
-  },
-  resultList: {
-    maxHeight: 180,
-    marginTop: spacing['2'],
-  },
-  resultRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing['2'],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  manualRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing['3'],
-    paddingTop: spacing['3'],
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  applyBtn: {
-    backgroundColor: colors.textSecondary,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing['2'],
-    paddingVertical: spacing['1'],
-    marginLeft: spacing['2'],
-  },
-  closeBtn: {
-    alignSelf: 'center',
-    marginTop: spacing['2'],
-    paddingVertical: spacing['1'],
-  },
-});

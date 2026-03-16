@@ -1,3 +1,4 @@
+import './global.css';
 import React from 'react';
 import { useAppFonts } from '@/design-system';
 import { NavigationContainer } from '@react-navigation/native';

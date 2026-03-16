@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, textStyles, spacing, radius } from '@/design-system';
+import { Text, View } from 'react-native';
+import { colors, fontFamily } from '@/design-system';
 
 interface Props {
   score: number | null;
@@ -20,52 +20,135 @@ function scoreColor(score: number): string {
   return colors.negative;
 }
 
+const GAUGE_SIZE = 54;
+const INNER_SIZE = 44;
+
 export default function ScoreSummarySection({ score }: Props) {
   const pct = score != null ? score / 100 : 0;
   const fillColor = score != null ? scoreColor(score) : colors.textSecondary;
 
-  // 12시 방향에서 시계 방향으로 채우기
-  // 오른쪽 클립: 0%→-180deg, 50%→0deg
   const rightRotate = -180 + Math.min(pct, 0.5) * 360;
-  // 왼쪽 클립: 50%→0deg, 100%→180deg
   const leftRotate = Math.max(0, (pct - 0.5) * 360);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.left}>
-        <Text style={[textStyles.overline, { color: colors.textTertiary }]}>종합 점수</Text>
-        <Text style={[textStyles.numeralLg, { color: score != null ? scoreColor(score) : colors.textDisabled }]}>
+    <View className="bg-fillBold rounded-lg p-4 flex-row items-center justify-between">
+      <View className="flex-1 justify-center">
+        <Text
+          className="text-overline text-textTertiary uppercase"
+          style={{ fontFamily: fontFamily.sansMedium }}
+        >
+          종합 점수
+        </Text>
+        <Text
+          className="text-numeralLg"
+          style={{
+            fontFamily: fontFamily.serifSemiBold,
+            color: score != null ? scoreColor(score) : colors.textDisabled,
+          }}
+        >
           {score != null ? score : '–'}
         </Text>
         {score != null && (
-          <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>
+          <Text
+            className="text-bodySm text-textTertiary"
+            style={{ fontFamily: fontFamily.sansRegular }}
+          >
             {ScoreLabel(score)}
           </Text>
         )}
       </View>
 
-      {/* 도넛 게이지 */}
-      <View style={styles.gauge}>
-        {/* 트랙 (배경 원) */}
-        <View style={styles.track} />
-
-        {/* 오른쪽 클립 (0~50% 진행) */}
-        <View style={styles.clipRight}>
-          <View style={[styles.rotatingHalf, styles.rotatingHalfRight, { transform: [{ rotate: `${rightRotate}deg` }] }]}>
-            <View style={[styles.semiRight, { backgroundColor: fillColor }]} />
+      <View style={{ width: GAUGE_SIZE, height: GAUGE_SIZE, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{
+            position: 'absolute',
+            width: GAUGE_SIZE,
+            height: GAUGE_SIZE,
+            borderRadius: GAUGE_SIZE / 2,
+            backgroundColor: colors.textSecondary,
+          }}
+        />
+        <View
+          style={{
+            position: 'absolute',
+            right: 0,
+            width: GAUGE_SIZE / 2,
+            height: GAUGE_SIZE,
+            overflow: 'hidden',
+          }}
+        >
+          <View
+            style={[
+              {
+                position: 'absolute',
+                width: GAUGE_SIZE,
+                height: GAUGE_SIZE,
+                left: -(GAUGE_SIZE / 2),
+              },
+              { transform: [{ rotate: `${rightRotate}deg` }] },
+            ]}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                right: 0,
+                width: GAUGE_SIZE / 2,
+                height: GAUGE_SIZE,
+                backgroundColor: fillColor,
+                borderTopRightRadius: GAUGE_SIZE / 2,
+                borderBottomRightRadius: GAUGE_SIZE / 2,
+              }}
+            />
           </View>
         </View>
-
-        {/* 왼쪽 클립 (50~100% 진행) */}
-        <View style={styles.clipLeft}>
-          <View style={[styles.rotatingHalf, styles.rotatingHalfLeft, { transform: [{ rotate: `${leftRotate}deg` }] }]}>
-            <View style={[styles.semiRight, { backgroundColor: fillColor }]} />
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            width: GAUGE_SIZE / 2,
+            height: GAUGE_SIZE,
+            overflow: 'hidden',
+          }}
+        >
+          <View
+            style={[
+              {
+                position: 'absolute',
+                width: GAUGE_SIZE,
+                height: GAUGE_SIZE,
+                left: 0,
+              },
+              { transform: [{ rotate: `${leftRotate}deg` }] },
+            ]}
+          >
+            <View
+              style={{
+                position: 'absolute',
+                right: 0,
+                width: GAUGE_SIZE / 2,
+                height: GAUGE_SIZE,
+                backgroundColor: fillColor,
+                borderTopRightRadius: GAUGE_SIZE / 2,
+                borderBottomRightRadius: GAUGE_SIZE / 2,
+              }}
+            />
           </View>
         </View>
-
-        {/* 내부 원 (도넛 구멍) */}
-        <View style={styles.innerCircle}>
-          <Text style={[textStyles.numeralMd, { color: colors.textDisabled }]}>
+        <View
+          style={{
+            width: INNER_SIZE,
+            height: INNER_SIZE,
+            borderRadius: INNER_SIZE / 2,
+            backgroundColor: colors.fillBold,
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1,
+          }}
+        >
+          <Text
+            className="text-numeralMd text-textDisabled"
+            style={{ fontFamily: fontFamily.serifMedium }}
+          >
             {score != null ? score : '–'}
           </Text>
         </View>
@@ -73,80 +156,3 @@ export default function ScoreSummarySection({ score }: Props) {
     </View>
   );
 }
-
-const GAUGE_SIZE = 54;
-const INNER_SIZE = 44;
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.fillBold,
-    borderRadius: radius.lg,
-    padding: spacing['4'],
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  left: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  gauge: {
-    width: GAUGE_SIZE,
-    height: GAUGE_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  track: {
-    position: 'absolute',
-    width: GAUGE_SIZE,
-    height: GAUGE_SIZE,
-    borderRadius: GAUGE_SIZE / 2,
-    backgroundColor: colors.textSecondary,
-  },
-  // 오른쪽 반원 클립 (right: 0 기준)
-  clipRight: {
-    position: 'absolute',
-    right: 0,
-    width: GAUGE_SIZE / 2,
-    height: GAUGE_SIZE,
-    overflow: 'hidden',
-  },
-  // 왼쪽 반원 클립 (left: 0 기준)
-  clipLeft: {
-    position: 'absolute',
-    left: 0,
-    width: GAUGE_SIZE / 2,
-    height: GAUGE_SIZE,
-    overflow: 'hidden',
-  },
-  // 회전 기준 뷰: GAUGE_SIZE × GAUGE_SIZE, 중앙 = 트랙 중앙
-  rotatingHalf: {
-    position: 'absolute',
-    width: GAUGE_SIZE,
-    height: GAUGE_SIZE,
-  },
-  rotatingHalfRight: {
-    left: -(GAUGE_SIZE / 2), // 중앙을 클립 컨테이너 왼쪽 끝(=트랙 중심)에 맞춤
-  },
-  rotatingHalfLeft: {
-    left: 0, // 중앙을 클립 컨테이너 오른쪽 끝(=트랙 중심)에 맞춤
-  },
-  // 오른쪽 반원 채우기
-  semiRight: {
-    position: 'absolute',
-    right: 0,
-    width: GAUGE_SIZE / 2,
-    height: GAUGE_SIZE,
-    borderTopRightRadius: GAUGE_SIZE / 2,
-    borderBottomRightRadius: GAUGE_SIZE / 2,
-  },
-  innerCircle: {
-    width: INNER_SIZE,
-    height: INNER_SIZE,
-    borderRadius: INNER_SIZE / 2,
-    backgroundColor: colors.fillBold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1,
-  },
-});

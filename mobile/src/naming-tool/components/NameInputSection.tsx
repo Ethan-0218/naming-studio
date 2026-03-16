@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors, textStyles, spacing, radius } from '@/design-system';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import clsx from 'clsx';
+import { colors, fontFamily } from '@/design-system';
 import { CharSlotData, Gender, NameInput, NamingAnalysis } from '../types';
 import HanjaSlotInput from './HanjaSlotInput';
 import ScoreSummarySection from './ScoreSummarySection';
@@ -17,20 +18,39 @@ const SLOT_LABELS = { surname: '성', first1: '첫째', first2: '둘째' } as co
 type SlotKey = 'surname' | 'first1' | 'first2';
 const SLOTS: SlotKey[] = ['surname', 'first1', 'first2'];
 
-export default function NameInputSection({analysis, nameInput, onUpdate, gender, onGenderChange }: Props) {
+export default function NameInputSection({
+  analysis,
+  nameInput,
+  onUpdate,
+  gender,
+  onGenderChange,
+}: Props) {
   return (
-    <View >
-      {/* Title row — outside the card */}
-      <View style={styles.outerTitleRow}>
-        <Text style={[textStyles.heading, { color: colors.textPrimary }]}>이름 입력</Text>
-        <View style={styles.genderRow}>
-          {(['male', 'female'] as Gender[]).map(g => (
+    <View>
+      <View className="flex-row items-center justify-between mb-2">
+        <Text
+          className="text-heading text-textPrimary"
+          style={{ fontFamily: fontFamily.serifMedium }}
+        >
+          이름 입력
+        </Text>
+        <View className="flex-row gap-1">
+          {(['male', 'female'] as Gender[]).map((g) => (
             <Pressable
               key={g}
-              style={[styles.genderBtn, gender === g && styles.genderBtnActive]}
+              className={clsx(
+                'px-3 py-1 rounded-full border',
+                gender === g ? 'bg-textSecondary border-textSecondary' : 'border-border',
+              )}
               onPress={() => onGenderChange(g)}
             >
-              <Text style={[textStyles.label, { color: gender === g ? colors.textInverse : colors.textSecondary }]}>
+              <Text
+                className="text-label"
+                style={{
+                  fontFamily: fontFamily.sansMedium,
+                  color: gender === g ? colors.textInverse : colors.textSecondary,
+                }}
+              >
                 {g === 'male' ? '남' : '여'}
               </Text>
             </Pressable>
@@ -38,132 +58,74 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
         </View>
       </View>
 
-      <View style={styles.card}>
-        {/* 한 글 row */}
-        <View style={styles.rowGroup}>
-          <Text style={[textStyles.overline, styles.rowLabel]}>한 글</Text>
-          <View style={styles.slotRow}>
-            {SLOTS.map((slot, i) => (
-              <React.Fragment key={slot}>
-                {i > 0 && <View style={styles.colDivider} />}
-                <View style={styles.hangulSlot}>
-                  <Text style={[textStyles.overline, styles.slotLabel]}>
-                    {SLOT_LABELS[slot]}
-                  </Text>
-                  <TextInput
-                    style={styles.hangulInput}
-                    value={nameInput[slot].hangul}
-                    onChangeText={text => {
-                      const last = text.slice(-1);
-                      onUpdate(slot, { hangul: last });
-                    }}
-                    placeholder="ㅡ"
-                    placeholderTextColor={colors.textDisabled}
-                    maxLength={2}
-                    textAlign="center"
-                  />
-                </View>
-              </React.Fragment>
+      <View className="bg-surfaceRaised rounded-lg p-4 border border-border" style={{ gap: 12 }}>
+        <View style={{ gap: 4 }}>
+          <Text
+            className="text-overline text-textTertiary uppercase"
+            style={{ fontFamily: fontFamily.sansMedium }}
+          >
+            한 글
+          </Text>
+          <View className="flex-row items-stretch" style={{ gap: 8 }}>
+            {SLOTS.map((slot) => (
+              <View key={slot} className="flex-1 min-w-0 items-center" style={{ gap: 4 }}>
+                <Text
+                  className="text-overline text-textTertiary uppercase"
+                  style={{ fontFamily: fontFamily.sansMedium }}
+                >
+                  {SLOT_LABELS[slot]}
+                </Text>
+                <TextInput
+                  className="w-full rounded-md border border-border bg-bg text-center"
+                  style={{
+                    height: 54,
+                    borderWidth: 1.5,
+                    fontFamily: fontFamily.serifMedium,
+                    fontSize: 24,
+                    lineHeight: 24,
+                    color: colors.textPrimary,
+                  }}
+                  value={nameInput[slot].hangul}
+                  onChangeText={(text) => {
+                    const last = text.slice(-1);
+                    onUpdate(slot, { hangul: last });
+                  }}
+                  placeholder="ㅡ"
+                  placeholderTextColor={colors.textDisabled}
+                  maxLength={2}
+                  textAlign="center"
+                />
+              </View>
             ))}
           </View>
         </View>
 
-        <View style={styles.divider} />
+        <View className="h-px bg-border" />
 
-        {/* 한 자 row */}
-        <View style={styles.rowGroup}>
-          <Text style={[textStyles.overline, styles.rowLabel]}>한 자</Text>
-          <View style={styles.slotRow}>
-            {SLOTS.map((slot, i) => (
-              <React.Fragment key={slot}>
-                {i > 0 && <View style={styles.colDivider} />}
+        <View style={{ gap: 4 }}>
+          <Text
+            className="text-overline text-textTertiary uppercase"
+            style={{ fontFamily: fontFamily.sansMedium }}
+          >
+            한 자
+          </Text>
+          <View className="flex-row items-stretch" style={{ gap: 8 }}>
+            {SLOTS.map((slot) => (
+              <View key={slot} className="flex-1 min-w-0">
                 <HanjaSlotInput
                   label={SLOT_LABELS[slot]}
                   hangul={nameInput[slot].hangul}
                   value={nameInput[slot]}
-                  onUpdate={d => onUpdate(slot, d)}
+                  onUpdate={(d) => onUpdate(slot, d)}
                   role={slot === 'surname' ? 'surname' : 'name'}
                 />
-              </React.Fragment>
+              </View>
             ))}
           </View>
         </View>
 
-
-      <ScoreSummarySection score={analysis.totalScore} />
-
+        <ScoreSummarySection score={analysis.totalScore} />
       </View>
-
-
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  outerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing['2'],
-  },
-  genderRow: {
-    flexDirection: 'row',
-    gap: spacing['1'],
-  },
-  genderBtn: {
-    paddingHorizontal: spacing['3'],
-    paddingVertical: spacing['1'],
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  genderBtnActive: {
-    backgroundColor: colors.textSecondary,
-    borderColor: colors.textSecondary,
-  },
-  card: {
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: radius.lg,
-    padding: spacing['4'],
-    gap: spacing['3'],
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  rowGroup: {
-    gap: spacing['1'],
-  },
-  rowLabel: {
-    color: colors.textTertiary,
-  },
-  slotRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 0,
-  },
-  colDivider: {
-    width: spacing['2'],
-  },
-  hangulSlot: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  slotLabel: {
-    color: colors.textTertiary,
-    marginBottom: spacing['1'],
-  },
-  hangulInput: {
-    width: '100%',
-    height: 54,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.bg,
-    ...textStyles.hanjaLg,
-    color: colors.textPrimary,
-    textAlign: 'center',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-  },
-});

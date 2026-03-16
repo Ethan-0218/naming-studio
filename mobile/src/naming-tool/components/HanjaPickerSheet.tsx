@@ -12,12 +12,11 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { ohaengColors, colors, radius, spacing, textStyles } from '@/design-system';
+import { ohaengColors, colors, fontFamily } from '@/design-system';
 import { CharSlotData } from '../types';
 import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
@@ -53,7 +52,6 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
     }
   }, [visible]);
 
-  // 열린 상태에서 한글 글자가 바뀌면 재검색
   useEffect(() => {
     if (visible && hangul) search(hangul);
   }, [hangul]);
@@ -81,27 +79,46 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.overlay}
+        className="flex-1 justify-end"
       >
-        {/* 반투명 배경 — 탭하면 닫힘 */}
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable
+          className="absolute inset-0"
+          style={{ backgroundColor: 'rgba(58, 47, 30, 0.4)' }}
+          onPress={onClose}
+        />
 
-        {/* 시트 */}
-        <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
-          {/* 드래그 핸들 */}
-          <View style={styles.handle} />
+        <Animated.View
+          className="bg-bg rounded-t-xl px-4 pt-3 pb-8"
+          style={[
+            {
+              height: SHEET_HEIGHT,
+              paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+            },
+            { transform: [{ translateY: slideAnim }] },
+          ]}
+        >
+          <View className="w-9 h-1 rounded-full bg-borderStrong self-center mb-3" style={{ width: 36, height: 4, borderRadius: 2 }} />
 
-          {/* 헤더 */}
-          <View style={styles.header}>
-            <Text style={[textStyles.heading, { color: colors.textPrimary }]}>한자 선택</Text>
-            <Pressable onPress={onClose} style={styles.closeBtn}>
-              <Text style={[textStyles.bodySm, { color: colors.textSecondary }]}>닫기</Text>
+          <View className="flex-row items-center justify-between mb-3">
+            <Text
+              className="text-heading text-textPrimary"
+              style={{ fontFamily: fontFamily.serifMedium }}
+            >
+              한자 선택
+            </Text>
+            <Pressable onPress={onClose} className="py-1 px-2">
+              <Text
+                className="text-bodySm text-textSecondary"
+                style={{ fontFamily: fontFamily.sansRegular }}
+              >
+                닫기
+              </Text>
             </Pressable>
           </View>
 
-          {/* 검색 입력 */}
           <TextInput
-            style={styles.searchInput}
+            className="border-[1.5px] border-border rounded-md px-3 py-2 mb-2 bg-surfaceRaised text-textPrimary"
+            style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, lineHeight: 19 }}
             value={query}
             onChangeText={search}
             placeholder={role === 'surname' ? '성씨 검색 (예: 김)' : '음 검색 (예: 민)'}
@@ -110,48 +127,66 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
             returnKeyType="search"
           />
 
-          {/* 결과 영역 */}
           {loading && (
-            <ActivityIndicator
-              size="small"
-              color={colors.textTertiary}
-              style={{ marginTop: spacing['4'] }}
-            />
+            <ActivityIndicator size="small" color={colors.textTertiary} className="mt-4" />
           )}
 
           {!loading && results.length === 0 && query.length > 0 && (
-            <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', marginTop: spacing['5'] }]}>
+            <Text
+              className="text-bodySm text-textDisabled text-center mt-5"
+              style={{ fontFamily: fontFamily.sansRegular }}
+            >
               검색 결과가 없습니다
             </Text>
           )}
 
           {results.length > 0 && (
             <ScrollView
-              style={styles.resultList}
+              className="flex-1"
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
               {results.map((r, i) => {
                 const oc = r.charOhaeng ? ohaengColors[r.charOhaeng] : null;
                 return (
-                  <Pressable key={i} style={styles.resultRow} onPress={() => handleSelect(r)}>
-                    {/* 한자 박스 — 자원오행 색상 */}
-                    <View style={[
-                      styles.hanjaBox,
-                      oc
-                        ? { backgroundColor: oc.light, borderColor: oc.border }
-                        : { backgroundColor: colors.surface, borderColor: colors.border },
-                    ]}>
-                      <Text style={[textStyles.hanjaLg, { fontSize: 24, color: oc?.base ?? colors.textSecondary }]}>
+                  <Pressable
+                    key={i}
+                    className="flex-row items-center py-3 border-b border-border gap-3"
+                    onPress={() => handleSelect(r)}
+                  >
+                    <View
+                      className="w-12 h-12 rounded-md border items-center justify-center"
+                      style={[
+                        {
+                          width: 48,
+                          height: 48,
+                          backgroundColor: oc ? oc.light : colors.surface,
+                          borderColor: oc ? oc.border : colors.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        className="text-hanjaLg"
+                        style={{
+                          fontFamily: fontFamily.serifMedium,
+                          color: oc?.base ?? colors.textSecondary,
+                        }}
+                      >
                         {r.hanja}
                       </Text>
                     </View>
 
-                    <View style={{ flex: 1 }}>
-                      <Text style={[textStyles.uiSm, { color: colors.textPrimary }]}>
+                    <View className="flex-1">
+                      <Text
+                        className="text-uiSm text-textPrimary"
+                        style={{ fontFamily: fontFamily.sansMedium }}
+                      >
                         {r.eum} · {r.mean}
                       </Text>
-                      <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>
+                      <Text
+                        className="text-bodySm text-textTertiary"
+                        style={{ fontFamily: fontFamily.sansRegular }}
+                      >
                         {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
                         {r.charOhaeng ? ` · 자원오행 ${r.charOhaeng}` : ''}
                       </Text>
@@ -166,71 +201,3 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(58, 47, 30, 0.4)',
-  },
-  sheet: {
-    backgroundColor: colors.bg,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    height: SHEET_HEIGHT,
-    paddingHorizontal: spacing['4'],
-    paddingTop: spacing['3'],
-    paddingBottom: Platform.OS === 'ios' ? spacing['8'] : spacing['4'],
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.borderStrong,
-    alignSelf: 'center',
-    marginBottom: spacing['3'],
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing['3'],
-  },
-  closeBtn: {
-    paddingVertical: spacing['1'],
-    paddingHorizontal: spacing['2'],
-  },
-  searchInput: {
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing['3'],
-    paddingVertical: spacing['2'],
-    ...textStyles.bodySm,
-    color: colors.textPrimary,
-    backgroundColor: colors.surfaceRaised,
-    marginBottom: spacing['2'],
-  },
-  resultList: {
-    flex: 1,
-  },
-  resultRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing['3'],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing['3'],
-  },
-  hanjaBox: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

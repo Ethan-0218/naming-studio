@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
-import { colors, fontFamily, ohaengColors } from '@/design-system';
+import clsx from 'clsx';
+import { colors, ohaengColors } from '@/design-system';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -8,7 +9,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -185,16 +185,16 @@ function HanjaSearchField({ selected, onSelect, onClear, error, endpoint, placeh
 
   if (selected) {
     return (
-      <View style={fm.hanjaChip}>
-        <View style={fm.hanjaChipInner}>
-          <Text style={fm.hanjaChipChar}>{selected.hanja}</Text>
+      <View className={fm.hanjaChip}>
+        <View className={fm.hanjaChipInner}>
+          <Text className={fm.hanjaChipChar}>{selected.hanja}</Text>
           <View>
-            <Text style={fm.hanjaChipHangul}>{selected.hangul}{chipSuffix}</Text>
-            <Text style={fm.hanjaChipMean} numberOfLines={1}>{selected.mean}</Text>
+            <Text className={fm.hanjaChipHangul}>{selected.hangul}{chipSuffix}</Text>
+            <Text className={fm.hanjaChipMean} numberOfLines={1}>{selected.mean}</Text>
           </View>
         </View>
-        <Pressable onPress={onClear} style={fm.hanjaChipClearBtn}>
-          <Text style={fm.hanjaChipClearText}>변경</Text>
+        <Pressable onPress={onClear} className={fm.hanjaChipClearBtn}>
+          <Text className={fm.hanjaChipClearText}>변경</Text>
         </Pressable>
       </View>
     );
@@ -202,9 +202,10 @@ function HanjaSearchField({ selected, onSelect, onClear, error, endpoint, placeh
 
   return (
     <View>
-      <View style={fm.searchRow}>
+      <View className={fm.searchRow}>
         <TextInput
-          style={[fm.input, { flex: 1 }, error && fm.inputErr]}
+          className={clsx(fm.input, error && fm.inputErr)}
+          style={{ flex: 1 }}
           value={query}
           onChangeText={search}
           placeholder={placeholder}
@@ -213,25 +214,25 @@ function HanjaSearchField({ selected, onSelect, onClear, error, endpoint, placeh
         />
         {searching && <ActivityIndicator style={{ marginLeft: 8 }} color={PURPLE} size="small" />}
       </View>
-      {error && !query ? <Text style={fm.errText}>{error}</Text> : null}
+      {error && !query ? <Text className={fm.errText}>{error}</Text> : null}
       {results.length > 0 && (
-        <View style={fm.searchResults}>
+        <View className={fm.searchResults}>
           {results.map((r, i) => (
             <Pressable
               key={i}
-              style={[fm.searchResultItem, i < results.length - 1 && fm.searchResultBorder]}
+              className={clsx(fm.searchResultItem, i < results.length - 1 && fm.searchResultBorder)}
               onPress={() => pick(r)}
             >
-              <Text style={fm.searchResultHanja}>{r.hanja}</Text>
-              <Text style={fm.searchResultEum}>{r.eum}{chipSuffix}</Text>
-              <Text style={fm.searchResultMean} numberOfLines={1}>{r.mean}</Text>
-              {r.stroke != null && <Text style={fm.searchResultStroke}>{r.stroke}획</Text>}
+              <Text className={fm.searchResultHanja}>{r.hanja}</Text>
+              <Text className={fm.searchResultEum}>{r.eum}{chipSuffix}</Text>
+              <Text className={fm.searchResultMean} numberOfLines={1}>{r.mean}</Text>
+              {r.stroke != null && <Text className={fm.searchResultStroke}>{r.stroke}획</Text>}
             </Pressable>
           ))}
         </View>
       )}
       {query.trim() && !searching && results.length === 0 && (
-        <Text style={fm.searchNoResult}>검색 결과가 없어요</Text>
+        <Text className={fm.searchNoResult}>검색 결과가 없어요</Text>
       )}
     </View>
   );
@@ -253,18 +254,18 @@ function DolrimjaModal({ visible, onClose, onSubmit, loading }: {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
-      <Pressable style={fm.backdrop} onPress={handleClose} />
-      <View style={[fm.sheet, { maxHeight: '60%' }]}>
-        <View style={fm.handle} />
-        <View style={fm.header}>
-          <Text style={fm.title}>돌림자 변경</Text>
-          <Pressable style={fm.closeBtn} onPress={handleClose}>
-            <Text style={fm.closeBtnText}>✕</Text>
+      <Pressable className={fm.backdrop} onPress={handleClose} />
+      <View className={fm.sheet} style={{ maxHeight: '60%' }}>
+        <View className={fm.handle} />
+        <View className={fm.header}>
+          <Text className={fm.title}>돌림자 변경</Text>
+          <Pressable className={fm.closeBtn} onPress={handleClose}>
+            <Text className={fm.closeBtnText}>✕</Text>
           </Pressable>
         </View>
-        <Text style={fm.subtitle}>새로운 돌림자를 검색해서 선택해주세요</Text>
+        <Text className={fm.subtitle}>새로운 돌림자를 검색해서 선택해주세요</Text>
         <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          <View style={fm.field}>
+          <View className={fm.field}>
             <HanjaSearchField
               selected={selected}
               onSelect={setSelected}
@@ -275,13 +276,13 @@ function DolrimjaModal({ visible, onClose, onSubmit, loading }: {
             />
           </View>
           <Pressable
-            style={[fm.submitBtn, (!selected || loading) && fm.submitBtnOff]}
+            className={clsx(fm.submitBtn, (!selected || loading) && fm.submitBtnOff)}
             onPress={() => selected && onSubmit(selected)}
             disabled={!selected || loading}
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={fm.submitText}>돌림자 변경하기</Text>
+              : <Text className={fm.submitText}>돌림자 변경하기</Text>
             }
           </Pressable>
           <View style={{ height: 32 }} />
@@ -349,21 +350,21 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <Pressable style={fm.backdrop} onPress={onClose} />
-      <View style={fm.sheet}>
-        <View style={fm.handle} />
+      <Pressable className={fm.backdrop} onPress={onClose} />
+      <View className={fm.sheet}>
+        <View className={fm.handle} />
         <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          <View style={fm.header}>
-            <Text style={fm.title}>아이 정보 입력</Text>
-            <Pressable style={fm.closeBtn} onPress={onClose}>
-              <Text style={fm.closeBtnText}>✕</Text>
+          <View className={fm.header}>
+            <Text className={fm.title}>아이 정보 입력</Text>
+            <Pressable className={fm.closeBtn} onPress={onClose}>
+              <Text className={fm.closeBtnText}>✕</Text>
             </Pressable>
           </View>
-          <Text style={fm.subtitle}>정확한 정보를 입력하면 더 잘 어울리는 이름을 추천해드릴 수 있어요</Text>
+          <Text className={fm.subtitle}>정확한 정보를 입력하면 더 잘 어울리는 이름을 추천해드릴 수 있어요</Text>
 
           {/* 성씨 */}
-          <View style={fm.field}>
-            <Text style={fm.label}>성씨 <Text style={fm.req}>*</Text></Text>
+          <View className={fm.field}>
+            <Text className={fm.label}>성씨 <Text className={fm.req}>*</Text></Text>
             <HanjaSearchField
               selected={form.surname}
               onSelect={s => set('surname', s)}
@@ -376,16 +377,16 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
           </View>
 
           {/* 성별 */}
-          <View style={fm.field}>
-            <Text style={fm.label}>성별 <Text style={fm.req}>*</Text></Text>
-            <View style={fm.genderRow}>
+          <View className={fm.field}>
+            <Text className={fm.label}>성별 <Text className={fm.req}>*</Text></Text>
+            <View className={fm.genderRow}>
               {(['남', '여'] as const).map(g => (
                 <Pressable
                   key={g}
-                  style={[fm.genderBtn, form.gender === g && fm.genderBtnOn]}
+                  className={clsx(fm.genderBtn, form.gender === g && fm.genderBtnOn)}
                   onPress={() => set('gender', g)}
                 >
-                  <Text style={[fm.genderText, form.gender === g && fm.genderTextOn]}>
+                  <Text className={clsx(fm.genderText, form.gender === g && fm.genderTextOn)}>
                     {g === '남' ? '👦 아들' : '👧 딸'}
                   </Text>
                 </Pressable>
@@ -394,27 +395,27 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
           </View>
 
           {/* 생년월일 */}
-          <View style={fm.field}>
-            <View style={fm.labelRow}>
-              <Text style={fm.label}>생년월일 <Text style={fm.req}>*</Text></Text>
-              <View style={fm.lunarRow}>
+          <View className={fm.field}>
+            <View className={fm.labelRow}>
+              <Text className={fm.label}>생년월일 <Text className={fm.req}>*</Text></Text>
+              <View className={fm.lunarRow}>
                 {([false, true] as const).map(lunar => (
                   <Pressable
                     key={String(lunar)}
-                    style={[fm.lunarBtn, form.is_lunar === lunar && fm.lunarBtnOn]}
+                    className={clsx(fm.lunarBtn, form.is_lunar === lunar && fm.lunarBtnOn)}
                     onPress={() => set('is_lunar', lunar)}
                   >
-                    <Text style={[fm.lunarText, form.is_lunar === lunar && fm.lunarTextOn]}>
+                    <Text className={clsx(fm.lunarText, form.is_lunar === lunar && fm.lunarTextOn)}>
                       {lunar ? '음력' : '양력'}
                     </Text>
                   </Pressable>
                 ))}
               </View>
             </View>
-            <View style={fm.dateRow}>
+            <View className={fm.dateRow}>
               <View style={{ flex: 2.2 }}>
                 <TextInput
-                  style={[fm.input, errors.birth_year && fm.inputErr]}
+                  className={clsx(fm.input, errors.birth_year && fm.inputErr)}
                   value={form.birth_year}
                   onChangeText={v => set('birth_year', v.replace(/\D/g, ''))}
                   placeholder="년도"
@@ -422,12 +423,12 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
                   keyboardType="numeric"
                   maxLength={4}
                 />
-                {errors.birth_year ? <Text style={fm.errText}>{errors.birth_year}</Text> : null}
+                {errors.birth_year ? <Text className={fm.errText}>{errors.birth_year}</Text> : null}
               </View>
-              <Text style={fm.sep}>년</Text>
+              <Text className={fm.sep}>년</Text>
               <View style={{ flex: 1 }}>
                 <TextInput
-                  style={[fm.input, errors.birth_month && fm.inputErr]}
+                  className={clsx(fm.input, errors.birth_month && fm.inputErr)}
                   value={form.birth_month}
                   onChangeText={v => set('birth_month', v.replace(/\D/g, ''))}
                   placeholder="월"
@@ -435,12 +436,12 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
                   keyboardType="numeric"
                   maxLength={2}
                 />
-                {errors.birth_month ? <Text style={fm.errText}>{errors.birth_month}</Text> : null}
+                {errors.birth_month ? <Text className={fm.errText}>{errors.birth_month}</Text> : null}
               </View>
-              <Text style={fm.sep}>월</Text>
+              <Text className={fm.sep}>월</Text>
               <View style={{ flex: 1 }}>
                 <TextInput
-                  style={[fm.input, errors.birth_day && fm.inputErr]}
+                  className={clsx(fm.input, errors.birth_day && fm.inputErr)}
                   value={form.birth_day}
                   onChangeText={v => set('birth_day', v.replace(/\D/g, ''))}
                   placeholder="일"
@@ -448,15 +449,15 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
                   keyboardType="numeric"
                   maxLength={2}
                 />
-                {errors.birth_day ? <Text style={fm.errText}>{errors.birth_day}</Text> : null}
+                {errors.birth_day ? <Text className={fm.errText}>{errors.birth_day}</Text> : null}
               </View>
-              <Text style={fm.sep}>일</Text>
+              <Text className={fm.sep}>일</Text>
             </View>
           </View>
 
           {/* 돌림자 (선택) */}
-          <View style={fm.field}>
-            <Text style={fm.label}>돌림자 <Text style={fm.optional}>(선택)</Text></Text>
+          <View className={fm.field}>
+            <Text className={fm.label}>돌림자 <Text className={fm.optional}>(선택)</Text></Text>
             <HanjaSearchField
               selected={form.dolrimja}
               onSelect={s => set('dolrimja', s)}
@@ -468,22 +469,22 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
           </View>
 
           {/* 출생시간 */}
-          <View style={fm.field}>
-            <Text style={fm.label}>출생시간</Text>
+          <View className={fm.field}>
+            <Text className={fm.label}>출생시간</Text>
             <Pressable
-              style={fm.checkRow}
+              className={fm.checkRow}
               onPress={() => set('birth_time_unknown', !form.birth_time_unknown)}
             >
-              <View style={[fm.checkbox, form.birth_time_unknown && fm.checkboxOn]}>
-                {form.birth_time_unknown && <Text style={fm.checkMark}>✓</Text>}
+              <View className={clsx(fm.checkbox, form.birth_time_unknown && fm.checkboxOn)}>
+                {form.birth_time_unknown && <Text className={fm.checkMark}>✓</Text>}
               </View>
-              <Text style={fm.checkLabel}>시간을 모릅니다</Text>
+              <Text className={fm.checkLabel}>시간을 모릅니다</Text>
             </Pressable>
             {!form.birth_time_unknown && (
-              <View style={fm.dateRow}>
+              <View className={fm.dateRow}>
                 <View style={{ flex: 1 }}>
                   <TextInput
-                    style={[fm.input, errors.birth_hour && fm.inputErr]}
+                    className={clsx(fm.input, errors.birth_hour && fm.inputErr)}
                     value={form.birth_hour}
                     onChangeText={v => set('birth_hour', v.replace(/\D/g, ''))}
                     placeholder="시"
@@ -491,12 +492,12 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
                     keyboardType="numeric"
                     maxLength={2}
                   />
-                  {errors.birth_hour ? <Text style={fm.errText}>{errors.birth_hour}</Text> : null}
+                  {errors.birth_hour ? <Text className={fm.errText}>{errors.birth_hour}</Text> : null}
                 </View>
-                <Text style={fm.sep}>시</Text>
+                <Text className={fm.sep}>시</Text>
                 <View style={{ flex: 1 }}>
                   <TextInput
-                    style={[fm.input, errors.birth_minute && fm.inputErr]}
+                    className={clsx(fm.input, errors.birth_minute && fm.inputErr)}
                     value={form.birth_minute}
                     onChangeText={v => set('birth_minute', v.replace(/\D/g, ''))}
                     placeholder="분"
@@ -504,22 +505,22 @@ function InfoFormModal({ visible, onClose, onSubmit, loading }: {
                     keyboardType="numeric"
                     maxLength={2}
                   />
-                  {errors.birth_minute ? <Text style={fm.errText}>{errors.birth_minute}</Text> : null}
+                  {errors.birth_minute ? <Text className={fm.errText}>{errors.birth_minute}</Text> : null}
                 </View>
-                <Text style={fm.sep}>분</Text>
+                <Text className={fm.sep}>분</Text>
                 <View style={{ flex: 1 }} />
               </View>
             )}
           </View>
 
           <Pressable
-            style={[fm.submitBtn, (!canSubmit || loading) && fm.submitBtnOff]}
+            className={clsx(fm.submitBtn, (!canSubmit || loading) && fm.submitBtnOff)}
             onPress={handleSubmit}
             disabled={!canSubmit || loading}
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={fm.submitText}>이름 찾기 시작 →</Text>
+              : <Text className={fm.submitText}>이름 찾기 시작 →</Text>
             }
           </Pressable>
           <View style={{ height: 32 }} />
@@ -534,24 +535,24 @@ function DebugPanel({ debug }: { debug: ApiResponse['debug'] }) {
   const [open, setOpen] = useState(false);
   if (!debug) return null;
   return (
-    <View style={db.wrap}>
-      <Pressable style={db.toggle} onPress={() => setOpen(v => !v)}>
-        <Text style={db.toggleText}>{open ? '▾' : '▸'} DEBUG</Text>
+    <View className={db.wrap}>
+      <Pressable className={db.toggle} onPress={() => setOpen(v => !v)}>
+        <Text className={db.toggleText}>{open ? '▾' : '▸'} DEBUG</Text>
       </Pressable>
       {open && (
-        <ScrollView style={db.scroll} nestedScrollEnabled>
+        <ScrollView className={db.scroll} nestedScrollEnabled>
           <ScrollView horizontal nestedScrollEnabled>
             <View>
               {debug.raw_llm_output != null && (
                 <>
-                  <Text style={db.sectionLabel}>── raw LLM output ──</Text>
-                  <Text style={db.code}>{debug.raw_llm_output}</Text>
+                  <Text className={db.sectionLabel}>── raw LLM output ──</Text>
+                  <Text className={db.code}>{debug.raw_llm_output}</Text>
                 </>
               )}
               {debug.state != null && (
                 <>
-                  <Text style={[db.sectionLabel, { marginTop: 10 }]}>── state snapshot ──</Text>
-                  <Text style={db.code}>{JSON.stringify(debug.state, null, 2)}</Text>
+                  <Text className={db.sectionLabel} style={{ marginTop: 10 }}>── state snapshot ──</Text>
+                  <Text className={db.code}>{JSON.stringify(debug.state, null, 2)}</Text>
                 </>
               )}
             </View>
@@ -572,55 +573,55 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
 }) {
   const harmony = data.발음오행_조화 ?? '반길';
   return (
-    <View style={s.nameCard}>
-      <View style={s.nameHeader}>
-        <Text style={s.nameText}>{data.full_name}</Text>
-        <View style={[s.badge, { backgroundColor: harmonyColor[harmony] ?? '#95a1a8' }]}>
-          <Text style={s.badgeText}>{harmony}</Text>
+    <View className={s.nameCard}>
+      <View className={s.nameHeader}>
+        <Text className={s.nameText}>{data.full_name}</Text>
+        <View className={s.badge} style={{ backgroundColor: harmonyColor[harmony] ?? '#95a1a8' }}>
+          <Text className={s.badgeText}>{harmony}</Text>
         </View>
-        <View style={[s.badge, { backgroundColor: rarityColor[data.rarity_signal] ?? '#3498db' }]}>
-          <Text style={s.badgeText}>{data.rarity_signal}</Text>
+        <View className={s.badge} style={{ backgroundColor: rarityColor[data.rarity_signal] ?? '#3498db' }}>
+          <Text className={s.badgeText}>{data.rarity_signal}</Text>
         </View>
       </View>
-      <View style={s.syllableRow}>
+      <View className={s.syllableRow}>
         {data.syllables.map((syl, i) => (
-          <View key={i} style={s.syllable}>
-            <Text style={s.sylHanja}>{syl.한자 || syl.한글}</Text>
-            <Text style={s.sylHangul}>{syl.한글}</Text>
+          <View key={i} className={s.syllable}>
+            <Text className={s.sylHanja}>{syl.한자 || syl.한글}</Text>
+            <Text className={s.sylHangul}>{syl.한글}</Text>
             {syl.오행 ? (
-              <View style={[s.ohaengPill, { backgroundColor: ohaengColors[syl.오행]?.base ?? colors.textDisabled }]}>
-                <Text style={s.ohaengText}>{syl.오행}</Text>
+              <View className={s.ohaengPill} style={{ backgroundColor: ohaengColors[syl.오행]?.base ?? colors.textDisabled }}>
+                <Text className={s.ohaengText}>{syl.오행}</Text>
               </View>
             ) : null}
-            <Text style={s.sylMeaning} numberOfLines={2}>{syl.meaning}</Text>
+            <Text className={s.sylMeaning} numberOfLines={2}>{syl.meaning}</Text>
           </View>
         ))}
       </View>
-      {data.reason ? <Text style={s.nameReason}>{data.reason}</Text> : null}
+      {data.reason ? <Text className={s.nameReason}>{data.reason}</Text> : null}
       {data.score_breakdown && Object.keys(data.score_breakdown).length > 0 ? (
-        <View style={s.scoreBreakdown}>
+        <View className={s.scoreBreakdown}>
           {(Object.entries(data.score_breakdown) as [string, number][]).map(([key, val]) => (
-            <View key={key} style={s.scoreRow}>
-              <Text style={s.scoreLabel}>{key}</Text>
-              <View style={s.scoreBarBg}>
-                <View style={[s.scoreBarFill, { width: `${Math.round(val * 100)}%` as any }]} />
+            <View key={key} className={s.scoreRow}>
+              <Text className={s.scoreLabel}>{key}</Text>
+              <View className={s.scoreBarBg}>
+                <View className={s.scoreBarFill} style={{ width: `${Math.round(val * 100)}%` }} />
               </View>
-              <Text style={s.scoreValue}>{Math.round(val * 100)}%</Text>
+              <Text className={s.scoreValue}>{Math.round(val * 100)}%</Text>
             </View>
           ))}
         </View>
       ) : null}
       {data.syllables.some(syl => syl.hanja_options && syl.hanja_options.length > 0) ? (
-        <View style={s.hanjaOptionsSection}>
+        <View className={s.hanjaOptionsSection}>
           {data.syllables.map((syl, i) =>
             syl.hanja_options && syl.hanja_options.length > 0 ? (
-              <View key={i} style={s.hanjaOptionsRow}>
-                <Text style={s.hanjaOptionsLabel}>{syl.한글} 한자 선택:</Text>
-                <View style={s.hanjaOptionsList}>
+              <View key={i} className={s.hanjaOptionsRow}>
+                <Text className={s.hanjaOptionsLabel}>{syl.한글} 한자 선택:</Text>
+                <View className={s.hanjaOptionsList}>
                   {syl.hanja_options.map((opt, j) => (
-                    <View key={j} style={s.hanjaOptionItem}>
-                      <Text style={s.hanjaOptionChar}>{opt.한자}</Text>
-                      <Text style={s.hanjaOptionMeaning}>{opt.meaning}</Text>
+                    <View key={j} className={s.hanjaOptionItem}>
+                      <Text className={s.hanjaOptionChar}>{opt.한자}</Text>
+                      <Text className={s.hanjaOptionMeaning}>{opt.meaning}</Text>
                     </View>
                   ))}
                 </View>
@@ -629,12 +630,12 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
           )}
         </View>
       ) : null}
-      <View style={s.reactionRow}>
-        <Pressable style={[s.reactionBtn, liked && s.reactionLiked]} onPress={onLike}>
-          <Text style={[s.reactionText, liked && s.reactionTextActive]}>👍 좋아요</Text>
+      <View className={s.reactionRow}>
+        <Pressable className={clsx(s.reactionBtn, liked && s.reactionLiked)} onPress={onLike}>
+          <Text className={clsx(s.reactionText, liked && s.reactionTextActive)}>👍 좋아요</Text>
         </Pressable>
-        <Pressable style={[s.reactionBtn, disliked && s.reactionDisliked]} onPress={onDislike}>
-          <Text style={[s.reactionText, disliked && s.reactionTextActive]}>👎 별로</Text>
+        <Pressable className={clsx(s.reactionBtn, disliked && s.reactionDisliked)} onPress={onDislike}>
+          <Text className={clsx(s.reactionText, disliked && s.reactionTextActive)}>👎 별로</Text>
         </Pressable>
       </View>
     </View>
@@ -737,22 +738,22 @@ function ChoiceGroupBlock({ data, onSend, submitted }: {
   }
 
   return (
-    <View style={[s.choiceGroup, done && s.choiceGroupDone]}>
-      <Text style={s.choiceQuestion}>{data.question}</Text>
-      <View style={s.choiceChips}>
+    <View className={clsx(s.choiceGroup, done && s.choiceGroupDone)}>
+      <Text className={s.choiceQuestion}>{data.question}</Text>
+      <View className={s.choiceChips}>
         {data.choices.map(choice => (
           <Pressable
             key={choice}
-            style={[s.chip, selected.includes(choice) && s.chipSelected, done && s.chipDisabled]}
+            className={clsx(s.chip, selected.includes(choice) && s.chipSelected, done && s.chipDisabled)}
             onPress={() => toggleChoice(choice)}
           >
-            <Text style={[s.chipText, selected.includes(choice) && s.chipTextSelected]}>{choice}</Text>
+            <Text className={clsx(s.chipText, selected.includes(choice) && s.chipTextSelected)}>{choice}</Text>
           </Pressable>
         ))}
         {data.allow_custom && !done && (
-          <View style={s.chipCustomRow}>
+          <View className={s.chipCustomRow}>
             <TextInput
-              style={s.chipCustomInput}
+              className={s.chipCustomInput}
               value={customText}
               onChangeText={text => { setCustomText(text); if (text.trim()) setSelected([]); }}
               placeholder="직접 입력"
@@ -762,27 +763,27 @@ function ChoiceGroupBlock({ data, onSend, submitted }: {
         )}
       </View>
       {showFollowUp && !done && data.follow_up && (
-        <View style={s.followUpRow}>
+        <View className={s.followUpRow}>
           <TextInput
-            style={s.followUpInput}
+            className={s.followUpInput}
             value={followUpText}
             onChangeText={setFollowUpText}
             placeholder={data.follow_up.placeholder}
             placeholderTextColor="#aaa"
             autoFocus
           />
-          <Pressable style={s.followUpBtn} onPress={submitFollowUp}>
-            <Text style={s.followUpBtnText}>완료</Text>
+          <Pressable className={s.followUpBtn} onPress={submitFollowUp}>
+            <Text className={s.followUpBtnText}>완료</Text>
           </Pressable>
         </View>
       )}
       {data.multi && !done && (
-        <Pressable style={s.multiSubmitBtn} onPress={submitMulti}>
-          <Text style={s.multiSubmitBtnText}>선택 완료</Text>
+        <Pressable className={s.multiSubmitBtn} onPress={submitMulti}>
+          <Text className={s.multiSubmitBtnText}>선택 완료</Text>
         </Pressable>
       )}
       {done && selected.length > 0 && (
-        <Text style={s.choiceDoneText}>선택: {selected.join(', ')}</Text>
+        <Text className={s.choiceDoneText}>선택: {selected.join(', ')}</Text>
       )}
     </View>
   );
@@ -807,27 +808,30 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
       .map(b => (b as { type: 'TEXT'; data: { text: string } }).data.text)
       .join('');
     return (
-      <View style={s.userWrap}>
-        <View style={s.userBubble}>
-          <Text style={s.userText}>{text}</Text>
+      <View className={s.userWrap}>
+        <View className={s.userBubble}>
+          <Text className={s.userText}>{text}</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={s.aiWrap}>
+    <View className={s.aiWrap}>
       {msg.stage ? (
-        <View style={s.stagePill}>
-          <Text style={s.stagePillText}>{stageLabel[msg.stage] ?? msg.stage}</Text>
+        <View className={s.stagePill}>
+          <Text className={s.stagePillText}>{stageLabel[msg.stage] ?? msg.stage}</Text>
         </View>
       ) : null}
       {showDebug && <DebugPanel debug={msg.debug} />}
       {msg.content.map((block, i) => {
         if (block.type === 'TEXT') {
           return (
-            <View key={i} style={s.aiBubble}>
-              <SimpleMarkdown text={block.data.text} baseStyle={s.aiText} />
+            <View key={i} className={s.aiBubble}>
+              <SimpleMarkdown
+              text={block.data.text}
+              baseStyle={{ fontFamily: 'NotoSansKR_400Regular', color: colors.textPrimary, fontSize: 15, lineHeight: 23 }}
+            />
             </View>
           );
         }
@@ -844,8 +848,8 @@ function MessageBubble({ msg, liked, disliked, onLike, onDislike, onOpenForm, fo
         if (block.type === 'FORM_BUTTON') {
           if (formSubmitted) return null;
           return (
-            <Pressable key={i} style={s.formOpenBtn} onPress={onOpenForm}>
-              <Text style={s.formOpenBtnText}>📋  정보 입력하기</Text>
+            <Pressable key={i} className={s.formOpenBtn} onPress={onOpenForm}>
+              <Text className={s.formOpenBtnText}>📋  정보 입력하기</Text>
             </Pressable>
           );
         }
@@ -924,23 +928,23 @@ function ReasonPicker({ visible, name, type, onSubmit, onSkip }: {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleSkip}>
-      <Pressable style={fm.backdrop} onPress={handleSkip} />
-      <View style={[fm.sheet, { maxHeight: '65%' }]}>
-        <View style={fm.handle} />
-        <View style={fm.header}>
-          <Text style={fm.title}>{emoji} "{name}" 이름이 {type === 'liked' ? '좋은' : '별로인'} 이유가 있나요?</Text>
-          <Pressable style={fm.closeBtn} onPress={handleSkip}>
-            <Text style={fm.closeBtnText}>건너뛰기</Text>
+      <Pressable className={fm.backdrop} onPress={handleSkip} />
+      <View className={fm.sheet} style={{ maxHeight: '65%' }}>
+        <View className={fm.handle} />
+        <View className={fm.header}>
+          <Text className={fm.title}>{emoji} "{name}" 이름이 {type === 'liked' ? '좋은' : '별로인'} 이유가 있나요?</Text>
+          <Pressable className={fm.closeBtn} onPress={handleSkip}>
+            <Text className={fm.closeBtnText}>건너뛰기</Text>
           </Pressable>
         </View>
-        <View style={s.choiceChips}>
+        <View className={s.choiceChips}>
           {reasons.map(r => (
             <Pressable
               key={r.key}
-              style={[s.chip, selected.includes(r.key) && s.chipSelected]}
+              className={clsx(s.chip, selected.includes(r.key) && s.chipSelected)}
               onPress={() => toggle(r.key)}
             >
-              <Text style={[s.chipText, selected.includes(r.key) && s.chipTextSelected]}>
+              <Text className={clsx(s.chipText, selected.includes(r.key) && s.chipTextSelected)}>
                 {r.label}
               </Text>
             </Pressable>
@@ -948,7 +952,8 @@ function ReasonPicker({ visible, name, type, onSubmit, onSkip }: {
         </View>
         {otherSelected && (
           <TextInput
-            style={[fm.input, { marginHorizontal: 16, marginTop: 8 }]}
+            className={fm.input}
+            style={{ marginHorizontal: 16, marginTop: 8 }}
             placeholder="직접 입력해주세요"
             placeholderTextColor="#aaa"
             value={otherText}
@@ -958,11 +963,11 @@ function ReasonPicker({ visible, name, type, onSubmit, onSkip }: {
           />
         )}
         <Pressable
-          style={[fm.submitBtn, !canSubmit && fm.submitBtnOff]}
+          className={clsx(fm.submitBtn, !canSubmit && fm.submitBtnOff)}
           onPress={handleSubmit}
           disabled={!canSubmit}
         >
-          <Text style={fm.submitText}>
+          <Text className={fm.submitText}>
             {selected.length === 0 ? '선택 후 전달하기' : `이유 전달하기 (${selected.length}개)`}
           </Text>
         </Pressable>
@@ -994,19 +999,19 @@ function SessionRestoreModal({ visible, onClose, onRestore }: {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
-      <Pressable style={fm.backdrop} onPress={handleClose} />
-      <View style={[fm.sheet, { maxHeight: '40%' }]}>
-        <View style={fm.handle} />
-        <View style={fm.header}>
-          <Text style={fm.title}>세션 불러오기</Text>
-          <Pressable style={fm.closeBtn} onPress={handleClose}>
-            <Text style={fm.closeBtnText}>✕</Text>
+      <Pressable className={fm.backdrop} onPress={handleClose} />
+      <View className={fm.sheet} style={{ maxHeight: '40%' }}>
+        <View className={fm.handle} />
+        <View className={fm.header}>
+          <Text className={fm.title}>세션 불러오기</Text>
+          <Pressable className={fm.closeBtn} onPress={handleClose}>
+            <Text className={fm.closeBtnText}>✕</Text>
           </Pressable>
         </View>
-        <Text style={fm.subtitle}>이전 대화의 session_id를 입력하면 해당 세션을 이어서 진행합니다</Text>
-        <View style={fm.field}>
+        <Text className={fm.subtitle}>이전 대화의 session_id를 입력하면 해당 세션을 이어서 진행합니다</Text>
+        <View className={fm.field}>
           <TextInput
-            style={fm.input}
+            className={fm.input}
             value={inputId}
             onChangeText={setInputId}
             placeholder="session_id를 붙여넣으세요"
@@ -1018,11 +1023,11 @@ function SessionRestoreModal({ visible, onClose, onRestore }: {
           />
         </View>
         <Pressable
-          style={[fm.submitBtn, !inputId.trim() && fm.submitBtnOff]}
+          className={clsx(fm.submitBtn, !inputId.trim() && fm.submitBtnOff)}
           onPress={handleConfirm}
           disabled={!inputId.trim()}
         >
-          <Text style={fm.submitText}>불러오기 →</Text>
+          <Text className={fm.submitText}>불러오기 →</Text>
         </Pressable>
         <View style={{ height: 32 }} />
       </View>
@@ -1406,43 +1411,43 @@ export default function AINamingScreen() {
   }
 
   return (
-    <View style={s.root}>
+    <View className={s.root}>
       <StatusBar style="light" />
 
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 12 }]}>
+      <View className={s.header} style={{ paddingTop: insets.top + 12 }}>
         <View>
-          <Text style={s.headerTitle}>이름이 ✨</Text>
-          <Text style={s.headerSub}>{stageLabel[stage] ?? stage}</Text>
+          <Text className={s.headerTitle}>이름이 ✨</Text>
+          <Text className={s.headerSub}>{stageLabel[stage] ?? stage}</Text>
         </View>
-        <View style={s.headerRight}>
-          <Pressable style={[s.headerBtn, { marginRight: 8 }]} onPress={() => navigation.navigate('SelfNaming')}>
-            <Text style={s.headerBtnText}>작명 도구</Text>
+        <View className={s.headerRight}>
+          <Pressable className={s.headerBtn} style={{ marginRight: 8 }} onPress={() => navigation.navigate('SelfNaming')}>
+            <Text className={s.headerBtnText}>작명 도구</Text>
           </Pressable>
-          <Pressable style={[s.headerBtn, showDebug && s.headerBtnOn]} onPress={() => setShowDebug(v => !v)}>
-            <Text style={s.headerBtnText}>DEV</Text>
+          <Pressable className={clsx(s.headerBtn, showDebug && s.headerBtnOn)} onPress={() => setShowDebug(v => !v)}>
+            <Text className={s.headerBtnText}>DEV</Text>
           </Pressable>
           {formSubmitted && (
-            <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={() => setDolrimjaModalOpen(true)}>
-              <Text style={s.headerBtnText}>돌림자 수정</Text>
+            <Pressable className={s.headerBtn} style={{ marginLeft: 8 }} onPress={() => setDolrimjaModalOpen(true)}>
+              <Text className={s.headerBtnText}>돌림자 수정</Text>
             </Pressable>
           )}
-          <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={() => setShowLiked(v => !v)}>
-            <Text style={s.headerBtnText}>👍 {likedNames.length}</Text>
+          <Pressable className={s.headerBtn} style={{ marginLeft: 8 }} onPress={() => setShowLiked(v => !v)}>
+            <Text className={s.headerBtnText}>👍 {likedNames.length}</Text>
           </Pressable>
-          <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={() => setRestoreModalOpen(true)}>
-            <Text style={s.headerBtnText}>불러오기</Text>
+          <Pressable className={s.headerBtn} style={{ marginLeft: 8 }} onPress={() => setRestoreModalOpen(true)}>
+            <Text className={s.headerBtnText}>불러오기</Text>
           </Pressable>
-          <Pressable style={[s.headerBtn, { marginLeft: 8 }]} onPress={handleReset}>
-            <Text style={s.headerBtnText}>↺</Text>
+          <Pressable className={s.headerBtn} style={{ marginLeft: 8 }} onPress={handleReset}>
+            <Text className={s.headerBtnText}>↺</Text>
           </Pressable>
         </View>
       </View>
 
       {/* Session ID chip — 세션이 있을 때만 표시 */}
       {sessionId && (
-        <View style={s.sessionChip}>
-          <Text style={s.sessionChipText} numberOfLines={1}>
+        <View className={s.sessionChip}>
+          <Text className={s.sessionChipText} numberOfLines={1}>
             🔑 {sessionId}
           </Text>
         </View>
@@ -1450,15 +1455,15 @@ export default function AINamingScreen() {
 
       {/* Liked panel */}
       {showLiked && (
-        <View style={s.likedPanel}>
-          <Text style={s.likedTitle}>👍 좋아요한 이름</Text>
+        <View className={s.likedPanel}>
+          <Text className={s.likedTitle}>👍 좋아요한 이름</Text>
           {likedNames.length === 0
-            ? <Text style={s.likedEmpty}>아직 없어요</Text>
-            : likedNames.map(n => <Text key={n} style={s.likedName}>{n}</Text>)}
+            ? <Text className={s.likedEmpty}>아직 없어요</Text>
+            : likedNames.map(n => <Text key={n} className={s.likedName}>{n}</Text>)}
           {dislikedNames.length > 0 && (
             <>
-              <Text style={[s.likedTitle, { marginTop: 8 }]}>👎 별로인 이름</Text>
-              {dislikedNames.map(n => <Text key={n} style={s.dislikedName}>{n}</Text>)}
+              <Text className={s.likedTitle} style={{ marginTop: 8 }}>👎 별로인 이름</Text>
+              {dislikedNames.map(n => <Text key={n} className={s.dislikedName}>{n}</Text>)}
             </>
           )}
         </View>
@@ -1472,8 +1477,8 @@ export default function AINamingScreen() {
       >
         <ScrollView
           ref={scrollRef}
-          style={s.list}
-          contentContainerStyle={s.listContent}
+          className={s.list}
+          contentContainerStyle={{ padding: 14, paddingBottom: 8 }}
         >
           {messages.map(msg => (
             <MessageBubble
@@ -1490,9 +1495,9 @@ export default function AINamingScreen() {
             />
           ))}
           {loading && (
-            <View style={s.loadingRow}>
+            <View className={s.loadingRow}>
               <ActivityIndicator color={PURPLE} />
-              <Text style={s.loadingText}>
+              <Text className={s.loadingText}>
                 {progressMessage ?? '이름이가 생각 중...'}
               </Text>
             </View>
@@ -1500,17 +1505,17 @@ export default function AINamingScreen() {
         </ScrollView>
 
         {paymentRequired && (
-          <View style={s.payBanner}>
-            <Text style={s.payText}>더 많은 이름을 탐색하려면 결제가 필요해요</Text>
-            <Pressable style={s.payBtn} onPress={handlePayment}>
-              <Text style={s.payBtnText}>결제하고 계속하기 →</Text>
+          <View className={s.payBanner}>
+            <Text className={s.payText}>더 많은 이름을 탐색하려면 결제가 필요해요</Text>
+            <Pressable className={s.payBtn} onPress={handlePayment}>
+              <Text className={s.payBtnText}>결제하고 계속하기 →</Text>
             </Pressable>
           </View>
         )}
 
-        <View style={s.inputRow}>
+        <View className={s.inputRow}>
           <TextInput
-            style={s.input}
+            className={s.input}
             value={input}
             onChangeText={setInput}
             placeholder="메시지를 입력하세요..."
@@ -1521,11 +1526,11 @@ export default function AINamingScreen() {
             multiline
           />
           <Pressable
-            style={[s.sendBtn, (!input.trim() || loading || !formSubmitted) && s.sendBtnOff]}
+            className={clsx(s.sendBtn, (!input.trim() || loading || !formSubmitted) && s.sendBtnOff)}
             onPress={handleSend}
             disabled={!input.trim() || loading || !formSubmitted}
           >
-            <Text style={s.sendBtnText}>전송</Text>
+            <Text className={s.sendBtnText}>전송</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -1570,366 +1575,161 @@ export default function AINamingScreen() {
   );
 }
 
-// ── Form Modal Styles ──────────────────────────────────────────────────
-const fm = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  sheet: {
-    backgroundColor: colors.surfaceRaised,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    maxHeight: '88%',
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  title: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: colors.textPrimary },
-  closeBtn: { padding: 6 },
-  closeBtnText: { fontSize: 18, color: colors.textDisabled },
-  subtitle: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textTertiary, lineHeight: 18, marginBottom: 20 },
+// ── Form Modal class names (NativeWind) ──────────────────────────────────
+const fm: Record<string, string> = {
+  backdrop: 'flex-1 bg-black/40',
+  sheet: 'bg-surfaceRaised rounded-t-3xl px-5 pt-3 max-h-[88%]',
+  handle: 'w-10 h-1 bg-border rounded-sm self-center mb-4',
+  header: 'flex-row items-center justify-between mb-1',
+  title: 'font-serif-medium text-xl text-textPrimary',
+  closeBtn: 'p-1.5',
+  closeBtnText: 'text-lg text-textDisabled',
+  subtitle: 'font-sans-regular text-[13px] text-textTertiary leading-[18px] mb-5',
+  row: 'flex-row mb-0',
+  field: 'mb-[18px]',
+  label: 'font-sans-medium text-sm text-textSecondary mb-2',
+  req: 'text-negative',
+  labelRow: 'flex-row items-center justify-between mb-2',
+  input: 'border-[1.5px] border-border rounded-[10px] px-3 py-2.5 font-sans-regular text-[15px] text-textPrimary bg-surface',
+  inputErr: 'border-negative',
+  errText: 'font-sans-regular text-negative text-[11px] mt-0.5',
+  genderRow: 'flex-row gap-2',
+  genderBtn: 'flex-1 border-[1.5px] border-border rounded-[10px] py-2.5 items-center',
+  genderBtnOn: 'border-negative bg-negativeSub',
+  genderText: 'font-sans-regular text-[13px] text-textTertiary',
+  genderTextOn: 'font-sans-medium text-negative',
+  lunarRow: 'flex-row gap-1',
+  lunarBtn: 'px-2.5 py-1 rounded-md border border-border',
+  lunarBtnOn: 'border-negative bg-negativeSub',
+  lunarText: 'font-sans-regular text-xs text-textTertiary',
+  lunarTextOn: 'font-sans-medium text-negative',
+  dateRow: 'flex-row items-start gap-1',
+  sep: 'font-sans-regular text-textSecondary text-[15px] pt-2.5',
+  checkRow: 'flex-row items-center mb-2.5',
+  checkbox: 'w-5 h-5 rounded-md border-2 border-border mr-2 items-center justify-center',
+  checkboxOn: 'border-negative bg-negative',
+  checkMark: 'text-white text-xs font-bold',
+  checkLabel: 'font-sans-regular text-sm text-textSecondary',
+  submitBtn: 'bg-negative rounded-xl py-4 items-center mt-2',
+  submitBtnOff: 'bg-border',
+  submitText: 'font-sans-medium text-white text-base',
+  optional: 'text-textDisabled font-normal',
+  searchRow: 'flex-row items-center',
+  searchResults: 'border-[1.5px] border-border rounded-[10px] mt-1 bg-surfaceRaised overflow-hidden',
+  searchResultItem: 'flex-row items-center px-3 py-2.5 gap-2.5',
+  searchResultBorder: 'border-b border-b-surface',
+  searchResultHanja: 'font-serif-medium text-[22px] text-textPrimary w-[34px] text-center',
+  searchResultEum: 'font-sans-medium text-[15px] text-negative w-11',
+  searchResultMean: 'font-sans-regular text-xs text-textTertiary flex-1',
+  searchResultStroke: 'font-sans-regular text-[11px] text-textDisabled',
+  searchNoResult: 'font-sans-regular text-[13px] text-textDisabled mt-1.5 pl-1',
+  hanjaChip: 'flex-row items-center justify-between border-[1.5px] border-negativeBorder rounded-[10px] px-3 py-2.5 bg-negativeSub',
+  hanjaChipInner: 'flex-row items-center gap-3',
+  hanjaChipChar: 'font-serif-medium text-[28px] text-textPrimary',
+  hanjaChipHangul: 'font-sans-medium text-base text-negative',
+  hanjaChipMean: 'font-sans-regular text-xs text-textTertiary max-w-[180px]',
+  hanjaChipClearBtn: 'bg-surface rounded-md px-2.5 py-1.5',
+  hanjaChipClearText: 'font-sans-medium text-[13px] text-negative',
+};
 
-  row: { flexDirection: 'row', marginBottom: 0 },
-  field: { marginBottom: 18 },
-  label: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: colors.textSecondary, marginBottom: 8 },
-  req: { color: ohaengColors['화'].base },
-  labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+// ── Debug class names ────────────────────────────────────────────────────
+const db: Record<string, string> = {
+  wrap: 'w-full mb-1 rounded-lg overflow-hidden border border-[#333]',
+  toggle: 'bg-[#1e1e2e] px-2.5 py-1.5',
+  toggleText: 'text-[#7c7cff] text-[11px] font-bold font-mono',
+  scroll: 'bg-[#12121f] max-h-[500px] p-2.5',
+  sectionLabel: 'text-[#555] text-[10px] font-mono mb-1',
+  code: 'text-[#a8ff78] text-[11px] font-mono leading-[17px]',
+};
 
-  input: {
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontFamily: fontFamily.sansRegular,
-    fontSize: 15,
-    color: colors.textPrimary,
-    backgroundColor: colors.surface,
-  },
-  inputErr: { borderColor: ohaengColors['화'].base },
-  errText: { fontFamily: fontFamily.sansRegular, color: ohaengColors['화'].base, fontSize: 11, marginTop: 3 },
-
-  genderRow: { flexDirection: 'row', gap: 8 },
-  genderBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  genderBtnOn: { borderColor: colors.negative, backgroundColor: colors.negativeSub },
-  genderText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textTertiary },
-  genderTextOn: { fontFamily: fontFamily.sansMedium, color: colors.negative },
-
-  lunarRow: { flexDirection: 'row', gap: 4 },
-  lunarBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  lunarBtnOn: { borderColor: colors.negative, backgroundColor: colors.negativeSub },
-  lunarText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary },
-  lunarTextOn: { fontFamily: fontFamily.sansMedium, color: colors.negative },
-
-  dateRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
-  sep: { fontFamily: fontFamily.sansRegular, color: colors.textSecondary, fontSize: 15, paddingTop: 11 },
-
-  checkRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  checkbox: {
-    width: 20, height: 20, borderRadius: 5,
-    borderWidth: 2, borderColor: colors.border,
-    marginRight: 8, alignItems: 'center', justifyContent: 'center',
-  },
-  checkboxOn: { borderColor: colors.negative, backgroundColor: colors.negative },
-  checkMark: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  checkLabel: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: colors.textSecondary },
-
-  submitBtn: {
-    backgroundColor: colors.negative,
-    borderRadius: 12,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  submitBtnOff: { backgroundColor: colors.border },
-  submitText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 16 },
-
-  optional: { color: colors.textDisabled, fontWeight: '400' },
-
-  // ── Hanja search (공통) ──
-  searchRow: { flexDirection: 'row', alignItems: 'center' },
-  searchResults: {
-    borderWidth: 1.5, borderColor: colors.border,
-    borderRadius: 10, marginTop: 4,
-    backgroundColor: colors.surfaceRaised, overflow: 'hidden',
-  },
-  searchResultItem: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 12, paddingVertical: 10, gap: 10,
-  },
-  searchResultBorder: { borderBottomWidth: 1, borderBottomColor: colors.surface },
-  searchResultHanja: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: colors.textPrimary, width: 34, textAlign: 'center' },
-  searchResultEum: { fontFamily: fontFamily.sansMedium, fontSize: 15, color: colors.negative, width: 44 },
-  searchResultMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary, flex: 1 },
-  searchResultStroke: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textDisabled },
-  searchNoResult: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textDisabled, marginTop: 6, paddingLeft: 4 },
-
-  hanjaChip: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1.5, borderColor: colors.negativeBorder, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: colors.negativeSub,
-  },
-  hanjaChipInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  hanjaChipChar: { fontFamily: fontFamily.serifMedium, fontSize: 28, color: colors.textPrimary },
-  hanjaChipHangul: { fontFamily: fontFamily.sansMedium, fontSize: 16, color: colors.negative },
-  hanjaChipMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary, maxWidth: 180 },
-  hanjaChipClearBtn: {
-    backgroundColor: colors.surface,
-    borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5,
-  },
-  hanjaChipClearText: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: colors.negative },
-});
-
-// ── Debug styles ────────────────────────────────────────────────────────
-const db = StyleSheet.create({
-  wrap: {
-    width: '100%',
-    marginBottom: 4,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  toggle: {
-    backgroundColor: '#1e1e2e',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  toggleText: { color: '#7c7cff', fontSize: 11, fontWeight: '700', fontFamily: 'monospace' },
-  scroll: {
-    backgroundColor: '#12121f',
-    maxHeight: 500,
-    padding: 10,
-  },
-  sectionLabel: {
-    color: '#555',
-    fontSize: 10,
-    fontFamily: 'monospace',
-    marginBottom: 4,
-  },
-  code: {
-    color: '#a8ff78',
-    fontSize: 11,
-    fontFamily: 'monospace',
-    lineHeight: 17,
-  },
-});
-
-// ── Chat Styles ────────────────────────────────────────────────────────
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
-
-  header: {
-    backgroundColor: colors.negative,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerTitle: { fontFamily: fontFamily.serifMedium, color: '#fff', fontSize: 20, letterSpacing: 1 },
-  headerSub: { fontFamily: fontFamily.sansRegular, color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 },
-  headerRight: { flexDirection: 'row', alignItems: 'center' },
-  headerBtn: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
-  },
-  headerBtnOn: { backgroundColor: 'rgba(255,220,50,0.35)' },
-  headerBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 13 },
-
-  likedPanel: {
-    backgroundColor: colors.surfaceRaised,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    padding: 12, paddingHorizontal: 16,
-  },
-  likedTitle: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
-  likedEmpty: { fontFamily: fontFamily.sansRegular, color: colors.textDisabled, fontSize: 13 },
-  likedName: { fontFamily: fontFamily.sansMedium, color: colors.negative, fontSize: 14, paddingVertical: 2 },
-  dislikedName: { fontFamily: fontFamily.sansRegular, color: ohaengColors['화'].base, fontSize: 14, paddingVertical: 2 },
-
-  list: { flex: 1 },
-  listContent: { padding: 14, paddingBottom: 8 },
-
-  userWrap: { alignItems: 'flex-end', marginBottom: 8 },
-  userBubble: {
-    backgroundColor: colors.negative,
-    borderRadius: 18, borderBottomRightRadius: 4,
-    paddingHorizontal: 14, paddingVertical: 10,
-    maxWidth: '78%',
-  },
-  userText: { fontFamily: fontFamily.sansRegular, color: '#fff', fontSize: 15, lineHeight: 22 },
-
-  aiWrap: { alignItems: 'flex-start', marginBottom: 12, maxWidth: '92%' },
-  aiBubble: {
-    backgroundColor: colors.surfaceRaised,
-    borderRadius: 18, borderTopLeftRadius: 4,
-    paddingHorizontal: 14, paddingVertical: 10,
-    marginBottom: 6,
-    shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }, elevation: 2,
-  },
-  aiText: { fontFamily: fontFamily.sansRegular, color: colors.textPrimary, fontSize: 15, lineHeight: 23 },
-
-  stagePill: {
-    backgroundColor: colors.negativeSub,
-    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 4,
-  },
-  stagePillText: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: colors.negative },
-
-  formOpenBtn: {
-    backgroundColor: colors.negative,
-    borderRadius: 12,
-    paddingHorizontal: 20, paddingVertical: 12,
-    alignSelf: 'flex-start',
-    marginTop: 2,
-  },
-  formOpenBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
-
-  // ── ChoiceGroup ───────────────────────────────────────────────────────
-  choiceGroup: {
-    backgroundColor: colors.surface,
-    borderRadius: 14, padding: 14, marginBottom: 8, width: '100%',
-    borderWidth: 1, borderColor: colors.border,
-  },
-  choiceGroupDone: { opacity: 0.6 },
-  choiceQuestion: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: colors.textPrimary, marginBottom: 10 },
-  choiceChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    backgroundColor: colors.surfaceRaised, borderRadius: 20,
-    paddingHorizontal: 14, paddingVertical: 8,
-    borderWidth: 1.5, borderColor: colors.border,
-  },
-  chipSelected: { backgroundColor: colors.negative, borderColor: colors.negative },
-  chipDisabled: { opacity: 0.5 },
-  chipText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textSecondary },
-  chipTextSelected: { fontFamily: fontFamily.sansMedium, color: '#fff' },
-  chipCustomRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, width: '100%' },
-  chipCustomInput: {
-    flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 6,
-    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: colors.surfaceRaised,
-  },
-  followUpRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8 },
-  followUpInput: {
-    flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 8,
-    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: colors.surfaceRaised,
-  },
-  followUpBtn: {
-    backgroundColor: colors.negative, borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 8,
-  },
-  followUpBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 13 },
-  multiSubmitBtn: {
-    marginTop: 12, backgroundColor: colors.negative, borderRadius: 10,
-    paddingHorizontal: 20, paddingVertical: 10, alignSelf: 'flex-end',
-  },
-  multiSubmitBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 14 },
-  choiceDoneText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary, marginTop: 8, fontStyle: 'italic' },
-
-  nameCard: {
-    backgroundColor: colors.surfaceRaised, borderRadius: 14, padding: 14, marginBottom: 8,
-    width: '100%', borderLeftWidth: 3, borderLeftColor: colors.negative,
-    shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 }, elevation: 3,
-  },
-  nameHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 },
-  nameText: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: colors.textPrimary, marginRight: 4 },
-  badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  badgeText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 12 },
-
-  syllableRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  syllable: { alignItems: 'center', flex: 1, backgroundColor: colors.surface, borderRadius: 8, padding: 8 },
-  sylHanja: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: colors.textPrimary },
-  sylHangul: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textTertiary, marginTop: 2 },
-  ohaengPill: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginTop: 3 },
-  ohaengText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 11 },
-  sylMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textDisabled, textAlign: 'center', marginTop: 3 },
-  nameReason: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textSecondary, fontStyle: 'italic', marginBottom: 8 },
-
-  scoreBreakdown: { marginBottom: 10, gap: 4 },
-  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  scoreLabel: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textTertiary, width: 48 },
-  scoreBarBg: { flex: 1, height: 6, backgroundColor: colors.surface, borderRadius: 3, overflow: 'hidden' },
-  scoreBarFill: { height: 6, backgroundColor: colors.negative, borderRadius: 3 },
-  scoreValue: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textTertiary, width: 32, textAlign: 'right' },
-
-  hanjaOptionsSection: { marginBottom: 8, gap: 6 },
-  hanjaOptionsRow: { gap: 4 },
-  hanjaOptionsLabel: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: colors.textTertiary },
-  hanjaOptionsList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  hanjaOptionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.surface, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
-  hanjaOptionChar: { fontFamily: fontFamily.serifMedium, fontSize: 14, color: colors.textPrimary },
-  hanjaOptionMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textTertiary },
-
-  reactionRow: { flexDirection: 'row', gap: 8 },
-  reactionBtn: {
-    flex: 1, borderWidth: 1.5, borderColor: colors.border,
-    borderRadius: 8, paddingVertical: 8, alignItems: 'center',
-  },
-  reactionLiked: { borderColor: ohaengColors['목'].border, backgroundColor: ohaengColors['목'].light },
-  reactionDisliked: { borderColor: colors.negativeBorder, backgroundColor: colors.negativeSub },
-  reactionText: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: colors.textTertiary },
-  reactionTextActive: { fontFamily: fontFamily.sansMedium, color: colors.textPrimary },
-
-  loadingRow: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 },
-  loadingText: { fontFamily: fontFamily.sansRegular, color: colors.textTertiary, fontSize: 14 },
-
-  payBanner: {
-    backgroundColor: colors.warningSub, borderTopWidth: 1, borderTopColor: colors.warningBorder,
-    padding: 14, alignItems: 'center', gap: 8,
-  },
-  payText: { fontFamily: fontFamily.sansRegular, color: colors.textSecondary, fontSize: 14 },
-  payBtn: { backgroundColor: colors.fillAccent, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  payBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
-
-  inputRow: {
-    flexDirection: 'row', padding: 10, backgroundColor: colors.surfaceRaised,
-    borderTopWidth: 1, borderTopColor: colors.border, alignItems: 'flex-end', gap: 8,
-  },
-  input: {
-    flex: 1, backgroundColor: colors.bg, borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 10,
-    fontFamily: fontFamily.sansRegular, fontSize: 15, color: colors.textPrimary, maxHeight: 100,
-    borderWidth: 1, borderColor: colors.border,
-  },
-  sendBtn: { backgroundColor: colors.negative, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
-  sendBtnOff: { backgroundColor: colors.border },
-  sendBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
-
-  sessionChip: {
-    backgroundColor: '#1a1a2e',
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  sessionChipText: {
-    color: '#7c7cff',
-    fontSize: 11,
-    fontFamily: 'monospace',
-  },
-});
+// ── Chat class names ────────────────────────────────────────────────────
+const s: Record<string, string> = {
+  root: 'flex-1 bg-bg',
+  header: 'bg-negative pb-3 px-4 flex-row items-center justify-between',
+  headerTitle: 'font-serif-medium text-white text-xl tracking-[1px]',
+  headerSub: 'font-sans-regular text-white/75 text-xs mt-0.5',
+  headerRight: 'flex-row items-center',
+  headerBtn: 'bg-white/20 px-2.5 py-1.5 rounded-lg',
+  headerBtnOn: 'bg-[rgba(255,220,50,0.35)]',
+  headerBtnText: 'font-sans-medium text-white text-[13px]',
+  likedPanel: 'bg-surfaceRaised border-b border-border p-3 px-4',
+  likedTitle: 'font-sans-medium text-[13px] text-textSecondary mb-1',
+  likedEmpty: 'font-sans-regular text-textDisabled text-[13px]',
+  likedName: 'font-sans-medium text-negative text-sm py-0.5',
+  dislikedName: 'font-sans-regular text-negative text-sm py-0.5',
+  list: 'flex-1',
+  listContent: 'p-3.5 pb-2',
+  userWrap: 'items-end mb-2',
+  userBubble: 'bg-negative rounded-[18px] rounded-br-1 px-3.5 py-2.5 max-w-[78%]',
+  userText: 'font-sans-regular text-white text-[15px] leading-[22px]',
+  aiWrap: 'items-start mb-3 max-w-[92%]',
+  aiBubble: 'bg-surfaceRaised rounded-[18px] rounded-tl-1 px-3.5 py-2.5 mb-1.5',
+  aiText: 'font-sans-regular text-textPrimary text-[15px] leading-[23px]',
+  stagePill: 'bg-negativeSub rounded-md px-2 py-0.5 mb-1',
+  stagePillText: 'font-sans-medium text-[11px] text-negative',
+  formOpenBtn: 'bg-negative rounded-xl px-5 py-3 self-start mt-0.5',
+  formOpenBtnText: 'font-sans-medium text-white text-[15px]',
+  choiceGroup: 'bg-surface rounded-[14px] p-3.5 mb-2 w-full border border-border',
+  choiceGroupDone: 'opacity-60',
+  choiceQuestion: 'font-sans-medium text-sm text-textPrimary mb-2.5',
+  choiceChips: 'flex-row flex-wrap gap-2',
+  chip: 'bg-surfaceRaised rounded-[20px] px-3.5 py-2 border-[1.5px] border-border',
+  chipSelected: 'bg-negative border-negative',
+  chipDisabled: 'opacity-50',
+  chipText: 'font-sans-regular text-[13px] text-textSecondary',
+  chipTextSelected: 'font-sans-medium text-white',
+  chipCustomRow: 'flex-row items-center mt-2 w-full',
+  chipCustomInput: 'flex-1 border border-border rounded-[10px] px-3 py-1.5 font-sans-regular text-[13px] bg-surfaceRaised',
+  followUpRow: 'flex-row items-center mt-2.5 gap-2',
+  followUpInput: 'flex-1 border border-border rounded-[10px] px-3 py-2 font-sans-regular text-[13px] bg-surfaceRaised',
+  followUpBtn: 'bg-negative rounded-[10px] px-3.5 py-2',
+  followUpBtnText: 'font-sans-medium text-white text-[13px]',
+  multiSubmitBtn: 'mt-3 bg-negative rounded-[10px] px-5 py-2.5 self-end',
+  multiSubmitBtnText: 'font-sans-medium text-white text-sm',
+  choiceDoneText: 'font-sans-regular text-xs text-textTertiary mt-2 italic',
+  nameCard: 'bg-surfaceRaised rounded-[14px] p-3.5 mb-2 w-full border-l-4 border-l-negative',
+  nameHeader: 'flex-row items-center mb-2.5 flex-wrap gap-1.5',
+  nameText: 'font-serif-medium text-[22px] text-textPrimary mr-1',
+  badge: 'rounded-md px-2 py-0.5',
+  badgeText: 'font-sans-medium text-white text-xs',
+  syllableRow: 'flex-row gap-2 mb-2',
+  syllable: 'items-center flex-1 bg-surface rounded-lg p-2',
+  sylHanja: 'font-serif-medium text-xl text-textPrimary',
+  sylHangul: 'font-sans-regular text-[13px] text-textTertiary mt-0.5',
+  ohaengPill: 'rounded px-1.5 py-0.5 mt-0.5',
+  ohaengText: 'font-sans-medium text-white text-[11px]',
+  sylMeaning: 'font-sans-regular text-[11px] text-textDisabled text-center mt-0.5',
+  nameReason: 'font-sans-regular text-[13px] text-textSecondary italic mb-2',
+  scoreBreakdown: 'mb-2.5 gap-1',
+  scoreRow: 'flex-row items-center gap-1.5',
+  scoreLabel: 'font-sans-regular text-[11px] text-textTertiary w-12',
+  scoreBarBg: 'flex-1 h-1.5 bg-surface rounded-sm overflow-hidden',
+  scoreBarFill: 'h-1.5 bg-negative rounded-sm',
+  scoreValue: 'font-sans-regular text-[11px] text-textTertiary w-8 text-right',
+  hanjaOptionsSection: 'mb-2 gap-1.5',
+  hanjaOptionsRow: 'gap-1',
+  hanjaOptionsLabel: 'font-sans-medium text-[11px] text-textTertiary',
+  hanjaOptionsList: 'flex-row flex-wrap gap-1.5',
+  hanjaOptionItem: 'flex-row items-center gap-0.5 bg-surface rounded-md px-1.5 py-0.5',
+  hanjaOptionChar: 'font-serif-medium text-sm text-textPrimary',
+  hanjaOptionMeaning: 'font-sans-regular text-[11px] text-textTertiary',
+  reactionRow: 'flex-row gap-2',
+  reactionBtn: 'flex-1 border-[1.5px] border-border rounded-lg py-2 items-center',
+  reactionLiked: 'border-ohaeng-wood-border bg-ohaeng-wood-light',
+  reactionDisliked: 'border-negativeBorder bg-negativeSub',
+  reactionText: 'font-sans-regular text-sm text-textTertiary',
+  reactionTextActive: 'font-sans-medium text-textPrimary',
+  loadingRow: 'flex-row items-center p-3 gap-2',
+  loadingText: 'font-sans-regular text-textTertiary text-sm',
+  payBanner: 'bg-warningSub border-t border-warningBorder p-3.5 items-center gap-2',
+  payText: 'font-sans-regular text-textSecondary text-sm',
+  payBtn: 'bg-fillAccent rounded-[10px] px-5 py-2.5',
+  payBtnText: 'font-sans-medium text-white text-[15px]',
+  inputRow: 'flex-row p-2.5 bg-surfaceRaised border-t border-border items-end gap-2',
+  input: 'flex-1 bg-bg rounded-xl px-3.5 py-2.5 font-sans-regular text-[15px] text-textPrimary max-h-[100px] border border-border',
+  sendBtn: 'bg-negative rounded-xl px-4 py-3',
+  sendBtnOff: 'bg-border',
+  sendBtnText: 'font-sans-medium text-white text-[15px]',
+  sessionChip: 'bg-[#1a1a2e] px-3.5 py-1.5 border-b border-[#333]',
+  sessionChipText: 'text-[#7c7cff] text-[11px] font-mono',
+};

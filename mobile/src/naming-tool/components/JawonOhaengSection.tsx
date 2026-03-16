@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
-import { colors, textStyles, spacing } from '@/design-system';
+import { Text } from 'react-native';
+import { fontFamily } from '@/design-system';
 import { NameInput, OhaengHarmonyResult } from '../types';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
 import SectionCard, { harmonyBadgeColor } from './SectionCard';
@@ -19,7 +19,7 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
     { character: first2.hanja || first2.hangul || null, ohaeng: first2.charOhaeng, positionLabel: '둘째' },
   ];
 
-  const hasInput = nodes.some(n => n.ohaeng !== null);
+  const hasInput = nodes.some((n) => n.ohaeng !== null);
   const badge = result?.level;
   const badgeColor = result ? harmonyBadgeColor(result.level) : undefined;
 
@@ -28,20 +28,21 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
       {hasInput ? (
         <OhaengRelationDiagram nodes={nodes} />
       ) : (
-        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text
+          className="text-bodySm text-textDisabled text-center py-4"
+          style={{ fontFamily: fontFamily.sansRegular }}
+        >
           한자를 선택하면 자원오행이 표시됩니다
         </Text>
       )}
       {result && (
-        <Text style={[textStyles.bodySm, styles.reason]}>{result.reason}</Text>
+        <Text
+          className="text-bodySm text-textSecondary mt-2"
+          style={{ fontFamily: fontFamily.sansRegular }}
+        >
+          {result.reason}
+        </Text>
       )}
     </SectionCard>
   );
 }
-
-const styles = StyleSheet.create({
-  reason: {
-    color: colors.textSecondary,
-    marginTop: spacing['2'],
-  },
-});

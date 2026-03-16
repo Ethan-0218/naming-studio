@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
-import { colors, textStyles, spacing } from '@/design-system';
+import { Text } from 'react-native';
+import { colors, fontFamily } from '@/design-system';
 import { NameInput, OhaengHarmonyResult } from '../types';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
@@ -20,7 +20,7 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
     { character: first2.hangul || null, ohaeng: first2.hangul ? baleumOhaengFromChar(first2.hangul) : null, positionLabel: '둘째' },
   ];
 
-  const hasInput = nodes.some(n => n.character);
+  const hasInput = nodes.some((n) => n.character);
   const badge = result ? result.level : undefined;
   const badgeColor = result ? harmonyBadgeColor(result.level) : undefined;
 
@@ -29,21 +29,21 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
       {hasInput ? (
         <OhaengRelationDiagram nodes={nodes} />
       ) : (
-        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text
+          className="text-bodySm text-textDisabled text-center py-4"
+          style={{ fontFamily: fontFamily.sansRegular }}
+        >
           이름을 입력하면 발음오행이 표시됩니다
         </Text>
       )}
       {result && (
-        <Text style={[textStyles.bodySm, styles.reason]}>{result.reason}</Text>
+        <Text
+          className="text-bodySm text-textSecondary mt-2"
+          style={{ fontFamily: fontFamily.sansRegular, lineHeight: 18 }}
+        >
+          {result.reason}
+        </Text>
       )}
     </SectionCard>
   );
 }
-
-const styles = StyleSheet.create({
-  reason: {
-    color: colors.textSecondary,
-    marginTop: spacing['2'],
-    lineHeight: 18,
-  },
-});

@@ -5,8 +5,9 @@
  * - 탭 시 HanjaPickerSheet 바텀시트 오픈
  */
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ohaengColors, colors, radius, spacing, textStyles } from '@/design-system';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import clsx from 'clsx';
+import { ohaengColors, colors, fontFamily } from '@/design-system';
 import { CharSlotData } from '../types';
 import HanjaPickerSheet from './HanjaPickerSheet';
 
@@ -22,39 +23,69 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const hasHanja = !!value.hanja;
-  // 자원오행 기반 색상
   const oc = value.charOhaeng ? ohaengColors[value.charOhaeng] : null;
 
   return (
-    <View style={styles.wrapper}>
-      <Text style={[textStyles.overline, styles.label]}>{label}</Text>
+    <View className="flex-1 items-center min-w-0" style={{ gap: 4 }}>
+      <Text
+        className="text-overline text-textTertiary uppercase"
+        style={{ fontFamily: fontFamily.sansMedium }}
+      >
+        {label}
+      </Text>
 
       <Pressable
         onPress={() => setSheetOpen(true)}
+        className={clsx(
+          'w-full rounded-md border-[1.5px] items-center justify-center',
+          !hasHanja && 'border-dashed bg-surface border-border',
+        )}
         style={[
-          styles.box,
-          hasHanja
-            ? {
-                borderColor: oc?.border ?? colors.borderStrong,
-                backgroundColor: oc?.light ?? colors.surface,
-              }
-            : styles.boxEmpty,
+          { height: 54 },
+          hasHanja && {
+            borderColor: oc?.border ?? colors.borderStrong,
+            backgroundColor: oc?.light ?? colors.surface,
+          },
         ]}
       >
         {hasHanja ? (
           <>
-            {/* 한자 글자 — 자원오행 색상 */}
-            <Text style={[textStyles.hanjaLg, { color: oc?.base ?? colors.textSecondary }]}>
+            <Text
+              className="text-hanjaLg text-center"
+              style={{
+                fontFamily: fontFamily.serifMedium,
+                color: oc?.base ?? colors.textSecondary,
+              }}
+            >
               {value.hanja}
             </Text>
-            <Text style={[styles.mean, { color: oc?.base ?? colors.textSecondary }]} numberOfLines={1}>
+            <Text
+              className="text-center text-caption"
+              style={{
+                fontFamily: fontFamily.sansMedium,
+                color: oc?.base ?? colors.textSecondary,
+                fontSize: 10,
+                lineHeight: 14,
+              }}
+              numberOfLines={1}
+            >
               {value.mean} {value.hangul}
             </Text>
           </>
         ) : (
           <>
-            <Text style={[styles.plusIcon, { color: colors.textDisabled }]}>+</Text>
-            <Text style={[textStyles.overline, { color: colors.textTertiary }]}>한자 선택</Text>
+            <Text
+              className="text-textDisabled"
+              style={{ fontFamily: fontFamily.serifLight, fontSize: 22, lineHeight: 26 }}
+            >
+              +
+            </Text>
+            <Text
+              className="text-overline text-textTertiary uppercase"
+              style={{ fontFamily: fontFamily.sansMedium }}
+            >
+              한자 선택
+            </Text>
           </>
         )}
       </Pressable>
@@ -69,37 +100,3 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    alignItems: 'center',
-    gap: spacing['1'],
-  },
-  label: {
-    color: colors.textTertiary,
-  },
-  box: {
-    width: '100%',
-    height: 54,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  boxEmpty: {
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    borderStyle: 'dashed',
-  },
-  plusIcon: {
-    fontSize: 22,
-    lineHeight: 26,
-    fontWeight: '300',
-  },
-  mean: {
-    textAlign: 'center',
-    fontSize: 10,
-    lineHeight: 14,
-  },
-});

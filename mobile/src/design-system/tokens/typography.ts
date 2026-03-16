@@ -239,3 +239,27 @@ export const textStyles = {
 } as const satisfies Record<string, TextStyle>;
 
 export type TextStyleKey = keyof typeof textStyles;
+
+/**
+ * NativeWind(Tailwind) className 조합 — textStyles와 1:1 대응.
+ * 컴포넌트에서 className={textClassNames.heading} 형태로 사용.
+ */
+export const textClassNames = {
+  display: 'text-display font-serif-medium',
+  title1: 'text-title1 font-serif-medium',
+  title2: 'text-title2 font-serif-medium',
+  heading: 'text-heading font-serif-medium',
+  numeralLg: 'text-numeralLg font-serif-semi-bold',
+  numeralMd: 'text-numeralMd font-serif-medium',
+  hanjaLg: 'text-hanjaLg font-serif-medium',
+  hanjaSm: 'text-hanjaSm font-serif-medium',
+  serifLabel: 'text-serifLabel font-serif-medium',
+  bodyLg: 'text-bodyLg font-sans-medium',
+  body: 'text-body font-sans-regular',
+  bodySm: 'text-bodySm font-sans-regular',
+  uiMd: 'text-uiMd font-sans-medium',
+  uiSm: 'text-uiSm font-sans-medium',
+  label: 'text-label font-sans-medium',
+  caption: 'text-caption font-sans-medium',
+  overline: 'text-overline font-sans-medium uppercase',
+} as const satisfies Record<TextStyleKey, string>;

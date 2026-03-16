@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, ohaengColors, textStyles, spacing, radius } from '@/design-system';
+import { Text, View } from 'react-native';
+import { colors, fontFamily, ohaengColors } from '@/design-system';
 import { Ohaeng, OhaengRelation } from '../types';
 
 interface Props {
@@ -23,11 +23,22 @@ const RELATION_COLOR: Record<OhaengRelation, string> = {
 function OhaengNode({ element }: { element: Ohaeng | null }) {
   const oc = element ? ohaengColors[element] : null;
   return (
-    <View style={[
-      styles.node,
-      oc ? { backgroundColor: oc.light, borderColor: oc.border } : styles.nodeEmpty,
-    ]}>
-      <Text style={[textStyles.uiSm, { color: oc?.base ?? colors.textDisabled }]}>
+    <View
+      className="w-[52px] h-[52px] rounded-full border-[1.5px] items-center justify-center"
+      style={
+        oc
+          ? { backgroundColor: oc.light, borderColor: oc.border }
+          : {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              borderStyle: 'dashed',
+            }
+      }
+    >
+      <Text
+        className="text-uiSm"
+        style={{ fontFamily: fontFamily.sansMedium, color: oc?.base ?? colors.textDisabled }}
+      >
         {element ?? '?'}
       </Text>
     </View>
@@ -38,66 +49,28 @@ function Arrow({ relation }: { relation: OhaengRelation | null }) {
   const color = relation ? RELATION_COLOR[relation] : colors.border;
   const label = relation ? RELATION_LABEL[relation] : '';
   return (
-    <View style={styles.arrowWrapper}>
-      <Text style={[styles.arrowLabel, { color }]}>{label}</Text>
-      <View style={[styles.arrowLine, { backgroundColor: color }]} />
-      <Text style={[styles.arrowHead, { color }]}>{'▶'}</Text>
+    <View className="items-center justify-center mx-1 min-w-[48px]">
+      <Text
+        className="text-overline"
+        style={{ fontFamily: fontFamily.sansMedium, color, fontSize: 8, marginBottom: 2 }}
+      >
+        {label}
+      </Text>
+      <View className="h-[1.5px] w-8 bg-current" style={{ width: 32, height: 1.5, backgroundColor: color }} />
+      <Text style={{ fontSize: 8, marginTop: -2, color }}>{'▶'}</Text>
     </View>
   );
 }
 
 export default function OhaengFlowDiagram({ elements, relations }: Props) {
   return (
-    <View style={styles.container}>
+    <View className="flex-row items-center justify-center py-3">
       {elements.map((el, i) => (
         <React.Fragment key={i}>
           <OhaengNode element={el} />
-          {i < elements.length - 1 && (
-            <Arrow relation={relations[i] ?? null} />
-          )}
+          {i < elements.length - 1 && <Arrow relation={relations[i] ?? null} />}
         </React.Fragment>
       ))}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing['3'],
-  },
-  node: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.full,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nodeEmpty: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-  },
-  arrowWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: spacing['1'],
-    minWidth: 48,
-  },
-  arrowLabel: {
-    ...textStyles.overline,
-    fontSize: 8,
-    marginBottom: 2,
-  },
-  arrowLine: {
-    height: 1.5,
-    width: 32,
-  },
-  arrowHead: {
-    fontSize: 8,
-    marginTop: -2,
-  },
-});

@@ -1,34 +1,33 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, ohaengColors, textStyles, radius } from '@/design-system';
+import { Text, View } from 'react-native';
+import { colors, fontFamily, ohaengColors, radius } from '@/design-system';
 import { Ohaeng, OhaengRelation } from '../types';
 import { generates, destroys, ohaengLabel } from '../domain/ohaeng';
 
 export interface OhaengNodeData {
-  character: string | null;   // 한글 또는 한자 모두 가능 ('김', '民', '準')
+  character: string | null;
   ohaeng: Ohaeng | null;
-  positionLabel: string;      // '성', '첫째', '둘째'
+  positionLabel: string;
 }
 
-// 노드 크기: 기존(52) × 1.4
 const NODE_SIZE = 73;
 
-// 삼각형 레이아웃 — 노드 center 좌표
-// 원 사이 gap을 기존 대비 0.6배로 줄인 위치
 const CENTERS = [
-  { x: 130, y: 37 },   // [0] 성 (상단)
-  { x: 55, y: 153 },   // [1] 첫째 (좌하)
-  { x: 205, y: 153 },  // [2] 둘째 (우하)
+  { x: 130, y: 37 },
+  { x: 55, y: 153 },
+  { x: 205, y: 153 },
 ] as const;
 
-// 기하학적 쌍 인덱스 (방향과 무관)
-const PAIR_INDICES: [number, number][] = [[0, 1], [1, 2], [0, 2]];
+const PAIR_INDICES: [number, number][] = [
+  [0, 1],
+  [1, 2],
+  [0, 2],
+];
 
-// 쌍별 레이블 오프셋 — 삼각형 외측 방향
 const PAIR_LABEL_OFFSETS = [
-  { dx: -12, dy: -8 },  // pair (0,1): 좌측 외측
-  { dx: 0,   dy: 50 },  // pair (1,2): 하단 외측 (노드 아래)
-  { dx: 12,  dy: -8 },  // pair (0,2): 우측 외측
+  { dx: -12, dy: -8 },
+  { dx: 0, dy: 50 },
+  { dx: 12, dy: -8 },
 ];
 
 const RELATION_COLOR: Record<OhaengRelation, string> = {
@@ -75,11 +74,10 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
   const angle = Math.atan2(dy, dx) * (180 / Math.PI);
   const midX = (from.x + to.x) / 2;
   const midY = (from.y + to.y) / 2;
-  const effectiveDist = dist - NODE_SIZE; // 양쪽 노드 가장자리까지
+  const effectiveDist = dist - NODE_SIZE;
   const color = RELATION_COLOR[relation];
   const isDashed = relation === '동일';
 
-  // 화살표 레이블: 水生木 / 金剋木 형식
   const fromOhaeng = nodes[fromIdx].ohaeng;
   const toOhaeng = nodes[toIdx].ohaeng;
   let labelText = '';
@@ -94,7 +92,6 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
 
   return (
     <>
-      {/* 화살표 라인 + 화살촉 */}
       <View
         style={{
           position: 'absolute',
@@ -106,7 +103,6 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
         }}
       >
         {isDashed ? (
-          // 동일: 점선, 화살촉 없음
           <View
             style={{
               position: 'absolute',
@@ -121,7 +117,6 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
           />
         ) : (
           <>
-            {/* 라인 — 화살촉 너비(10)만큼 앞에서 끝남 */}
             <View
               style={{
                 position: 'absolute',
@@ -132,7 +127,6 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
                 backgroundColor: color,
               }}
             />
-            {/* CSS border 삼각형 화살촉 — 라인 끝에 바로 붙음 */}
             <View
               style={{
                 position: 'absolute',
@@ -152,7 +146,6 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
         )}
       </View>
 
-      {/* 관계 레이블 (비회전 텍스트) */}
       {labelText !== '' && (
         <View
           style={{
@@ -163,7 +156,12 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
             alignItems: 'center',
           }}
         >
-          <Text style={[textStyles.caption, { color, letterSpacing: 0 }]}>{labelText}</Text>
+          <Text
+            className="text-caption"
+            style={{ fontFamily: fontFamily.sansMedium, color, letterSpacing: 0 }}
+          >
+            {labelText}
+          </Text>
         </View>
       )}
     </>
@@ -175,22 +173,56 @@ function OhaengNode({ data }: { data: OhaengNodeData }) {
   const oc = ohaeng ? ohaengColors[ohaeng] : null;
   return (
     <View
+      className="items-center justify-center rounded-full border-[1.5px]"
       style={[
-        styles.node,
+        {
+          width: NODE_SIZE,
+          height: NODE_SIZE,
+          borderRadius: radius.full,
+        },
         oc
           ? { backgroundColor: oc.light, borderColor: oc.border }
-          : styles.nodeEmpty,
+          : {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              borderStyle: 'dashed',
+            },
       ]}
     >
-      <Text style={[textStyles.hanjaSm, { color: colors.textPrimary, lineHeight: 19, fontSize: 18 }]}>
+      <Text
+        className="text-hanjaSm"
+        style={{
+          fontFamily: fontFamily.serifMedium,
+          color: colors.textPrimary,
+          lineHeight: 19,
+          fontSize: 18,
+        }}
+      >
         {character ?? '?'}
       </Text>
       {ohaeng ? (
-        <Text style={[textStyles.caption, { color: oc?.base, lineHeight: 13, letterSpacing: 0 }]}>
+        <Text
+          className="text-caption"
+          style={{
+            fontFamily: fontFamily.sansMedium,
+            color: oc?.base,
+            lineHeight: 13,
+            letterSpacing: 0,
+          }}
+        >
           {ohaeng}({ohaengLabel(ohaeng)})
         </Text>
       ) : null}
-      <Text style={[textStyles.overline, { color: oc?.base ?? colors.textDisabled, fontSize: 8, lineHeight: 10, letterSpacing: 0 }]}>
+      <Text
+        className="text-overline"
+        style={{
+          fontFamily: fontFamily.sansMedium,
+          color: oc?.base ?? colors.textDisabled,
+          fontSize: 8,
+          lineHeight: 10,
+          letterSpacing: 0,
+        }}
+      >
         {positionLabel}
       </Text>
     </View>
@@ -199,20 +231,52 @@ function OhaengNode({ data }: { data: OhaengNodeData }) {
 
 function Legend() {
   return (
-    <View style={styles.legend}>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendLine, { backgroundColor: colors.positive }]} />
-        <View style={[styles.legendArrowHead, { borderLeftColor: colors.positive }]} />
-        <Text style={styles.legendLabel}>생(生) 좋음</Text>
+    <View className="flex-row mb-2 items-center gap-3">
+      <View className="flex-row items-center gap-0.5">
+        <View className="h-[1.5px] w-3.5 bg-positive" style={{ width: 14, height: 1.5 }} />
+        <View
+          className="border-l-[5px] border-t-4 border-b-4 border-t-transparent border-b-transparent"
+          style={{ borderLeftColor: colors.positive, width: 0, height: 0 }}
+        />
+        <Text
+          className="text-caption"
+          style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+        >
+          생(生) 좋음
+        </Text>
       </View>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendLine, { backgroundColor: colors.negative }]} />
-        <View style={[styles.legendArrowHead, { borderLeftColor: colors.negative }]} />
-        <Text style={styles.legendLabel}>극(剋) 나쁨</Text>
+      <View className="flex-row items-center gap-0.5">
+        <View className="h-[1.5px] w-3.5 bg-negative" style={{ width: 14, height: 1.5 }} />
+        <View
+          style={{
+            width: 0,
+            height: 0,
+            borderTopWidth: 4,
+            borderTopColor: 'transparent',
+            borderBottomWidth: 4,
+            borderBottomColor: 'transparent',
+            borderLeftWidth: 5,
+            borderLeftColor: colors.negative,
+          }}
+        />
+        <Text
+          className="text-caption"
+          style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+        >
+          극(剋) 나쁨
+        </Text>
       </View>
-      <View style={styles.legendItem}>
-        <View style={[styles.legendDash, { borderTopColor: colors.borderStrong }]} />
-        <Text style={styles.legendLabel}>중립</Text>
+      <View className="flex-row items-center">
+        <View
+          className="w-3.5 h-0 border-t-[1.5px] border-dashed border-borderStrong mr-1"
+          style={{ width: 14, borderTopColor: colors.borderStrong }}
+        />
+        <Text
+          className="text-caption"
+          style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+        >
+          중립
+        </Text>
       </View>
     </View>
   );
@@ -228,14 +292,12 @@ export default function OhaengRelationDiagram({ nodes }: Props) {
   );
 
   return (
-    <View style={styles.wrapper}>
+    <View className="items-center py-2">
       <Legend />
-      <View style={styles.container}>
-        {/* 화살표 (노드 아래에 렌더링) */}
+      <View className="w-[260px] h-[225px] relative" style={{ width: 260, height: 225 }}>
         {directedPairs.map((pair, i) => (
           <ArrowEdge key={i} pair={pair} pairIndex={i} nodes={nodes} />
         ))}
-        {/* 노드 (화살표 위에 렌더링) */}
         {CENTERS.map((center, i) => (
           <View
             key={i}
@@ -252,65 +314,3 @@ export default function OhaengRelationDiagram({ nodes }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  legend: {
-    flexDirection: 'row',
-    marginBottom: 8,
-    alignItems: 'center',
-    columnGap: 12,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    columnGap: 1,
-  },
-  legendLine: {
-    width: 14,
-    height: 1.5,
-  },
-  legendArrowHead: {
-    width: 0,
-    height: 0,
-    borderTopWidth: 4,
-    borderTopColor: 'transparent',
-    borderBottomWidth: 4,
-    borderBottomColor: 'transparent',
-    borderLeftWidth: 5,
-  },
-  legendDash: {
-    width: 14,
-    height: 0,
-    borderTopWidth: 1.5,
-    borderStyle: 'dashed',
-    marginRight: 4,
-  },
-  legendLabel: {
-    ...textStyles.caption,
-    color: colors.textSecondary,
-    letterSpacing: 0,
-    marginLeft: 3,
-  },
-  container: {
-    width: 260,
-    height: 225,
-    position: 'relative',
-  },
-  node: {
-    width: NODE_SIZE,
-    height: NODE_SIZE,
-    borderRadius: radius.full,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nodeEmpty: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-  },
-});
