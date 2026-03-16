@@ -8,9 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@expo-google-fonts/noto-sans-kr':
+        specifier: ^0.4.3
+        version: 0.4.3
+      '@expo-google-fonts/noto-serif-kr':
+        specifier: ^0.4.3
+        version: 0.4.3
       expo:
         specifier: ~55.0.5
         version: 55.0.5(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      expo-font:
+        specifier: ^55.0.4
+        version: 55.0.4(expo@55.0.5)(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       expo-status-bar:
         specifier: ~55.0.4
         version: 55.0.4(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
@@ -525,6 +534,12 @@ packages:
   '@babel/types@7.29.0':
     resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
     engines: {node: '>=6.9.0'}
+
+  '@expo-google-fonts/noto-sans-kr@0.4.3':
+    resolution: {integrity: sha512-EVS/uJPcf1TgJtjmQmrFr0oGdcl7ml09CSu0E/AyGzR0UfzdR2pBbzWWPsnuzZiGUl643ODYwYiXK5+B+fLjhQ==}
+
+  '@expo-google-fonts/noto-serif-kr@0.4.3':
+    resolution: {integrity: sha512-thoZx9Dcr4CrjFdhOAVJXuv31rkirogUHkY0XUBybyC97NBO18Q2/achY+KfvLVabEZvmEEAH829Y9YUALZbIQ==}
 
   '@expo/cli@55.0.15':
     resolution: {integrity: sha512-Qd4aF2+wT9LtdV7G/gULbx/t8FJ/OVtwuNkLcZt1XlosQ5XX/C/3ywZXYl+/bYcHUmuO1TBD3Fg05bNlmL6vrw==}
@@ -3098,6 +3113,10 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
+
+  '@expo-google-fonts/noto-sans-kr@0.4.3': {}
+
+  '@expo-google-fonts/noto-serif-kr@0.4.3': {}
 
   '@expo/cli@55.0.15(@expo/dom-webview@55.0.3)(expo-constants@55.0.7(expo@55.0.5)(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(typescript@5.9.3))(expo-font@55.0.4(expo@55.0.5)(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0))(expo@55.0.5)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)':
     dependencies:

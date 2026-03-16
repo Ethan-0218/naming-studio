@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
+import { useAppFonts } from '@/design-system';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -1029,6 +1030,7 @@ function SessionRestoreModal({ visible, onClose, onRestore }: {
 
 // ── Main App ──────────────────────────────────────────────────────────
 export default function App() {
+  const [fontsLoaded, fontError] = useAppFonts();
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [formOpen, setFormOpen] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -1399,6 +1401,8 @@ export default function App() {
       setLoading(false);
     }
   }
+
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <View style={s.root}>
