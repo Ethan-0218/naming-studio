@@ -171,7 +171,14 @@ def surname_search(q: str = "", limit: int = 20):
     results = repo.search_by_eum(q.strip(), limit=limit * 3) if q.strip() else []
     family = [h for h in results if h.is_family_hanja][:limit]
     return [
-        {"hanja": h.hanja, "eum": h.eum, "mean": h.mean, "stroke": h.original_stroke_count}
+        {
+            "hanja": h.hanja, "eum": h.eum, "mean": h.mean, "stroke": h.original_stroke_count,
+            "char_ohaeng": h.character_five_elements,
+            "stroke_ohaeng": h.stroke_five_elements,
+            "sound_eumyang": h.sound_based_yin_yang,
+            "stroke_eumyang": h.stroke_based_yin_yang,
+            "baleum_ohaeng": h.pronunciation_five_elements,
+        }
         for h in family
     ]
 
@@ -184,7 +191,14 @@ def hanja_search(q: str = "", limit: int = 20):
     results = repo.search_by_eum(q.strip(), limit=limit * 3) if q.strip() else []
     name_hanja = [h for h in results if not h.is_family_hanja][:limit]
     return [
-        {"hanja": h.hanja, "eum": h.eum, "mean": h.mean, "stroke": h.original_stroke_count}
+        {
+            "hanja": h.hanja, "eum": h.eum, "mean": h.mean, "stroke": h.original_stroke_count,
+            "char_ohaeng": h.character_five_elements,
+            "stroke_ohaeng": h.stroke_five_elements,
+            "sound_eumyang": h.sound_based_yin_yang,
+            "stroke_eumyang": h.stroke_based_yin_yang,
+            "baleum_ohaeng": h.pronunciation_five_elements,
+        }
         for h in name_hanja
     ]
 
