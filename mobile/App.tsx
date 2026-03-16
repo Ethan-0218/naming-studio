@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
-import { useAppFonts } from '@/design-system';
+import { useAppFonts, palette, fontFamily, ohaengColors } from '@/design-system';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -119,13 +119,10 @@ const WELCOME_MESSAGE: ChatMessage = {
 
 // ── Constants ──────────────────────────────────────────────────────────
 const harmonyColor: Record<string, string> = {
-  대길: '#2ecc71', 반길: '#f39c12', 대흉: '#e74c3c',
+  대길: palette.green, 반길: palette.gold, 대흉: palette.fireBase,
 };
 const rarityColor: Record<string, string> = {
-  희귀: '#9b59b6', 보통: '#3498db', 흔한: '#95a1a8',
-};
-const ohaengColor: Record<string, string> = {
-  목: '#27ae60', 화: '#e74c3c', 토: '#d4a017', 금: '#7f8c8d', 수: '#2980b9',
+  희귀: palette.teal, 보통: palette.inkMid, 흔한: palette.inkFaint,
 };
 const stageLabel: Record<string, string> = {
   welcome: '환영',
@@ -138,9 +135,9 @@ const stageLabel: Record<string, string> = {
   candidate_exploration: '이름 탐색',
 };
 
-const PURPLE = '#6c63ff';
-const BG = '#f4f3ff';
-const CARD_BG = '#ffffff';
+const PURPLE = palette.vermillion;
+const BG = palette.bg;
+const CARD_BG = palette.card;
 
 // ── HanjaSearchField (공통) ────────────────────────────────────────────
 function HanjaSearchField({ selected, onSelect, onClear, error, endpoint, placeholder, chipSuffix = '' }: {
@@ -586,7 +583,7 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
             <Text style={s.sylHanja}>{syl.한자 || syl.한글}</Text>
             <Text style={s.sylHangul}>{syl.한글}</Text>
             {syl.오행 ? (
-              <View style={[s.ohaengPill, { backgroundColor: ohaengColor[syl.오행] ?? '#ccc' }]}>
+              <View style={[s.ohaengPill, { backgroundColor: ohaengColors[syl.오행]?.base ?? palette.inkFaint }]}>
                 <Text style={s.ohaengText}>{syl.오행}</Text>
               </View>
             ) : null}
@@ -1573,7 +1570,7 @@ const fm = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    backgroundColor: CARD_BG,
+    backgroundColor: palette.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -1583,48 +1580,49 @@ const fm = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: '#ddd',
+    backgroundColor: palette.border,
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 16,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  title: { fontSize: 20, fontWeight: '800', color: '#1a1a2e' },
+  title: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: palette.ink },
   closeBtn: { padding: 6 },
-  closeBtnText: { fontSize: 18, color: '#999' },
-  subtitle: { fontSize: 13, color: '#888', lineHeight: 18, marginBottom: 20 },
+  closeBtnText: { fontSize: 18, color: palette.inkFaint },
+  subtitle: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkLight, lineHeight: 18, marginBottom: 20 },
 
   row: { flexDirection: 'row', marginBottom: 0 },
   field: { marginBottom: 18 },
-  label: { fontSize: 14, fontWeight: '600', color: '#444', marginBottom: 8 },
-  req: { color: '#e74c3c' },
+  label: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: palette.inkMid, marginBottom: 8 },
+  req: { color: palette.fireBase },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
 
   input: {
     borderWidth: 1.5,
-    borderColor: '#e0dbff',
+    borderColor: palette.border,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    fontFamily: fontFamily.sansRegular,
     fontSize: 15,
-    color: '#222',
-    backgroundColor: '#fafafa',
+    color: palette.ink,
+    backgroundColor: palette.surface,
   },
-  inputErr: { borderColor: '#e74c3c' },
-  errText: { color: '#e74c3c', fontSize: 11, marginTop: 3 },
+  inputErr: { borderColor: palette.fireBase },
+  errText: { fontFamily: fontFamily.sansRegular, color: palette.fireBase, fontSize: 11, marginTop: 3 },
 
   genderRow: { flexDirection: 'row', gap: 8 },
   genderBtn: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#e0dbff',
+    borderColor: palette.border,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
-  genderBtnOn: { borderColor: PURPLE, backgroundColor: '#f0eeff' },
-  genderText: { fontSize: 13, color: '#888' },
-  genderTextOn: { color: PURPLE, fontWeight: '700' },
+  genderBtnOn: { borderColor: palette.vermillion, backgroundColor: palette.vermillionLight },
+  genderText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkLight },
+  genderTextOn: { fontFamily: fontFamily.sansMedium, color: palette.vermillion },
 
   lunarRow: { flexDirection: 'row', gap: 4 },
   lunarBtn: {
@@ -1632,69 +1630,69 @@ const fm = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: palette.border,
   },
-  lunarBtnOn: { borderColor: PURPLE, backgroundColor: '#f0eeff' },
-  lunarText: { fontSize: 12, color: '#888' },
-  lunarTextOn: { color: PURPLE, fontWeight: '700' },
+  lunarBtnOn: { borderColor: palette.vermillion, backgroundColor: palette.vermillionLight },
+  lunarText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight },
+  lunarTextOn: { fontFamily: fontFamily.sansMedium, color: palette.vermillion },
 
   dateRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
-  sep: { color: '#666', fontSize: 15, paddingTop: 11 },
+  sep: { fontFamily: fontFamily.sansRegular, color: palette.inkMid, fontSize: 15, paddingTop: 11 },
 
   checkRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   checkbox: {
     width: 20, height: 20, borderRadius: 5,
-    borderWidth: 2, borderColor: '#ccc',
+    borderWidth: 2, borderColor: palette.border,
     marginRight: 8, alignItems: 'center', justifyContent: 'center',
   },
-  checkboxOn: { borderColor: PURPLE, backgroundColor: PURPLE },
+  checkboxOn: { borderColor: palette.vermillion, backgroundColor: palette.vermillion },
   checkMark: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  checkLabel: { fontSize: 14, color: '#666' },
+  checkLabel: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: palette.inkMid },
 
   submitBtn: {
-    backgroundColor: PURPLE,
+    backgroundColor: palette.vermillion,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 8,
   },
-  submitBtnOff: { backgroundColor: '#ccc' },
-  submitText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  submitBtnOff: { backgroundColor: palette.border },
+  submitText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 16 },
 
-  optional: { color: '#aaa', fontWeight: '400' },
+  optional: { color: palette.inkFaint, fontWeight: '400' },
 
   // ── Hanja search (공통) ──
   searchRow: { flexDirection: 'row', alignItems: 'center' },
   searchResults: {
-    borderWidth: 1.5, borderColor: '#e0dbff',
+    borderWidth: 1.5, borderColor: palette.border,
     borderRadius: 10, marginTop: 4,
-    backgroundColor: CARD_BG, overflow: 'hidden',
+    backgroundColor: palette.card, overflow: 'hidden',
   },
   searchResultItem: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 12, paddingVertical: 10, gap: 10,
   },
-  searchResultBorder: { borderBottomWidth: 1, borderBottomColor: '#f0eeff' },
-  searchResultHanja: { fontSize: 22, fontWeight: '700', color: '#1a1a2e', width: 34, textAlign: 'center' },
-  searchResultEum: { fontSize: 15, fontWeight: '600', color: PURPLE, width: 44 },
-  searchResultMean: { fontSize: 12, color: '#888', flex: 1 },
-  searchResultStroke: { fontSize: 11, color: '#bbb' },
-  searchNoResult: { fontSize: 13, color: '#aaa', marginTop: 6, paddingLeft: 4 },
+  searchResultBorder: { borderBottomWidth: 1, borderBottomColor: palette.surface },
+  searchResultHanja: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: palette.ink, width: 34, textAlign: 'center' },
+  searchResultEum: { fontFamily: fontFamily.sansMedium, fontSize: 15, color: palette.vermillion, width: 44 },
+  searchResultMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight, flex: 1 },
+  searchResultStroke: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkFaint },
+  searchNoResult: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkFaint, marginTop: 6, paddingLeft: 4 },
 
   hanjaChip: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1.5, borderColor: PURPLE, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#f0eeff',
+    borderWidth: 1.5, borderColor: palette.vermillionBorder, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: palette.vermillionLight,
   },
   hanjaChipInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  hanjaChipChar: { fontSize: 28, fontWeight: '800', color: '#1a1a2e' },
-  hanjaChipHangul: { fontSize: 16, fontWeight: '700', color: PURPLE },
-  hanjaChipMean: { fontSize: 12, color: '#888', maxWidth: 180 },
+  hanjaChipChar: { fontFamily: fontFamily.serifMedium, fontSize: 28, color: palette.ink },
+  hanjaChipHangul: { fontFamily: fontFamily.sansMedium, fontSize: 16, color: palette.vermillion },
+  hanjaChipMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight, maxWidth: 180 },
   hanjaChipClearBtn: {
-    backgroundColor: 'rgba(108,99,255,0.12)',
+    backgroundColor: palette.surface,
     borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5,
   },
-  hanjaChipClearText: { fontSize: 13, color: PURPLE, fontWeight: '600' },
+  hanjaChipClearText: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: palette.vermillion },
 });
 
 // ── Debug styles ────────────────────────────────────────────────────────
@@ -1734,10 +1732,10 @@ const db = StyleSheet.create({
 
 // ── Chat Styles ────────────────────────────────────────────────────────
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+  root: { flex: 1, backgroundColor: palette.bg },
 
   header: {
-    backgroundColor: PURPLE,
+    backgroundColor: palette.vermillion,
     paddingTop: Platform.OS === 'ios' ? 52 : 16,
     paddingBottom: 12,
     paddingHorizontal: 16,
@@ -1745,174 +1743,176 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerTitle: { color: '#fff', fontSize: 20, fontWeight: '700' },
-  headerSub: { color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 },
+  headerTitle: { fontFamily: fontFamily.serifMedium, color: '#fff', fontSize: 20, letterSpacing: 1 },
+  headerSub: { fontFamily: fontFamily.sansRegular, color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 },
   headerRight: { flexDirection: 'row', alignItems: 'center' },
   headerBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
   },
   headerBtnOn: { backgroundColor: 'rgba(255,220,50,0.35)' },
-  headerBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  headerBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 13 },
 
   likedPanel: {
-    backgroundColor: CARD_BG,
+    backgroundColor: palette.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e4ff',
+    borderBottomColor: palette.border,
     padding: 12, paddingHorizontal: 16,
   },
-  likedTitle: { fontSize: 13, fontWeight: '700', color: '#555', marginBottom: 4 },
-  likedEmpty: { color: '#aaa', fontSize: 13 },
-  likedName: { color: PURPLE, fontSize: 14, fontWeight: '600', paddingVertical: 2 },
-  dislikedName: { color: '#e74c3c', fontSize: 14, paddingVertical: 2 },
+  likedTitle: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: palette.inkMid, marginBottom: 4 },
+  likedEmpty: { fontFamily: fontFamily.sansRegular, color: palette.inkFaint, fontSize: 13 },
+  likedName: { fontFamily: fontFamily.sansMedium, color: palette.vermillion, fontSize: 14, paddingVertical: 2 },
+  dislikedName: { fontFamily: fontFamily.sansRegular, color: palette.fireBase, fontSize: 14, paddingVertical: 2 },
 
   list: { flex: 1 },
   listContent: { padding: 14, paddingBottom: 8 },
 
   userWrap: { alignItems: 'flex-end', marginBottom: 8 },
   userBubble: {
-    backgroundColor: PURPLE,
+    backgroundColor: palette.vermillion,
     borderRadius: 18, borderBottomRightRadius: 4,
     paddingHorizontal: 14, paddingVertical: 10,
     maxWidth: '78%',
   },
-  userText: { color: '#fff', fontSize: 15, lineHeight: 21 },
+  userText: { fontFamily: fontFamily.sansRegular, color: '#fff', fontSize: 15, lineHeight: 22 },
 
   aiWrap: { alignItems: 'flex-start', marginBottom: 12, maxWidth: '92%' },
   aiBubble: {
-    backgroundColor: CARD_BG,
+    backgroundColor: palette.card,
     borderRadius: 18, borderTopLeftRadius: 4,
     paddingHorizontal: 14, paddingVertical: 10,
     marginBottom: 6,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
-  aiText: { color: '#222', fontSize: 15, lineHeight: 23 },
+  aiText: { fontFamily: fontFamily.sansRegular, color: palette.ink, fontSize: 15, lineHeight: 23 },
 
   stagePill: {
-    backgroundColor: '#e8e4ff',
+    backgroundColor: palette.vermillionLight,
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 4,
   },
-  stagePillText: { fontSize: 11, color: PURPLE, fontWeight: '600' },
+  stagePillText: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: palette.vermillion },
 
   formOpenBtn: {
-    backgroundColor: PURPLE,
+    backgroundColor: palette.vermillion,
     borderRadius: 12,
     paddingHorizontal: 20, paddingVertical: 12,
     alignSelf: 'flex-start',
     marginTop: 2,
   },
-  formOpenBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  formOpenBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
 
   // ── ChoiceGroup ───────────────────────────────────────────────────────
   choiceGroup: {
-    backgroundColor: '#f3f0ff',
+    backgroundColor: palette.surface,
     borderRadius: 14, padding: 14, marginBottom: 8, width: '100%',
-    borderWidth: 1, borderColor: '#d8d0f5',
+    borderWidth: 1, borderColor: palette.border,
   },
   choiceGroupDone: { opacity: 0.6 },
-  choiceQuestion: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 10 },
+  choiceQuestion: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: palette.ink, marginBottom: 10 },
   choiceChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    backgroundColor: '#fff', borderRadius: 20,
+    backgroundColor: palette.card, borderRadius: 20,
     paddingHorizontal: 14, paddingVertical: 8,
-    borderWidth: 1.5, borderColor: '#d0c8f0',
+    borderWidth: 1.5, borderColor: palette.border,
   },
-  chipSelected: { backgroundColor: PURPLE, borderColor: PURPLE },
+  chipSelected: { backgroundColor: palette.vermillion, borderColor: palette.vermillion },
   chipDisabled: { opacity: 0.5 },
-  chipText: { fontSize: 13, color: '#555', fontWeight: '500' },
-  chipTextSelected: { color: '#fff', fontWeight: '700' },
+  chipText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkMid },
+  chipTextSelected: { fontFamily: fontFamily.sansMedium, color: '#fff' },
   chipCustomRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, width: '100%' },
   chipCustomInput: {
-    flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 6, fontSize: 13, backgroundColor: '#fff',
+    flex: 1, borderWidth: 1, borderColor: palette.border, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 6,
+    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: palette.card,
   },
   followUpRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8 },
   followUpInput: {
-    flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, backgroundColor: '#fff',
+    flex: 1, borderWidth: 1, borderColor: palette.border, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: palette.card,
   },
   followUpBtn: {
-    backgroundColor: PURPLE, borderRadius: 10,
+    backgroundColor: palette.vermillion, borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 8,
   },
-  followUpBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  followUpBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 13 },
   multiSubmitBtn: {
-    marginTop: 12, backgroundColor: PURPLE, borderRadius: 10,
+    marginTop: 12, backgroundColor: palette.vermillion, borderRadius: 10,
     paddingHorizontal: 20, paddingVertical: 10, alignSelf: 'flex-end',
   },
-  multiSubmitBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-  choiceDoneText: { fontSize: 12, color: '#888', marginTop: 8, fontStyle: 'italic' },
+  multiSubmitBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 14 },
+  choiceDoneText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight, marginTop: 8, fontStyle: 'italic' },
 
   nameCard: {
-    backgroundColor: CARD_BG, borderRadius: 14, padding: 14, marginBottom: 8,
-    width: '100%', borderLeftWidth: 3, borderLeftColor: PURPLE,
+    backgroundColor: palette.card, borderRadius: 14, padding: 14, marginBottom: 8,
+    width: '100%', borderLeftWidth: 3, borderLeftColor: palette.vermillion,
     shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 }, elevation: 3,
   },
   nameHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 },
-  nameText: { fontSize: 22, fontWeight: '800', color: '#1a1a2e', marginRight: 4 },
+  nameText: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: palette.ink, marginRight: 4 },
   badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  badgeText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 12 },
 
   syllableRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  syllable: { alignItems: 'center', flex: 1, backgroundColor: '#f8f7ff', borderRadius: 8, padding: 8 },
-  sylHanja: { fontSize: 20, fontWeight: '700', color: '#333' },
-  sylHangul: { fontSize: 13, color: '#888', marginTop: 2 },
+  syllable: { alignItems: 'center', flex: 1, backgroundColor: palette.surface, borderRadius: 8, padding: 8 },
+  sylHanja: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: palette.ink },
+  sylHangul: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkLight, marginTop: 2 },
   ohaengPill: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginTop: 3 },
-  ohaengText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-  sylMeaning: { fontSize: 11, color: '#999', textAlign: 'center', marginTop: 3 },
-  nameReason: { fontSize: 13, color: '#555', fontStyle: 'italic', marginBottom: 8 },
+  ohaengText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 11 },
+  sylMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkFaint, textAlign: 'center', marginTop: 3 },
+  nameReason: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkMid, fontStyle: 'italic', marginBottom: 8 },
 
   scoreBreakdown: { marginBottom: 10, gap: 4 },
   scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  scoreLabel: { fontSize: 11, color: '#888', width: 48 },
-  scoreBarBg: { flex: 1, height: 6, backgroundColor: '#eee', borderRadius: 3, overflow: 'hidden' },
-  scoreBarFill: { height: 6, backgroundColor: PURPLE, borderRadius: 3 },
-  scoreValue: { fontSize: 11, color: '#888', width: 32, textAlign: 'right' },
+  scoreLabel: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkLight, width: 48 },
+  scoreBarBg: { flex: 1, height: 6, backgroundColor: palette.surface, borderRadius: 3, overflow: 'hidden' },
+  scoreBarFill: { height: 6, backgroundColor: palette.vermillion, borderRadius: 3 },
+  scoreValue: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkLight, width: 32, textAlign: 'right' },
 
   hanjaOptionsSection: { marginBottom: 8, gap: 6 },
   hanjaOptionsRow: { gap: 4 },
-  hanjaOptionsLabel: { fontSize: 11, color: '#888', fontWeight: '600' },
+  hanjaOptionsLabel: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: palette.inkLight },
   hanjaOptionsList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  hanjaOptionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#f5f5f5', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
-  hanjaOptionChar: { fontSize: 14, color: '#333', fontWeight: '700' },
-  hanjaOptionMeaning: { fontSize: 11, color: '#666' },
+  hanjaOptionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: palette.surface, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
+  hanjaOptionChar: { fontFamily: fontFamily.serifMedium, fontSize: 14, color: palette.ink },
+  hanjaOptionMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkLight },
 
   reactionRow: { flexDirection: 'row', gap: 8 },
   reactionBtn: {
-    flex: 1, borderWidth: 1.5, borderColor: '#ddd',
+    flex: 1, borderWidth: 1.5, borderColor: palette.border,
     borderRadius: 8, paddingVertical: 8, alignItems: 'center',
   },
-  reactionLiked: { borderColor: '#2ecc71', backgroundColor: '#f0fdf4' },
-  reactionDisliked: { borderColor: '#e74c3c', backgroundColor: '#fef2f2' },
-  reactionText: { fontSize: 14, color: '#888' },
-  reactionTextActive: { color: '#333', fontWeight: '600' },
+  reactionLiked: { borderColor: palette.greenBorder, backgroundColor: palette.greenLight },
+  reactionDisliked: { borderColor: palette.vermillionBorder, backgroundColor: palette.vermillionLight },
+  reactionText: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: palette.inkLight },
+  reactionTextActive: { fontFamily: fontFamily.sansMedium, color: palette.ink },
 
   loadingRow: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 },
-  loadingText: { color: '#888', fontSize: 14 },
+  loadingText: { fontFamily: fontFamily.sansRegular, color: palette.inkLight, fontSize: 14 },
 
   payBanner: {
-    backgroundColor: '#fff8e1', borderTopWidth: 1, borderTopColor: '#ffe082',
+    backgroundColor: palette.goldLight, borderTopWidth: 1, borderTopColor: palette.goldBorder,
     padding: 14, alignItems: 'center', gap: 8,
   },
-  payText: { color: '#795548', fontSize: 14 },
-  payBtn: { backgroundColor: '#f59e0b', borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
-  payBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  payText: { fontFamily: fontFamily.sansRegular, color: palette.inkMid, fontSize: 14 },
+  payBtn: { backgroundColor: palette.gold, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  payBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
 
   inputRow: {
-    flexDirection: 'row', padding: 10, backgroundColor: CARD_BG,
-    borderTopWidth: 1, borderTopColor: '#eee', alignItems: 'flex-end', gap: 8,
+    flexDirection: 'row', padding: 10, backgroundColor: palette.card,
+    borderTopWidth: 1, borderTopColor: palette.border, alignItems: 'flex-end', gap: 8,
   },
   input: {
-    flex: 1, backgroundColor: BG, borderRadius: 12,
+    flex: 1, backgroundColor: palette.bg, borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 10,
-    fontSize: 15, color: '#222', maxHeight: 100,
-    borderWidth: 1, borderColor: '#e0dbff',
+    fontFamily: fontFamily.sansRegular, fontSize: 15, color: palette.ink, maxHeight: 100,
+    borderWidth: 1, borderColor: palette.border,
   },
-  sendBtn: { backgroundColor: PURPLE, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
-  sendBtnOff: { backgroundColor: '#ccc' },
-  sendBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  sendBtn: { backgroundColor: palette.vermillion, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
+  sendBtnOff: { backgroundColor: palette.border },
+  sendBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
 
   sessionChip: {
     backgroundColor: '#1a1a2e',
