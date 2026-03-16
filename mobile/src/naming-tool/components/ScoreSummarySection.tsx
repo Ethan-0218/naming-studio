@@ -34,11 +34,11 @@ export default function ScoreSummarySection({ score }: Props) {
     <View style={styles.container}>
       <View style={styles.left}>
         <Text style={[textStyles.sectionLabel, { color: palette.inkLight }]}>종합 점수</Text>
-        <Text style={[textStyles.scoreDisplay, { color: score != null ? scoreColor(score) : palette.inkFaint, marginTop: spacing['1'] }]}>
+        <Text style={[textStyles.scoreDisplay, { color: score != null ? scoreColor(score) : palette.inkFaint }]}>
           {score != null ? score : '–'}
         </Text>
         {score != null && (
-          <Text style={[textStyles.body, { color: palette.inkLight, marginTop: spacing['1'] }]}>
+          <Text style={[textStyles.body, { color: palette.inkLight }]}>
             {ScoreLabel(score)}
           </Text>
         )}
@@ -74,21 +74,21 @@ export default function ScoreSummarySection({ score }: Props) {
   );
 }
 
-const GAUGE_SIZE = 72;
-const INNER_SIZE = 52;
+const GAUGE_SIZE = 54;
+const INNER_SIZE = 44;
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: palette.ink,
     borderRadius: radius.lg,
     padding: spacing['4'],
-    marginBottom: spacing['3'],
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   left: {
     flex: 1,
+    justifyContent: 'center',
   },
   gauge: {
     width: GAUGE_SIZE,

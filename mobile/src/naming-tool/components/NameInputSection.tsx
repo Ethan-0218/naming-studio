@@ -1,10 +1,12 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { palette, textStyles, spacing, radius } from '@/design-system';
-import { CharSlotData, Gender, NameInput } from '../types';
+import { CharSlotData, Gender, NameInput, NamingAnalysis } from '../types';
 import HanjaSlotInput from './HanjaSlotInput';
+import ScoreSummarySection from './ScoreSummarySection';
 
 interface Props {
+  analysis: NamingAnalysis;
   nameInput: NameInput;
   onUpdate: (slot: 'surname' | 'first1' | 'first2', data: Partial<CharSlotData>) => void;
   gender: Gender;
@@ -15,9 +17,9 @@ const SLOT_LABELS = { surname: '성', first1: '첫째', first2: '둘째' } as co
 type SlotKey = 'surname' | 'first1' | 'first2';
 const SLOTS: SlotKey[] = ['surname', 'first1', 'first2'];
 
-export default function NameInputSection({ nameInput, onUpdate, gender, onGenderChange }: Props) {
+export default function NameInputSection({analysis, nameInput, onUpdate, gender, onGenderChange }: Props) {
   return (
-    <View>
+    <View >
       {/* Title row — outside the card */}
       <View style={styles.outerTitleRow}>
         <Text style={[textStyles.sectionTitle, { color: palette.ink }]}>이름 입력</Text>
@@ -87,7 +89,12 @@ export default function NameInputSection({ nameInput, onUpdate, gender, onGender
           </View>
         </View>
 
+
+      <ScoreSummarySection score={analysis.totalScore} />
+
       </View>
+
+
     </View>
   );
 }
@@ -115,16 +122,18 @@ const styles = StyleSheet.create({
     borderColor: palette.inkMid,
   },
   card: {
-    backgroundColor: palette.card,
+    backgroundColor: 'white',
     borderRadius: radius.lg,
     padding: spacing['4'],
+    gap: spacing['3'],
+    borderWidth: 1,
+    borderColor: palette.border,
   },
   rowGroup: {
-    paddingVertical: spacing['2'],
+    gap: spacing['1'],
   },
   rowLabel: {
     color: palette.inkLight,
-    marginBottom: spacing['2'],
   },
   slotRow: {
     flexDirection: 'row',
@@ -144,7 +153,7 @@ const styles = StyleSheet.create({
   },
   hangulInput: {
     width: '100%',
-    height: 64,
+    height: 54,
     borderRadius: radius.md,
     borderWidth: 1.5,
     borderColor: palette.border,
@@ -156,6 +165,5 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: palette.border,
-    marginVertical: spacing['1'],
   },
 });

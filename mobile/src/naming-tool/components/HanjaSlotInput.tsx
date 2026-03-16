@@ -48,7 +48,7 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
               {value.hanja}
             </Text>
             <Text style={[styles.mean, { color: oc?.base ?? palette.inkMid }]} numberOfLines={1}>
-              {value.mean}
+              {value.mean} {value.hangul}
             </Text>
           </>
         ) : (
@@ -74,20 +74,18 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     alignItems: 'center',
+    gap: spacing['1'],
   },
   label: {
     color: palette.inkLight,
-    marginBottom: spacing['1'],
   },
   box: {
     width: '100%',
-    minHeight: 76,
+    height: 54,
     borderRadius: radius.md,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing['2'],
-    paddingHorizontal: spacing['1'],
   },
   boxEmpty: {
     borderColor: palette.border,
@@ -100,7 +98,6 @@ const styles = StyleSheet.create({
     fontWeight: '300',
   },
   mean: {
-    marginTop: 2,
     textAlign: 'center',
     fontSize: 10,
     lineHeight: 14,

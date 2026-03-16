@@ -20,6 +20,7 @@ export type FontFamilyKey = keyof typeof fontFamily;
  * 주의: RN의 lineHeight는 배수가 아닌 절댓값(px)
  * 주의: textTransform은 'uppercase' as const 필수 (TypeScript 타입 확장 방지)
  */
+const LINE_HEIGHT_MULTIPLIER = 1.14;
 export const textStyles = {
   /** 앱 타이틀: 이름공방 로고 등 */
   appTitle: {
@@ -32,24 +33,28 @@ export const textStyles = {
   hanjaDisplay: {
     fontFamily: fontFamily.serifMedium,
     fontSize: 24,
+    lineHeight: 24 * LINE_HEIGHT_MULTIPLIER
   },
 
   /** 섹션 제목 / 바텀시트 타이틀 */
   sectionTitle: {
     fontFamily: fontFamily.serifMedium,
     fontSize: 16,
+    lineHeight: 16 * LINE_HEIGHT_MULTIPLIER
   },
 
   /** 종합 점수 숫자 전용 */
   scoreDisplay: {
     fontFamily: fontFamily.serifLight,
     fontSize: 32,
+    lineHeight: 32 * LINE_HEIGHT_MULTIPLIER
   },
 
   /** 수리격 숫자 */
   numerologyNum: {
     fontFamily: fontFamily.serifRegular,
     fontSize: 20,
+    lineHeight: 20 * LINE_HEIGHT_MULTIPLIER
   },
 
   /** 평가 카드 제목 */
@@ -57,13 +62,14 @@ export const textStyles = {
     fontFamily: fontFamily.sansMedium,
     fontSize: 13,
     letterSpacing: 0.3,
+    lineHeight: 13 * LINE_HEIGHT_MULTIPLIER
   },
 
   /** 본문 설명 */
   body: {
     fontFamily: fontFamily.sansRegular,
     fontSize: 11,
-    lineHeight: 18.7, // 11 * 1.7
+    lineHeight: 11 * LINE_HEIGHT_MULTIPLIER
   },
 
   /** 라벨 · 뱃지 */
@@ -71,6 +77,7 @@ export const textStyles = {
     fontFamily: fontFamily.sansMedium,
     fontSize: 10,
     letterSpacing: 1,
+    lineHeight: 10 * LINE_HEIGHT_MULTIPLIER
   },
 
   /** 섹션 라벨 (uppercase) */
@@ -79,6 +86,7 @@ export const textStyles = {
     fontSize: 9,
     letterSpacing: 2,
     textTransform: 'uppercase' as const,
+    lineHeight: 9 * LINE_HEIGHT_MULTIPLIER
   },
 } as const satisfies Record<string, TextStyle>;
 

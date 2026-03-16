@@ -39,9 +39,9 @@ export default function NamingToolScreen({ onBack }: Props) {
           <Text style={[textStyles.body, { color: palette.inkMid }]}>← 채팅</Text>
         </Pressable>
         <View style={styles.headerCenter}>
-          <Text style={[textStyles.appTitle, { color: palette.ink }]}>이름공방</Text>
+          <Text style={[textStyles.appTitle, { color: palette.ink }]}>스스로 이름짓기</Text>
           <Text style={[textStyles.sectionLabel, { color: palette.inkLight, marginTop: 1 }]}>
-            획 · 이름 분석 및 작명
+            이름 분석 및 작명
           </Text>
         </View>
         <View style={{ width: 60 }} />
@@ -53,13 +53,13 @@ export default function NamingToolScreen({ onBack }: Props) {
         keyboardShouldPersistTaps="handled"
       >
         <NameInputSection
+          analysis={analysis}
           nameInput={nameInput}
           onUpdate={updateSlot}
           gender={gender}
           onGenderChange={setGender}
         />
 
-        <ScoreSummarySection score={analysis.totalScore} />
 
         <Divider />
 
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing['4'],
+    backgroundColor: palette.bg,
   },
   divider: {
     height: 1,
