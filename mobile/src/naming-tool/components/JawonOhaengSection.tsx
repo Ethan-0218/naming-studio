@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { fontFamily } from '@/design-system';
 import { NameInput, OhaengHarmonyResult } from '../types';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
@@ -25,24 +25,29 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
 
   return (
     <SectionCard title="자원오행" badge={badge} badgeColor={badgeColor}>
-      {hasInput ? (
-        <OhaengRelationDiagram nodes={nodes} />
-      ) : (
-        <Text
-          className="text-bodySm text-textDisabled text-center py-4"
-          style={{ fontFamily: fontFamily.sansRegular }}
-        >
-          한자를 선택하면 자원오행이 표시됩니다
-        </Text>
-      )}
-      {result && (
-        <Text
-          className="text-bodySm text-textSecondary mt-2"
-          style={{ fontFamily: fontFamily.sansRegular }}
-        >
-          {result.reason}
-        </Text>
-      )}
+      <View className="gap-3">
+        {hasInput ? (
+          <OhaengRelationDiagram nodes={nodes} />
+        ) : (
+          <Text
+            className="text-bodySm text-textDisabled text-center py-4"
+            style={{ fontFamily: fontFamily.sansRegular }}
+          >
+            한자를 선택하면 자원오행이 표시됩니다
+          </Text>
+        )}
+        {result && (
+          <>
+            <View className="border-b border-border" />
+            <Text
+              className="text-bodySm text-textSecondary"
+              style={{ fontFamily: fontFamily.sansRegular }}
+            >
+              {result.reason}
+            </Text>
+          </>
+        )}
+      </View>
     </SectionCard>
   );
 }
