@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, textStyles, spacing, radius } from '@/design-system';
+import { colors, textStyles, spacing, radius } from '@/design-system';
 import { NameInput, SuriEntry, SurigyeokResult, SuriLevel, Gender } from '../types';
 import { computeSurigyeok } from '../domain/surigyeok';
 import SectionCard from './SectionCard';
@@ -12,27 +12,27 @@ interface Props {
 }
 
 const LEVEL_COLOR: Record<SuriLevel, string> = {
-  '大吉': palette.teal,
-  '吉': palette.teal,
-  '中吉': palette.gold,
-  '中凶': palette.amber,
-  '凶': palette.vermillion,
-  '大凶': palette.vermillion,
+  '大吉': colors.positive,
+  '吉': colors.positive,
+  '中吉': colors.fillAccent,
+  '中凶': colors.warning,
+  '凶': colors.negative,
+  '大凶': colors.negative,
 };
 
 function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
   const color = LEVEL_COLOR[entry.level];
   return (
     <View style={styles.suriCard}>
-      <Text style={[textStyles.overline, { color: palette.inkLight }]}>{label}</Text>
+      <Text style={[textStyles.overline, { color: colors.textTertiary }]}>{label}</Text>
       <Text style={[textStyles.numeralMd, { color, marginTop: spacing['1'] }]}>{entry.number}</Text>
-      <Text style={[textStyles.uiSm, { color: palette.ink, marginTop: spacing['1'] }]}>
+      <Text style={[textStyles.uiSm, { color: colors.textPrimary, marginTop: spacing['1'] }]}>
         {entry.name1}
       </Text>
       <View style={[styles.levelBadge, { borderColor: color }]}>
         <Text style={[textStyles.overline, { color }]}>{entry.level}</Text>
       </View>
-      <Text style={[textStyles.bodySm, { color: palette.inkLight, marginTop: spacing['1'] }]} numberOfLines={2}>
+      <Text style={[textStyles.bodySm, { color: colors.textTertiary, marginTop: spacing['1'] }]} numberOfLines={2}>
         {entry.easyInterpretation}
       </Text>
     </View>
@@ -54,7 +54,7 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
   const badge = computed ? `총 ${computed.totalScore}점` : undefined;
 
   return (
-    <SectionCard title="수리격" badge={badge} badgeColor={computed ? (computed.totalScore >= 24 ? palette.teal : palette.gold) : undefined}>
+    <SectionCard title="수리격" badge={badge} badgeColor={computed ? (computed.totalScore >= 24 ? colors.positive : colors.warning) : undefined}>
       {computed ? (
         <View style={styles.grid}>
           <SuriCard label="원격" entry={computed.wongyeok} />
@@ -63,7 +63,7 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
           <SuriCard label="정격" entry={computed.jeongyeok} />
         </View>
       ) : (
-        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['4'] }]}>
           한자의 획수를 모두 입력하면 수리격이 계산됩니다
         </Text>
       )}
@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
   },
   suriCard: {
     width: '47%',
-    backgroundColor: palette.surface,
+    backgroundColor: colors.surface,
     borderRadius: radius.md,
     padding: spacing['3'],
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
   },
   levelBadge: {
     alignSelf: 'flex-start',

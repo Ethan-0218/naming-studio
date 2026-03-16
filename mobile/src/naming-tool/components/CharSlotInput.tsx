@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native';
-import { palette, ohaengColors, textStyles, spacing, radius } from '@/design-system';
+import { colors, ohaengColors, textStyles, spacing, radius } from '@/design-system';
 import { CharSlotData } from '../types';
 import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
@@ -57,11 +57,11 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
         onPress={() => !disabled && setEditing(e => !e)}
         disabled={disabled}
       >
-        <Text style={[textStyles.hanjaLg, { color: ohaengColor?.base ?? palette.inkMid }]}>
+        <Text style={[textStyles.hanjaLg, { color: ohaengColor?.base ?? colors.textSecondary }]}>
           {hasHanja ? value.hanja : '?'}
         </Text>
         {value.hangul ? (
-          <Text style={[textStyles.overline, { color: palette.inkLight, marginTop: 2 }]}>
+          <Text style={[textStyles.overline, { color: colors.textTertiary, marginTop: 2 }]}>
             {value.hangul}
           </Text>
         ) : null}
@@ -72,7 +72,7 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
         <View style={styles.pills}>
           {value.strokeCount != null && (
             <View style={styles.pill}>
-              <Text style={[textStyles.overline, { color: palette.inkMid }]}>
+              <Text style={[textStyles.overline, { color: colors.textSecondary }]}>
                 {value.strokeCount}획
               </Text>
             </View>
@@ -100,22 +100,22 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
             value={query}
             onChangeText={search}
             placeholder={role === 'surname' ? '성씨 검색 (예: 김)' : '음 검색 (예: 민)'}
-            placeholderTextColor={palette.inkFaint}
+            placeholderTextColor={colors.textDisabled}
             autoFocus
           />
-          {loading && <ActivityIndicator size="small" color={palette.inkLight} style={{ marginTop: 4 }} />}
+          {loading && <ActivityIndicator size="small" color={colors.textTertiary} style={{ marginTop: 4 }} />}
           {results.length > 0 && (
             <ScrollView style={styles.resultList} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
               {results.map((r, i) => (
                 <Pressable key={i} style={styles.resultRow} onPress={() => handleSelectResult(r)}>
-                  <Text style={[textStyles.hanjaLg, { fontSize: 20, color: palette.ink, marginRight: spacing['2'] }]}>
+                  <Text style={[textStyles.hanjaLg, { fontSize: 20, color: colors.textPrimary, marginRight: spacing['2'] }]}>
                     {r.hanja}
                   </Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={[textStyles.uiSm, { color: palette.ink }]}>
+                    <Text style={[textStyles.uiSm, { color: colors.textPrimary }]}>
                       {r.eum} · {r.mean}
                     </Text>
-                    <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>
+                    <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>
                       {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
                       {r.charOhaeng ? ` · ${r.charOhaeng}` : ''}
                     </Text>
@@ -126,22 +126,22 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
           )}
           {/* Manual stroke count input */}
           <View style={styles.manualRow}>
-            <Text style={[textStyles.bodySm, { color: palette.inkMid, marginRight: spacing['2'] }]}>획수 직접입력</Text>
+            <Text style={[textStyles.bodySm, { color: colors.textSecondary, marginRight: spacing['2'] }]}>획수 직접입력</Text>
             <TextInput
               style={[styles.searchInput, { flex: 1 }]}
               value={strokeInput}
               onChangeText={setStrokeInput}
               placeholder="예: 8"
-              placeholderTextColor={palette.inkFaint}
+              placeholderTextColor={colors.textDisabled}
               keyboardType="number-pad"
               onSubmitEditing={handleManualStroke}
             />
             <Pressable style={styles.applyBtn} onPress={handleManualStroke}>
-              <Text style={[textStyles.label, { color: palette.bg }]}>적용</Text>
+              <Text style={[textStyles.label, { color: colors.textInverse }]}>적용</Text>
             </Pressable>
           </View>
           <Pressable onPress={() => { setEditing(false); clearResults(); }} style={styles.closeBtn}>
-            <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>닫기</Text>
+            <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>닫기</Text>
           </Pressable>
         </View>
       )}
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     opacity: 0.35,
   },
   slotLabel: {
-    color: palette.inkLight,
+    color: colors.textTertiary,
     marginBottom: spacing['1'],
   },
   hanjaBox: {
@@ -166,8 +166,8 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: palette.border,
-    backgroundColor: palette.card,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceRaised,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -181,11 +181,11 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   mean: {
-    color: palette.inkLight,
+    color: colors.textTertiary,
     marginTop: 2,
     maxWidth: 80,
     textAlign: 'center',
@@ -195,10 +195,10 @@ const styles = StyleSheet.create({
     top: 100,
     left: -40,
     right: -40,
-    backgroundColor: palette.card,
+    backgroundColor: colors.surfaceRaised,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
     padding: spacing['3'],
     zIndex: 100,
     shadowColor: '#000',
@@ -209,13 +209,13 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
     borderRadius: radius.sm,
     paddingHorizontal: spacing['2'],
     paddingVertical: spacing['1'],
     ...textStyles.bodySm,
-    color: palette.ink,
-    backgroundColor: palette.bg,
+    color: colors.textPrimary,
+    backgroundColor: colors.bg,
   },
   resultList: {
     maxHeight: 180,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing['2'],
     borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+    borderBottomColor: colors.border,
   },
   manualRow: {
     flexDirection: 'row',
@@ -234,10 +234,10 @@ const styles = StyleSheet.create({
     marginTop: spacing['3'],
     paddingTop: spacing['3'],
     borderTopWidth: 1,
-    borderTopColor: palette.border,
+    borderTopColor: colors.border,
   },
   applyBtn: {
-    backgroundColor: palette.inkMid,
+    backgroundColor: colors.textSecondary,
     borderRadius: radius.sm,
     paddingHorizontal: spacing['2'],
     paddingVertical: spacing['1'],

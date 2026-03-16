@@ -2,7 +2,7 @@ import React from 'react';
 import {
   KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
-import { palette, textStyles, spacing } from '@/design-system';
+import { colors, textStyles, spacing } from '@/design-system';
 import { useNamingToolState } from '../hooks/useNamingToolState';
 import NameInputSection from './NameInputSection';
 import BaleumOhaengSection from './BaleumOhaengSection';
@@ -36,11 +36,11 @@ export default function NamingToolScreen({ onBack }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={onBack} style={styles.backBtn}>
-          <Text style={[textStyles.bodySm, { color: palette.inkMid }]}>← 채팅</Text>
+          <Text style={[textStyles.bodySm, { color: colors.textSecondary }]}>← 채팅</Text>
         </Pressable>
         <View style={styles.headerCenter}>
-          <Text style={[textStyles.title1, { color: palette.ink }]}>스스로 이름짓기</Text>
-          <Text style={[textStyles.overline, { color: palette.inkLight, marginTop: 1 }]}>
+          <Text style={[textStyles.title1, { color: colors.textPrimary }]}>스스로 이름짓기</Text>
+          <Text style={[textStyles.overline, { color: colors.textTertiary, marginTop: 1 }]}>
             이름 분석 및 작명
           </Text>
         </View>
@@ -114,7 +114,7 @@ export default function NamingToolScreen({ onBack }: Props) {
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: palette.appBg,
+    backgroundColor: colors.bgSubtle,
     zIndex: 100,
   },
   header: {
@@ -123,9 +123,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing['4'],
     paddingTop: Platform.OS === 'ios' ? 56 : spacing['4'],
     paddingBottom: spacing['3'],
-    backgroundColor: palette.bg,
+    backgroundColor: colors.bg,
     borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+    borderBottomColor: colors.border,
   },
   backBtn: {
     width: 60,
@@ -140,11 +140,11 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing['4'],
-    backgroundColor: palette.bg,
+    backgroundColor: colors.bg,
   },
   divider: {
     height: 1,
-    backgroundColor: palette.border,
+    backgroundColor: colors.border,
     marginVertical: spacing['4'],
   },
 });

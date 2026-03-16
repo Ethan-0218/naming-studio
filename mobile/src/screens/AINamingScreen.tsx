@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
-import { palette, fontFamily, ohaengColors } from '@/design-system';
+import { colors, fontFamily, ohaengColors } from '@/design-system';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -124,10 +124,10 @@ const WELCOME_MESSAGE: ChatMessage = {
 
 // ── Constants ──────────────────────────────────────────────────────────
 const harmonyColor: Record<string, string> = {
-  대길: palette.green, 반길: palette.gold, 대흉: palette.fireBase,
+  대길: colors.positive, 반길: colors.fillAccent, 대흉: ohaengColors['화'].base,
 };
 const rarityColor: Record<string, string> = {
-  희귀: palette.teal, 보통: palette.inkMid, 흔한: palette.inkFaint,
+  희귀: colors.positive, 보통: colors.textSecondary, 흔한: colors.textDisabled,
 };
 const stageLabel: Record<string, string> = {
   welcome: '환영',
@@ -140,9 +140,9 @@ const stageLabel: Record<string, string> = {
   candidate_exploration: '이름 탐색',
 };
 
-const PURPLE = palette.vermillion;
-const BG = palette.bg;
-const CARD_BG = palette.card;
+const PURPLE = colors.negative;
+const BG = colors.bg;
+const CARD_BG = colors.surfaceRaised;
 
 // ── HanjaSearchField (공통) ────────────────────────────────────────────
 function HanjaSearchField({ selected, onSelect, onClear, error, endpoint, placeholder, chipSuffix = '' }: {
@@ -588,7 +588,7 @@ function NameCard({ data, liked, disliked, onLike, onDislike }: {
             <Text style={s.sylHanja}>{syl.한자 || syl.한글}</Text>
             <Text style={s.sylHangul}>{syl.한글}</Text>
             {syl.오행 ? (
-              <View style={[s.ohaengPill, { backgroundColor: ohaengColors[syl.오행]?.base ?? palette.inkFaint }]}>
+              <View style={[s.ohaengPill, { backgroundColor: ohaengColors[syl.오행]?.base ?? colors.textDisabled }]}>
                 <Text style={s.ohaengText}>{syl.오행}</Text>
               </View>
             ) : null}
@@ -1577,7 +1577,7 @@ const fm = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    backgroundColor: palette.card,
+    backgroundColor: colors.surfaceRaised,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -1587,49 +1587,49 @@ const fm = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: palette.border,
+    backgroundColor: colors.border,
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 16,
   },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  title: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: palette.ink },
+  title: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: colors.textPrimary },
   closeBtn: { padding: 6 },
-  closeBtnText: { fontSize: 18, color: palette.inkFaint },
-  subtitle: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkLight, lineHeight: 18, marginBottom: 20 },
+  closeBtnText: { fontSize: 18, color: colors.textDisabled },
+  subtitle: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textTertiary, lineHeight: 18, marginBottom: 20 },
 
   row: { flexDirection: 'row', marginBottom: 0 },
   field: { marginBottom: 18 },
-  label: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: palette.inkMid, marginBottom: 8 },
-  req: { color: palette.fireBase },
+  label: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: colors.textSecondary, marginBottom: 8 },
+  req: { color: ohaengColors['화'].base },
   labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
 
   input: {
     borderWidth: 1.5,
-    borderColor: palette.border,
+    borderColor: colors.border,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontFamily: fontFamily.sansRegular,
     fontSize: 15,
-    color: palette.ink,
-    backgroundColor: palette.surface,
+    color: colors.textPrimary,
+    backgroundColor: colors.surface,
   },
-  inputErr: { borderColor: palette.fireBase },
-  errText: { fontFamily: fontFamily.sansRegular, color: palette.fireBase, fontSize: 11, marginTop: 3 },
+  inputErr: { borderColor: ohaengColors['화'].base },
+  errText: { fontFamily: fontFamily.sansRegular, color: ohaengColors['화'].base, fontSize: 11, marginTop: 3 },
 
   genderRow: { flexDirection: 'row', gap: 8 },
   genderBtn: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: palette.border,
+    borderColor: colors.border,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
-  genderBtnOn: { borderColor: palette.vermillion, backgroundColor: palette.vermillionLight },
-  genderText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkLight },
-  genderTextOn: { fontFamily: fontFamily.sansMedium, color: palette.vermillion },
+  genderBtnOn: { borderColor: colors.negative, backgroundColor: colors.negativeSub },
+  genderText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textTertiary },
+  genderTextOn: { fontFamily: fontFamily.sansMedium, color: colors.negative },
 
   lunarRow: { flexDirection: 'row', gap: 4 },
   lunarBtn: {
@@ -1637,69 +1637,69 @@ const fm = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
   },
-  lunarBtnOn: { borderColor: palette.vermillion, backgroundColor: palette.vermillionLight },
-  lunarText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight },
-  lunarTextOn: { fontFamily: fontFamily.sansMedium, color: palette.vermillion },
+  lunarBtnOn: { borderColor: colors.negative, backgroundColor: colors.negativeSub },
+  lunarText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary },
+  lunarTextOn: { fontFamily: fontFamily.sansMedium, color: colors.negative },
 
   dateRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 4 },
-  sep: { fontFamily: fontFamily.sansRegular, color: palette.inkMid, fontSize: 15, paddingTop: 11 },
+  sep: { fontFamily: fontFamily.sansRegular, color: colors.textSecondary, fontSize: 15, paddingTop: 11 },
 
   checkRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   checkbox: {
     width: 20, height: 20, borderRadius: 5,
-    borderWidth: 2, borderColor: palette.border,
+    borderWidth: 2, borderColor: colors.border,
     marginRight: 8, alignItems: 'center', justifyContent: 'center',
   },
-  checkboxOn: { borderColor: palette.vermillion, backgroundColor: palette.vermillion },
+  checkboxOn: { borderColor: colors.negative, backgroundColor: colors.negative },
   checkMark: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  checkLabel: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: palette.inkMid },
+  checkLabel: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: colors.textSecondary },
 
   submitBtn: {
-    backgroundColor: palette.vermillion,
+    backgroundColor: colors.negative,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 8,
   },
-  submitBtnOff: { backgroundColor: palette.border },
+  submitBtnOff: { backgroundColor: colors.border },
   submitText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 16 },
 
-  optional: { color: palette.inkFaint, fontWeight: '400' },
+  optional: { color: colors.textDisabled, fontWeight: '400' },
 
   // ── Hanja search (공통) ──
   searchRow: { flexDirection: 'row', alignItems: 'center' },
   searchResults: {
-    borderWidth: 1.5, borderColor: palette.border,
+    borderWidth: 1.5, borderColor: colors.border,
     borderRadius: 10, marginTop: 4,
-    backgroundColor: palette.card, overflow: 'hidden',
+    backgroundColor: colors.surfaceRaised, overflow: 'hidden',
   },
   searchResultItem: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 12, paddingVertical: 10, gap: 10,
   },
-  searchResultBorder: { borderBottomWidth: 1, borderBottomColor: palette.surface },
-  searchResultHanja: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: palette.ink, width: 34, textAlign: 'center' },
-  searchResultEum: { fontFamily: fontFamily.sansMedium, fontSize: 15, color: palette.vermillion, width: 44 },
-  searchResultMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight, flex: 1 },
-  searchResultStroke: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkFaint },
-  searchNoResult: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkFaint, marginTop: 6, paddingLeft: 4 },
+  searchResultBorder: { borderBottomWidth: 1, borderBottomColor: colors.surface },
+  searchResultHanja: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: colors.textPrimary, width: 34, textAlign: 'center' },
+  searchResultEum: { fontFamily: fontFamily.sansMedium, fontSize: 15, color: colors.negative, width: 44 },
+  searchResultMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary, flex: 1 },
+  searchResultStroke: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textDisabled },
+  searchNoResult: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textDisabled, marginTop: 6, paddingLeft: 4 },
 
   hanjaChip: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1.5, borderColor: palette.vermillionBorder, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: palette.vermillionLight,
+    borderWidth: 1.5, borderColor: colors.negativeBorder, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: colors.negativeSub,
   },
   hanjaChipInner: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  hanjaChipChar: { fontFamily: fontFamily.serifMedium, fontSize: 28, color: palette.ink },
-  hanjaChipHangul: { fontFamily: fontFamily.sansMedium, fontSize: 16, color: palette.vermillion },
-  hanjaChipMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight, maxWidth: 180 },
+  hanjaChipChar: { fontFamily: fontFamily.serifMedium, fontSize: 28, color: colors.textPrimary },
+  hanjaChipHangul: { fontFamily: fontFamily.sansMedium, fontSize: 16, color: colors.negative },
+  hanjaChipMean: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary, maxWidth: 180 },
   hanjaChipClearBtn: {
-    backgroundColor: palette.surface,
+    backgroundColor: colors.surface,
     borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5,
   },
-  hanjaChipClearText: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: palette.vermillion },
+  hanjaChipClearText: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: colors.negative },
 });
 
 // ── Debug styles ────────────────────────────────────────────────────────
@@ -1739,10 +1739,10 @@ const db = StyleSheet.create({
 
 // ── Chat Styles ────────────────────────────────────────────────────────
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: palette.bg },
+  root: { flex: 1, backgroundColor: colors.bg },
 
   header: {
-    backgroundColor: palette.vermillion,
+    backgroundColor: colors.negative,
     paddingBottom: 12,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -1760,22 +1760,22 @@ const s = StyleSheet.create({
   headerBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 13 },
 
   likedPanel: {
-    backgroundColor: palette.card,
+    backgroundColor: colors.surfaceRaised,
     borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+    borderBottomColor: colors.border,
     padding: 12, paddingHorizontal: 16,
   },
-  likedTitle: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: palette.inkMid, marginBottom: 4 },
-  likedEmpty: { fontFamily: fontFamily.sansRegular, color: palette.inkFaint, fontSize: 13 },
-  likedName: { fontFamily: fontFamily.sansMedium, color: palette.vermillion, fontSize: 14, paddingVertical: 2 },
-  dislikedName: { fontFamily: fontFamily.sansRegular, color: palette.fireBase, fontSize: 14, paddingVertical: 2 },
+  likedTitle: { fontFamily: fontFamily.sansMedium, fontSize: 13, color: colors.textSecondary, marginBottom: 4 },
+  likedEmpty: { fontFamily: fontFamily.sansRegular, color: colors.textDisabled, fontSize: 13 },
+  likedName: { fontFamily: fontFamily.sansMedium, color: colors.negative, fontSize: 14, paddingVertical: 2 },
+  dislikedName: { fontFamily: fontFamily.sansRegular, color: ohaengColors['화'].base, fontSize: 14, paddingVertical: 2 },
 
   list: { flex: 1 },
   listContent: { padding: 14, paddingBottom: 8 },
 
   userWrap: { alignItems: 'flex-end', marginBottom: 8 },
   userBubble: {
-    backgroundColor: palette.vermillion,
+    backgroundColor: colors.negative,
     borderRadius: 18, borderBottomRightRadius: 4,
     paddingHorizontal: 14, paddingVertical: 10,
     maxWidth: '78%',
@@ -1784,23 +1784,23 @@ const s = StyleSheet.create({
 
   aiWrap: { alignItems: 'flex-start', marginBottom: 12, maxWidth: '92%' },
   aiBubble: {
-    backgroundColor: palette.card,
+    backgroundColor: colors.surfaceRaised,
     borderRadius: 18, borderTopLeftRadius: 4,
     paddingHorizontal: 14, paddingVertical: 10,
     marginBottom: 6,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
-  aiText: { fontFamily: fontFamily.sansRegular, color: palette.ink, fontSize: 15, lineHeight: 23 },
+  aiText: { fontFamily: fontFamily.sansRegular, color: colors.textPrimary, fontSize: 15, lineHeight: 23 },
 
   stagePill: {
-    backgroundColor: palette.vermillionLight,
+    backgroundColor: colors.negativeSub,
     borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 4,
   },
-  stagePillText: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: palette.vermillion },
+  stagePillText: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: colors.negative },
 
   formOpenBtn: {
-    backgroundColor: palette.vermillion,
+    backgroundColor: colors.negative,
     borderRadius: 12,
     paddingHorizontal: 20, paddingVertical: 12,
     alignSelf: 'flex-start',
@@ -1810,114 +1810,114 @@ const s = StyleSheet.create({
 
   // ── ChoiceGroup ───────────────────────────────────────────────────────
   choiceGroup: {
-    backgroundColor: palette.surface,
+    backgroundColor: colors.surface,
     borderRadius: 14, padding: 14, marginBottom: 8, width: '100%',
-    borderWidth: 1, borderColor: palette.border,
+    borderWidth: 1, borderColor: colors.border,
   },
   choiceGroupDone: { opacity: 0.6 },
-  choiceQuestion: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: palette.ink, marginBottom: 10 },
+  choiceQuestion: { fontFamily: fontFamily.sansMedium, fontSize: 14, color: colors.textPrimary, marginBottom: 10 },
   choiceChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
-    backgroundColor: palette.card, borderRadius: 20,
+    backgroundColor: colors.surfaceRaised, borderRadius: 20,
     paddingHorizontal: 14, paddingVertical: 8,
-    borderWidth: 1.5, borderColor: palette.border,
+    borderWidth: 1.5, borderColor: colors.border,
   },
-  chipSelected: { backgroundColor: palette.vermillion, borderColor: palette.vermillion },
+  chipSelected: { backgroundColor: colors.negative, borderColor: colors.negative },
   chipDisabled: { opacity: 0.5 },
-  chipText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkMid },
+  chipText: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textSecondary },
   chipTextSelected: { fontFamily: fontFamily.sansMedium, color: '#fff' },
   chipCustomRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, width: '100%' },
   chipCustomInput: {
-    flex: 1, borderWidth: 1, borderColor: palette.border, borderRadius: 10,
+    flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 6,
-    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: palette.card,
+    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: colors.surfaceRaised,
   },
   followUpRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8 },
   followUpInput: {
-    flex: 1, borderWidth: 1, borderColor: palette.border, borderRadius: 10,
+    flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 8,
-    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: palette.card,
+    fontFamily: fontFamily.sansRegular, fontSize: 13, backgroundColor: colors.surfaceRaised,
   },
   followUpBtn: {
-    backgroundColor: palette.vermillion, borderRadius: 10,
+    backgroundColor: colors.negative, borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 8,
   },
   followUpBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 13 },
   multiSubmitBtn: {
-    marginTop: 12, backgroundColor: palette.vermillion, borderRadius: 10,
+    marginTop: 12, backgroundColor: colors.negative, borderRadius: 10,
     paddingHorizontal: 20, paddingVertical: 10, alignSelf: 'flex-end',
   },
   multiSubmitBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 14 },
-  choiceDoneText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: palette.inkLight, marginTop: 8, fontStyle: 'italic' },
+  choiceDoneText: { fontFamily: fontFamily.sansRegular, fontSize: 12, color: colors.textTertiary, marginTop: 8, fontStyle: 'italic' },
 
   nameCard: {
-    backgroundColor: palette.card, borderRadius: 14, padding: 14, marginBottom: 8,
-    width: '100%', borderLeftWidth: 3, borderLeftColor: palette.vermillion,
+    backgroundColor: colors.surfaceRaised, borderRadius: 14, padding: 14, marginBottom: 8,
+    width: '100%', borderLeftWidth: 3, borderLeftColor: colors.negative,
     shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 }, elevation: 3,
   },
   nameHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 },
-  nameText: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: palette.ink, marginRight: 4 },
+  nameText: { fontFamily: fontFamily.serifMedium, fontSize: 22, color: colors.textPrimary, marginRight: 4 },
   badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   badgeText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 12 },
 
   syllableRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  syllable: { alignItems: 'center', flex: 1, backgroundColor: palette.surface, borderRadius: 8, padding: 8 },
-  sylHanja: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: palette.ink },
-  sylHangul: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkLight, marginTop: 2 },
+  syllable: { alignItems: 'center', flex: 1, backgroundColor: colors.surface, borderRadius: 8, padding: 8 },
+  sylHanja: { fontFamily: fontFamily.serifMedium, fontSize: 20, color: colors.textPrimary },
+  sylHangul: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textTertiary, marginTop: 2 },
   ohaengPill: { borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, marginTop: 3 },
   ohaengText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 11 },
-  sylMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkFaint, textAlign: 'center', marginTop: 3 },
-  nameReason: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: palette.inkMid, fontStyle: 'italic', marginBottom: 8 },
+  sylMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textDisabled, textAlign: 'center', marginTop: 3 },
+  nameReason: { fontFamily: fontFamily.sansRegular, fontSize: 13, color: colors.textSecondary, fontStyle: 'italic', marginBottom: 8 },
 
   scoreBreakdown: { marginBottom: 10, gap: 4 },
   scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  scoreLabel: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkLight, width: 48 },
-  scoreBarBg: { flex: 1, height: 6, backgroundColor: palette.surface, borderRadius: 3, overflow: 'hidden' },
-  scoreBarFill: { height: 6, backgroundColor: palette.vermillion, borderRadius: 3 },
-  scoreValue: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkLight, width: 32, textAlign: 'right' },
+  scoreLabel: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textTertiary, width: 48 },
+  scoreBarBg: { flex: 1, height: 6, backgroundColor: colors.surface, borderRadius: 3, overflow: 'hidden' },
+  scoreBarFill: { height: 6, backgroundColor: colors.negative, borderRadius: 3 },
+  scoreValue: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textTertiary, width: 32, textAlign: 'right' },
 
   hanjaOptionsSection: { marginBottom: 8, gap: 6 },
   hanjaOptionsRow: { gap: 4 },
-  hanjaOptionsLabel: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: palette.inkLight },
+  hanjaOptionsLabel: { fontFamily: fontFamily.sansMedium, fontSize: 11, color: colors.textTertiary },
   hanjaOptionsList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  hanjaOptionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: palette.surface, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
-  hanjaOptionChar: { fontFamily: fontFamily.serifMedium, fontSize: 14, color: palette.ink },
-  hanjaOptionMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: palette.inkLight },
+  hanjaOptionItem: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: colors.surface, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
+  hanjaOptionChar: { fontFamily: fontFamily.serifMedium, fontSize: 14, color: colors.textPrimary },
+  hanjaOptionMeaning: { fontFamily: fontFamily.sansRegular, fontSize: 11, color: colors.textTertiary },
 
   reactionRow: { flexDirection: 'row', gap: 8 },
   reactionBtn: {
-    flex: 1, borderWidth: 1.5, borderColor: palette.border,
+    flex: 1, borderWidth: 1.5, borderColor: colors.border,
     borderRadius: 8, paddingVertical: 8, alignItems: 'center',
   },
-  reactionLiked: { borderColor: palette.greenBorder, backgroundColor: palette.greenLight },
-  reactionDisliked: { borderColor: palette.vermillionBorder, backgroundColor: palette.vermillionLight },
-  reactionText: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: palette.inkLight },
-  reactionTextActive: { fontFamily: fontFamily.sansMedium, color: palette.ink },
+  reactionLiked: { borderColor: ohaengColors['목'].border, backgroundColor: ohaengColors['목'].light },
+  reactionDisliked: { borderColor: colors.negativeBorder, backgroundColor: colors.negativeSub },
+  reactionText: { fontFamily: fontFamily.sansRegular, fontSize: 14, color: colors.textTertiary },
+  reactionTextActive: { fontFamily: fontFamily.sansMedium, color: colors.textPrimary },
 
   loadingRow: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 },
-  loadingText: { fontFamily: fontFamily.sansRegular, color: palette.inkLight, fontSize: 14 },
+  loadingText: { fontFamily: fontFamily.sansRegular, color: colors.textTertiary, fontSize: 14 },
 
   payBanner: {
-    backgroundColor: palette.goldLight, borderTopWidth: 1, borderTopColor: palette.goldBorder,
+    backgroundColor: colors.warningSub, borderTopWidth: 1, borderTopColor: colors.warningBorder,
     padding: 14, alignItems: 'center', gap: 8,
   },
-  payText: { fontFamily: fontFamily.sansRegular, color: palette.inkMid, fontSize: 14 },
-  payBtn: { backgroundColor: palette.gold, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
+  payText: { fontFamily: fontFamily.sansRegular, color: colors.textSecondary, fontSize: 14 },
+  payBtn: { backgroundColor: colors.fillAccent, borderRadius: 10, paddingHorizontal: 20, paddingVertical: 10 },
   payBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
 
   inputRow: {
-    flexDirection: 'row', padding: 10, backgroundColor: palette.card,
-    borderTopWidth: 1, borderTopColor: palette.border, alignItems: 'flex-end', gap: 8,
+    flexDirection: 'row', padding: 10, backgroundColor: colors.surfaceRaised,
+    borderTopWidth: 1, borderTopColor: colors.border, alignItems: 'flex-end', gap: 8,
   },
   input: {
-    flex: 1, backgroundColor: palette.bg, borderRadius: 12,
+    flex: 1, backgroundColor: colors.bg, borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 10,
-    fontFamily: fontFamily.sansRegular, fontSize: 15, color: palette.ink, maxHeight: 100,
-    borderWidth: 1, borderColor: palette.border,
+    fontFamily: fontFamily.sansRegular, fontSize: 15, color: colors.textPrimary, maxHeight: 100,
+    borderWidth: 1, borderColor: colors.border,
   },
-  sendBtn: { backgroundColor: palette.vermillion, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
-  sendBtnOff: { backgroundColor: palette.border },
+  sendBtn: { backgroundColor: colors.negative, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 12 },
+  sendBtnOff: { backgroundColor: colors.border },
   sendBtnText: { fontFamily: fontFamily.sansMedium, color: '#fff', fontSize: 15 },
 
   sessionChip: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { palette, textStyles, spacing, radius } from '@/design-system';
+import { colors, textStyles, spacing, radius } from '@/design-system';
 import { CharSlotData, Gender, NameInput, NamingAnalysis } from '../types';
 import HanjaSlotInput from './HanjaSlotInput';
 import ScoreSummarySection from './ScoreSummarySection';
@@ -22,7 +22,7 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
     <View >
       {/* Title row — outside the card */}
       <View style={styles.outerTitleRow}>
-        <Text style={[textStyles.heading, { color: palette.ink }]}>이름 입력</Text>
+        <Text style={[textStyles.heading, { color: colors.textPrimary }]}>이름 입력</Text>
         <View style={styles.genderRow}>
           {(['male', 'female'] as Gender[]).map(g => (
             <Pressable
@@ -30,7 +30,7 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
               style={[styles.genderBtn, gender === g && styles.genderBtnActive]}
               onPress={() => onGenderChange(g)}
             >
-              <Text style={[textStyles.label, { color: gender === g ? palette.bg : palette.inkMid }]}>
+              <Text style={[textStyles.label, { color: gender === g ? colors.textInverse : colors.textSecondary }]}>
                 {g === 'male' ? '남' : '여'}
               </Text>
             </Pressable>
@@ -58,7 +58,7 @@ export default function NameInputSection({analysis, nameInput, onUpdate, gender,
                       onUpdate(slot, { hangul: last });
                     }}
                     placeholder="ㅡ"
-                    placeholderTextColor={palette.inkFaint}
+                    placeholderTextColor={colors.textDisabled}
                     maxLength={2}
                     textAlign="center"
                   />
@@ -115,25 +115,25 @@ const styles = StyleSheet.create({
     paddingVertical: spacing['1'],
     borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
   },
   genderBtnActive: {
-    backgroundColor: palette.inkMid,
-    borderColor: palette.inkMid,
+    backgroundColor: colors.textSecondary,
+    borderColor: colors.textSecondary,
   },
   card: {
-    backgroundColor: palette.card,
+    backgroundColor: colors.surfaceRaised,
     borderRadius: radius.lg,
     padding: spacing['4'],
     gap: spacing['3'],
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
   },
   rowGroup: {
     gap: spacing['1'],
   },
   rowLabel: {
-    color: palette.inkLight,
+    color: colors.textTertiary,
   },
   slotRow: {
     flexDirection: 'row',
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   slotLabel: {
-    color: palette.inkLight,
+    color: colors.textTertiary,
     marginBottom: spacing['1'],
   },
   hangulInput: {
@@ -156,14 +156,14 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: palette.border,
-    backgroundColor: palette.bg,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
     ...textStyles.hanjaLg,
-    color: palette.ink,
+    color: colors.textPrimary,
     textAlign: 'center',
   },
   divider: {
     height: 1,
-    backgroundColor: palette.border,
+    backgroundColor: colors.border,
   },
 });

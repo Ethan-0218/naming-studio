@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { palette, textStyles, spacing } from '@/design-system';
+import { colors, textStyles, spacing } from '@/design-system';
 import { NameInput, OhaengHarmonyResult } from '../types';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
@@ -29,7 +29,7 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
       {hasInput ? (
         <OhaengRelationDiagram nodes={nodes} />
       ) : (
-        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['4'] }]}>
           이름을 입력하면 발음오행이 표시됩니다
         </Text>
       )}
@@ -42,7 +42,7 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
 
 const styles = StyleSheet.create({
   reason: {
-    color: palette.inkMid,
+    color: colors.textSecondary,
     marginTop: spacing['2'],
     lineHeight: 18,
   },

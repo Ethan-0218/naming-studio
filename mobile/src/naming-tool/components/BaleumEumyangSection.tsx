@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, textStyles, spacing, radius } from '@/design-system';
+import { colors, textStyles, spacing, radius } from '@/design-system';
 import { EumyangHarmonyResult, NameInput } from '../types';
 import SectionCard from './SectionCard';
 
@@ -10,8 +10,8 @@ interface Props {
 }
 
 const EUMYANG_COLOR = {
-  음: { text: palette.teal, bg: palette.tealLight, border: palette.tealBorder },
-  양: { text: palette.vermillion, bg: palette.vermillionLight, border: palette.vermillionBorder },
+  음: { text: colors.yin, bg: colors.yinSub, border: colors.yinBorder },
+  양: { text: colors.yang, bg: colors.yangSub, border: colors.yangBorder },
 };
 
 export default function BaleumEumyangSection({ nameInput, result }: Props) {
@@ -19,7 +19,7 @@ export default function BaleumEumyangSection({ nameInput, result }: Props) {
   const slots = [nameInput.surname, nameInput.first1, nameInput.first2];
 
   const badge = result ? (result.harmonious ? '균형' : '불균형') : undefined;
-  const badgeColor = result ? (result.harmonious ? palette.teal : palette.vermillion) : undefined;
+  const badgeColor = result ? (result.harmonious ? colors.positive : colors.negative) : undefined;
 
   return (
     <SectionCard title="발음음양" badge={badge} badgeColor={badgeColor}>
@@ -27,13 +27,13 @@ export default function BaleumEumyangSection({ nameInput, result }: Props) {
         <View style={styles.row}>
           {slots.map((slot, i) => {
             const ey = chars[i] ?? slot.soundEumyang;
-            const colors = ey ? EUMYANG_COLOR[ey] : null;
+            const oc = ey ? EUMYANG_COLOR[ey] : null;
             return (
-              <View key={i} style={[styles.box, colors && { backgroundColor: colors.bg, borderColor: colors.border }]}>
-                <Text style={[textStyles.uiSm, { color: colors?.text ?? palette.inkFaint }]}>
+              <View key={i} style={[styles.box, oc && { backgroundColor: oc.bg, borderColor: oc.border }]}>
+                <Text style={[textStyles.uiSm, { color: oc?.text ?? colors.textDisabled }]}>
                   {slot.hangul || '?'}
                 </Text>
-                <Text style={[textStyles.overline, { color: colors?.text ?? palette.inkFaint, marginTop: 2 }]}>
+                <Text style={[textStyles.overline, { color: oc?.text ?? colors.textDisabled, marginTop: 2 }]}>
                   {ey ?? '–'}
                 </Text>
               </View>
@@ -41,7 +41,7 @@ export default function BaleumEumyangSection({ nameInput, result }: Props) {
           })}
         </View>
       ) : (
-        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['4'] }]}>
           한자를 선택하면 발음음양이 표시됩니다
         </Text>
       )}
@@ -61,13 +61,13 @@ const styles = StyleSheet.create({
   box: {
     flex: 1,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
     borderRadius: radius.md,
     paddingVertical: spacing['3'],
     alignItems: 'center',
   },
   reason: {
-    color: palette.inkMid,
+    color: colors.textSecondary,
     marginTop: spacing['2'],
   },
 });

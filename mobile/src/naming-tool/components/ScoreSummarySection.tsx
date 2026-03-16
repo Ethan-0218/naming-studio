@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, textStyles, spacing, radius } from '@/design-system';
+import { colors, textStyles, spacing, radius } from '@/design-system';
 
 interface Props {
   score: number | null;
@@ -14,15 +14,15 @@ function ScoreLabel(score: number): string {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 80) return palette.teal;
-  if (score >= 60) return palette.gold;
-  if (score >= 40) return palette.amber;
-  return palette.vermillion;
+  if (score >= 80) return colors.positive;
+  if (score >= 60) return colors.fillAccent;
+  if (score >= 40) return colors.warning;
+  return colors.negative;
 }
 
 export default function ScoreSummarySection({ score }: Props) {
   const pct = score != null ? score / 100 : 0;
-  const fillColor = score != null ? scoreColor(score) : palette.inkMid;
+  const fillColor = score != null ? scoreColor(score) : colors.textSecondary;
 
   // 12시 방향에서 시계 방향으로 채우기
   // 오른쪽 클립: 0%→-180deg, 50%→0deg
@@ -33,12 +33,12 @@ export default function ScoreSummarySection({ score }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        <Text style={[textStyles.overline, { color: palette.inkLight }]}>종합 점수</Text>
-        <Text style={[textStyles.numeralLg, { color: score != null ? scoreColor(score) : palette.inkFaint }]}>
+        <Text style={[textStyles.overline, { color: colors.textTertiary }]}>종합 점수</Text>
+        <Text style={[textStyles.numeralLg, { color: score != null ? scoreColor(score) : colors.textDisabled }]}>
           {score != null ? score : '–'}
         </Text>
         {score != null && (
-          <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>
+          <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>
             {ScoreLabel(score)}
           </Text>
         )}
@@ -65,7 +65,7 @@ export default function ScoreSummarySection({ score }: Props) {
 
         {/* 내부 원 (도넛 구멍) */}
         <View style={styles.innerCircle}>
-          <Text style={[textStyles.numeralMd, { color: palette.inkFaint }]}>
+          <Text style={[textStyles.numeralMd, { color: colors.textDisabled }]}>
             {score != null ? score : '–'}
           </Text>
         </View>
@@ -79,7 +79,7 @@ const INNER_SIZE = 44;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: palette.ink,
+    backgroundColor: colors.fillBold,
     borderRadius: radius.lg,
     padding: spacing['4'],
     flexDirection: 'row',
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     width: GAUGE_SIZE,
     height: GAUGE_SIZE,
     borderRadius: GAUGE_SIZE / 2,
-    backgroundColor: palette.inkMid,
+    backgroundColor: colors.textSecondary,
   },
   // 오른쪽 반원 클립 (right: 0 기준)
   clipRight: {
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     width: INNER_SIZE,
     height: INNER_SIZE,
     borderRadius: INNER_SIZE / 2,
-    backgroundColor: palette.ink,
+    backgroundColor: colors.fillBold,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,

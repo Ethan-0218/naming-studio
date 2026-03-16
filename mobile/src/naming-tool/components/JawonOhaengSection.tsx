@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { palette, textStyles, spacing } from '@/design-system';
+import { colors, textStyles, spacing } from '@/design-system';
 import { NameInput, OhaengHarmonyResult } from '../types';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
 import SectionCard, { harmonyBadgeColor } from './SectionCard';
@@ -28,7 +28,7 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
       {hasInput ? (
         <OhaengRelationDiagram nodes={nodes} />
       ) : (
-        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['4'] }]}>
+        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['4'] }]}>
           한자를 선택하면 자원오행이 표시됩니다
         </Text>
       )}
@@ -41,7 +41,7 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
 
 const styles = StyleSheet.create({
   reason: {
-    color: palette.inkMid,
+    color: colors.textSecondary,
     marginTop: spacing['2'],
   },
 });

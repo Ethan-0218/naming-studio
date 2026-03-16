@@ -1,83 +1,137 @@
-export const palette = {
-  // 배경 / 서피스
-  appBg:   '#EEE8D8',
-  bg:      '#FBF7EE',
-  surface: '#F7F2E6',
-  card:    '#FDFAF3',
+// ─── Primitive Tokens ────────────────────────────────────────────────────────
+// 원시 색상 스케일. Semantic Token 정의 시에만 사용하고 컴포넌트에서 직접 참조 금지.
+export const primitives = {
+  // Hanji (한지)
+  hanji50:  '#FDFAF3',
+  hanji100: '#FBF7EE',
+  hanji200: '#F7F2E6',
+  hanji300: '#EEE8D8',
+  hanji400: '#E2D9C4',
+  hanji500: '#CEC3A8',
 
-  // 보더
-  border:   '#E2D9C4',
-  borderMd: '#CEC3A8',
+  // Ink (먹)
+  ink900: '#3A2F1E',
+  ink700: '#6B5C44',
+  ink500: '#9C8B72',
+  ink300: '#C0AE92',
 
-  // 잉크 (텍스트)
-  ink:      '#3A2F1E',
-  inkMid:   '#6B5C44',
-  inkLight: '#9C8B72',
-  inkFaint: '#C8AE92',
+  // Vermillion (주홍)
+  vermillion600: '#B83A2A',
+  vermillion400: '#DDA090',
+  vermillion200: '#FBF0EE',
 
-  // 주홍 (Vermillion)
-  vermillion:       '#B83A2A',
-  vermillionLight:  '#FBF0EE',
-  vermillionBorder: '#DDA898',
+  // Gold (금색)
+  gold600: '#A07030',
+  gold400: '#C9A86C',
+  gold200: '#FBF5E8',
 
-  // 금색 (Gold)
-  gold:       '#A87B38',
-  goldLight:  '#FBF5E8',
-  goldBorder: '#C9A86C',
+  // Teal (청록)
+  teal600: '#2A6060',
+  teal400: '#82B8B4',
+  teal200: '#EAF4F2',
 
-  // 청록 (Teal)
-  teal:       '#2A6B68',
-  tealLight:  '#EAF4F2',
-  tealBorder: '#B2BBB4',
+  // Purple (남보라)
+  purple600: '#5A4A8A',
+  purple400: '#AFA9EC',
+  purple200: '#F0EEF9',
 
-  // 남보리 (Purple)
-  purple:       '#5A4A8A',
-  purpleLight:  '#F0EEF9',
-  purpleBorder: '#AFA9EC',
+  // Ohaeng — Wood (목)
+  wood600: '#3A6818',
+  wood400: '#A8CC88',
+  wood200: '#EEF6E8',
 
-  // 황금 (Amber)
-  amber:       '#A07B38',
-  amberLight:  '#FBF5E8',
-  amberBorder: '#C9A86C',
+  // Ohaeng — Fire (화)
+  fire600: '#A03020',
+  fire400: '#DDA090',
+  fire200: '#FBF0EE',
 
-  // 초록 (Green)
-  green:       '#3A6818',
-  greenLight:  '#EEF6E8',
-  greenBorder: '#ABCC88',
+  // Ohaeng — Earth (토)
+  earth600: '#906830',
+  earth400: '#D4B870',
+  earth200: '#FDF5E4',
 
-  // 오행 — 목 (Wood)
-  woodBase:   '#3A6818',
-  woodLight:  '#EEF6E8',
-  woodBorder: '#ABCC88',
+  // Ohaeng — Metal (금)
+  metal600: '#706050',
+  metal400: '#C0B898',
+  metal200: '#F4F2EC',
 
-  // 오행 — 화 (Fire)
-  fireBase:   '#A83020',
-  fireLight:  '#FBF0EE',
-  fireBorder: '#DDA890',
-
-  // 오행 — 토 (Earth)
-  earthBase:   '#906830',
-  earthLight:  '#FDF5E4',
-  earthBorder: '#D4B870',
-
-  // 오행 — 금 (Metal)
-  metalBase:   '#706050',
-  metalLight:  '#F4F2EC',
-  metalBorder: '#C0B898',
-
-  // 오행 — 수 (Water)
-  waterBase:   '#2A6068',
-  waterLight:  '#EAF4F2',
-  waterBorder: '#B2BBB4',
+  // Ohaeng — Water (수)
+  water600: '#2A6060',
+  water400: '#82B8B4',
+  water200: '#EAF4F2',
 } as const;
 
-export type PaletteKey = keyof typeof palette;
+export type PrimitiveKey = keyof typeof primitives;
 
-/** 오행 색상 맵 — 한글 문자를 키로 직접 조회 */
+// ─── Semantic Tokens ──────────────────────────────────────────────────────────
+// 컴포넌트에서 반드시 이 토큰만 참조할 것.
+export const colors = {
+  // Surface
+  bg:            primitives.hanji100,
+  bgSubtle:      primitives.hanji300,
+  surface:       primitives.hanji200,
+  surfaceRaised: primitives.hanji50,
+  overlay:       'rgba(58, 47, 30, 0.35)',
+
+  // Border
+  border:        primitives.hanji400,
+  borderStrong:  primitives.hanji500,
+
+  // Text
+  textPrimary:   primitives.ink900,
+  textSecondary: primitives.ink700,
+  textTertiary:  primitives.ink500,
+  textDisabled:  primitives.ink300,
+  textInverse:   primitives.hanji100,
+
+  // Interactive
+  fillBold:      primitives.ink900,
+  fillAccent:    primitives.gold600,
+  fillAccentSub: primitives.gold200,
+
+  // Status — Positive (긍정, 생(生) 관계, 대길)
+  positive:       primitives.teal600,
+  positiveSub:    primitives.teal200,
+  positiveBorder: primitives.teal400,
+
+  // Status — Negative (부정, 극(剋) 관계, 대흉)
+  negative:       primitives.vermillion600,
+  negativeSub:    primitives.vermillion200,
+  negativeBorder: primitives.vermillion400,
+
+  // Status — Warning (주의, 반길)
+  warning:        primitives.gold600,
+  warningSub:     primitives.gold200,
+  warningBorder:  primitives.gold400,
+
+  // Status — Info (정보, 음(陰))
+  info:           primitives.purple600,
+  infoSub:        primitives.purple200,
+  infoBorder:     primitives.purple400,
+
+  // Highlight
+  highlight:       primitives.gold600,
+  highlightSub:    primitives.gold200,
+  highlightBorder: primitives.gold400,
+
+  // Yin Yang (음양)
+  yin:       primitives.purple600,
+  yinSub:    primitives.purple200,
+  yinBorder: primitives.purple400,
+
+  yang:      primitives.gold600,
+  yangSub:   primitives.gold200,
+  yangBorder: primitives.gold400,
+} as const;
+
+export type ColorKey = keyof typeof colors;
+
+// ─── Ohaeng Domain Colors ─────────────────────────────────────────────────────
+// 오행 도메인 전용. 일반 UI에서는 사용 안 함.
 export const ohaengColors: Record<string, { base: string; light: string; border: string }> = {
-  '목': { base: palette.woodBase,  light: palette.woodLight,  border: palette.woodBorder },
-  '화': { base: palette.fireBase,  light: palette.fireLight,  border: palette.fireBorder },
-  '토': { base: palette.earthBase, light: palette.earthLight, border: palette.earthBorder },
-  '금': { base: palette.metalBase, light: palette.metalLight, border: palette.metalBorder },
-  '수': { base: palette.waterBase, light: palette.waterLight, border: palette.waterBorder },
+  '목': { base: primitives.wood600,  light: primitives.wood200,  border: primitives.wood400  },
+  '화': { base: primitives.fire600,  light: primitives.fire200,  border: primitives.fire400  },
+  '토': { base: primitives.earth600, light: primitives.earth200, border: primitives.earth400 },
+  '금': { base: primitives.metal600, light: primitives.metal200, border: primitives.metal400 },
+  '수': { base: primitives.water600, light: primitives.water200, border: primitives.water400 },
 };

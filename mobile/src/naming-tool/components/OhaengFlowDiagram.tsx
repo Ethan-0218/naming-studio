@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, ohaengColors, textStyles, spacing, radius } from '@/design-system';
+import { colors, ohaengColors, textStyles, spacing, radius } from '@/design-system';
 import { Ohaeng, OhaengRelation } from '../types';
 
 interface Props {
@@ -15,19 +15,19 @@ const RELATION_LABEL: Record<OhaengRelation, string> = {
 };
 
 const RELATION_COLOR: Record<OhaengRelation, string> = {
-  '상생': palette.woodBorder,
-  '상극': palette.fireBorder,
-  '동일': palette.borderMd,
+  '상생': ohaengColors['목'].border,
+  '상극': ohaengColors['화'].border,
+  '동일': colors.borderStrong,
 };
 
 function OhaengNode({ element }: { element: Ohaeng | null }) {
-  const colors = element ? ohaengColors[element] : null;
+  const oc = element ? ohaengColors[element] : null;
   return (
     <View style={[
       styles.node,
-      colors ? { backgroundColor: colors.light, borderColor: colors.border } : styles.nodeEmpty,
+      oc ? { backgroundColor: oc.light, borderColor: oc.border } : styles.nodeEmpty,
     ]}>
-      <Text style={[textStyles.uiSm, { color: colors?.base ?? palette.inkFaint }]}>
+      <Text style={[textStyles.uiSm, { color: oc?.base ?? colors.textDisabled }]}>
         {element ?? '?'}
       </Text>
     </View>
@@ -35,7 +35,7 @@ function OhaengNode({ element }: { element: Ohaeng | null }) {
 }
 
 function Arrow({ relation }: { relation: OhaengRelation | null }) {
-  const color = relation ? RELATION_COLOR[relation] : palette.border;
+  const color = relation ? RELATION_COLOR[relation] : colors.border;
   const label = relation ? RELATION_LABEL[relation] : '';
   return (
     <View style={styles.arrowWrapper}>
@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   nodeEmpty: {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderStyle: 'dashed',
   },
   arrowWrapper: {

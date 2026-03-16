@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { palette, ohaengColors, textStyles, spacing, radius } from '@/design-system';
+import { colors, ohaengColors, textStyles, spacing, radius } from '@/design-system';
 import { NameInput, Ohaeng, SajuInput } from '../types';
 import { getRelation } from '../domain/ohaeng';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
@@ -15,9 +15,9 @@ interface Props {
 }
 
 const RELATION_BADGE: Record<string, { label: string; color: string }> = {
-  상생: { label: '상생 ✓', color: palette.teal },
-  동일: { label: '동일', color: palette.gold },
-  상극: { label: '상극 ✗', color: palette.vermillion },
+  상생: { label: '상생 ✓', color: colors.positive },
+  동일: { label: '동일', color: colors.fillAccent },
+  상극: { label: '상극 ✗', color: colors.negative },
 };
 
 export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props) {
@@ -26,26 +26,26 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
 
   return (
     <SectionCard title="용신 보완">
-      <Text style={[textStyles.bodySm, { color: palette.inkMid, marginBottom: spacing['3'] }]}>
+      <Text style={[textStyles.bodySm, { color: colors.textSecondary, marginBottom: spacing['3'] }]}>
         아이의 용신 오행을 선택하면 이름 글자들과의 궁합을 분석합니다.
       </Text>
 
       {/* 오행 selector */}
       <View style={styles.selectorRow}>
         {OHAENG_LIST.map(o => {
-          const colors = ohaengColors[o];
+          const oc = ohaengColors[o];
           const selected = yongsin === o;
           return (
             <Pressable
               key={o}
               style={[
                 styles.ohaengBtn,
-                { borderColor: colors.border },
-                selected && { backgroundColor: colors.light },
+                { borderColor: oc.border },
+                selected && { backgroundColor: oc.light },
               ]}
               onPress={() => onUpdate({ yongsin: selected ? null : o })}
             >
-              <Text style={[textStyles.uiSm, { color: selected ? colors.base : palette.inkMid }]}>{o}</Text>
+              <Text style={[textStyles.uiSm, { color: selected ? oc.base : colors.textSecondary }]}>{o}</Text>
             </Pressable>
           );
         })}
@@ -60,7 +60,7 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
             const badge = relation ? RELATION_BADGE[relation] : null;
             return (
               <View key={i} style={styles.compatRow}>
-                <Text style={[textStyles.uiSm, { color: palette.ink, width: 40 }]}>
+                <Text style={[textStyles.uiSm, { color: colors.textPrimary, width: 40 }]}>
                   {slot.hanja || slot.hangul || '?'}
                 </Text>
                 {charOhaeng ? (
@@ -68,7 +68,7 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
                     <Text style={[textStyles.overline, { color: ohaengColors[charOhaeng].base }]}>{charOhaeng}</Text>
                   </View>
                 ) : <View style={{ width: 36 }} />}
-                <Text style={[textStyles.bodySm, { color: palette.inkLight, marginHorizontal: spacing['2'] }]}>→</Text>
+                <Text style={[textStyles.bodySm, { color: colors.textTertiary, marginHorizontal: spacing['2'] }]}>→</Text>
                 <View style={[styles.ohaengPill, { backgroundColor: ohaengColors[yongsin].light, borderColor: ohaengColors[yongsin].border }]}>
                   <Text style={[textStyles.overline, { color: ohaengColors[yongsin].base }]}>{yongsin} (용신)</Text>
                 </View>
@@ -84,7 +84,7 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
       )}
 
       {!yongsin && (
-        <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', paddingVertical: spacing['2'] }]}>
+        <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', paddingVertical: spacing['2'] }]}>
           용신 오행을 선택해주세요
         </Text>
       )}
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     gap: spacing['2'],
     paddingTop: spacing['2'],
     borderTopWidth: 1,
-    borderTopColor: palette.border,
+    borderTopColor: colors.border,
   },
   compatRow: {
     flexDirection: 'row',

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { palette, fontFamily, radius, spacing } from '@/design-system';
+import { colors, fontFamily, radius, spacing } from '@/design-system';
 import { RootStackParamList } from '../navigation/types';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
@@ -71,7 +71,7 @@ export default function HomeScreen() {
 const s = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: palette.appBg,
+    backgroundColor: colors.bgSubtle,
   },
   scroll: {
     flexGrow: 1,
@@ -87,14 +87,14 @@ const s = StyleSheet.create({
   appTitle: {
     fontFamily: fontFamily.serifMedium,
     fontSize: 36,
-    color: palette.ink,
+    color: colors.textPrimary,
     letterSpacing: 1,
     marginBottom: spacing['2'],
   },
   appSubtitle: {
     fontFamily: fontFamily.sansRegular,
     fontSize: 15,
-    color: palette.inkLight,
+    color: colors.textTertiary,
     lineHeight: 22,
     textAlign: 'center',
   },
@@ -104,10 +104,10 @@ const s = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: palette.card,
+    backgroundColor: colors.surfaceRaised,
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: colors.border,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.07,
@@ -127,11 +127,11 @@ const s = StyleSheet.create({
 
   cardAccentAI: {
     height: 4,
-    backgroundColor: palette.vermillion,
+    backgroundColor: colors.negative,
   },
   cardAccentSelf: {
     height: 4,
-    backgroundColor: palette.teal,
+    backgroundColor: colors.positive,
   },
 
   cardContent: {
@@ -149,18 +149,18 @@ const s = StyleSheet.create({
   cardTitle: {
     fontFamily: fontFamily.serifMedium,
     fontSize: 18,
-    color: palette.ink,
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   cardSubtitle: {
     fontFamily: fontFamily.sansRegular,
     fontSize: 13,
-    color: palette.inkLight,
+    color: colors.textTertiary,
     lineHeight: 18,
   },
   cardArrow: {
     fontFamily: fontFamily.sansRegular,
     fontSize: 24,
-    color: palette.inkFaint,
+    color: colors.textDisabled,
   },
 });

@@ -17,7 +17,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { ohaengColors, palette, radius, spacing, textStyles } from '@/design-system';
+import { ohaengColors, colors, radius, spacing, textStyles } from '@/design-system';
 import { CharSlotData } from '../types';
 import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
@@ -93,9 +93,9 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
 
           {/* 헤더 */}
           <View style={styles.header}>
-            <Text style={[textStyles.heading, { color: palette.ink }]}>한자 선택</Text>
+            <Text style={[textStyles.heading, { color: colors.textPrimary }]}>한자 선택</Text>
             <Pressable onPress={onClose} style={styles.closeBtn}>
-              <Text style={[textStyles.bodySm, { color: palette.inkMid }]}>닫기</Text>
+              <Text style={[textStyles.bodySm, { color: colors.textSecondary }]}>닫기</Text>
             </Pressable>
           </View>
 
@@ -105,7 +105,7 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
             value={query}
             onChangeText={search}
             placeholder={role === 'surname' ? '성씨 검색 (예: 김)' : '음 검색 (예: 민)'}
-            placeholderTextColor={palette.inkFaint}
+            placeholderTextColor={colors.textDisabled}
             autoFocus={visible}
             returnKeyType="search"
           />
@@ -114,13 +114,13 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
           {loading && (
             <ActivityIndicator
               size="small"
-              color={palette.inkLight}
+              color={colors.textTertiary}
               style={{ marginTop: spacing['4'] }}
             />
           )}
 
           {!loading && results.length === 0 && query.length > 0 && (
-            <Text style={[textStyles.bodySm, { color: palette.inkFaint, textAlign: 'center', marginTop: spacing['5'] }]}>
+            <Text style={[textStyles.bodySm, { color: colors.textDisabled, textAlign: 'center', marginTop: spacing['5'] }]}>
               검색 결과가 없습니다
             </Text>
           )}
@@ -140,18 +140,18 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
                       styles.hanjaBox,
                       oc
                         ? { backgroundColor: oc.light, borderColor: oc.border }
-                        : { backgroundColor: palette.surface, borderColor: palette.border },
+                        : { backgroundColor: colors.surface, borderColor: colors.border },
                     ]}>
-                      <Text style={[textStyles.hanjaLg, { fontSize: 24, color: oc?.base ?? palette.inkMid }]}>
+                      <Text style={[textStyles.hanjaLg, { fontSize: 24, color: oc?.base ?? colors.textSecondary }]}>
                         {r.hanja}
                       </Text>
                     </View>
 
                     <View style={{ flex: 1 }}>
-                      <Text style={[textStyles.uiSm, { color: palette.ink }]}>
+                      <Text style={[textStyles.uiSm, { color: colors.textPrimary }]}>
                         {r.eum} · {r.mean}
                       </Text>
-                      <Text style={[textStyles.bodySm, { color: palette.inkLight }]}>
+                      <Text style={[textStyles.bodySm, { color: colors.textTertiary }]}>
                         {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
                         {r.charOhaeng ? ` · 자원오행 ${r.charOhaeng}` : ''}
                       </Text>
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(58, 47, 30, 0.4)',
   },
   sheet: {
-    backgroundColor: palette.bg,
+    backgroundColor: colors.bg,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     height: SHEET_HEIGHT,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: palette.borderMd,
+    backgroundColor: colors.borderStrong,
     alignSelf: 'center',
     marginBottom: spacing['3'],
   },
@@ -205,13 +205,13 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     borderWidth: 1.5,
-    borderColor: palette.border,
+    borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing['3'],
     paddingVertical: spacing['2'],
     ...textStyles.bodySm,
-    color: palette.ink,
-    backgroundColor: palette.card,
+    color: colors.textPrimary,
+    backgroundColor: colors.surfaceRaised,
     marginBottom: spacing['2'],
   },
   resultList: {
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing['3'],
     borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+    borderBottomColor: colors.border,
     gap: spacing['3'],
   },
   hanjaBox: {

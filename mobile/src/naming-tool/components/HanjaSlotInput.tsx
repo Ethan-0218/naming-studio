@@ -6,7 +6,7 @@
  */
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ohaengColors, palette, radius, spacing, textStyles } from '@/design-system';
+import { ohaengColors, colors, radius, spacing, textStyles } from '@/design-system';
 import { CharSlotData } from '../types';
 import HanjaPickerSheet from './HanjaPickerSheet';
 
@@ -35,8 +35,8 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
           styles.box,
           hasHanja
             ? {
-                borderColor: oc?.border ?? palette.borderMd,
-                backgroundColor: oc?.light ?? palette.surface,
+                borderColor: oc?.border ?? colors.borderStrong,
+                backgroundColor: oc?.light ?? colors.surface,
               }
             : styles.boxEmpty,
         ]}
@@ -44,17 +44,17 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
         {hasHanja ? (
           <>
             {/* 한자 글자 — 자원오행 색상 */}
-            <Text style={[textStyles.hanjaLg, { color: oc?.base ?? palette.inkMid }]}>
+            <Text style={[textStyles.hanjaLg, { color: oc?.base ?? colors.textSecondary }]}>
               {value.hanja}
             </Text>
-            <Text style={[styles.mean, { color: oc?.base ?? palette.inkMid }]} numberOfLines={1}>
+            <Text style={[styles.mean, { color: oc?.base ?? colors.textSecondary }]} numberOfLines={1}>
               {value.mean} {value.hangul}
             </Text>
           </>
         ) : (
           <>
-            <Text style={[styles.plusIcon, { color: palette.inkFaint }]}>+</Text>
-            <Text style={[textStyles.overline, { color: palette.inkLight }]}>한자 선택</Text>
+            <Text style={[styles.plusIcon, { color: colors.textDisabled }]}>+</Text>
+            <Text style={[textStyles.overline, { color: colors.textTertiary }]}>한자 선택</Text>
           </>
         )}
       </Pressable>
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     gap: spacing['1'],
   },
   label: {
-    color: palette.inkLight,
+    color: colors.textTertiary,
   },
   box: {
     width: '100%',
@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   boxEmpty: {
-    borderColor: palette.border,
-    backgroundColor: palette.surface,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     borderStyle: 'dashed',
   },
   plusIcon: {

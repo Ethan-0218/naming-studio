@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { palette, ohaengColors, textStyles, radius } from '@/design-system';
+import { colors, ohaengColors, textStyles, radius } from '@/design-system';
 import { Ohaeng, OhaengRelation } from '../types';
 import { generates, destroys, ohaengLabel } from '../domain/ohaeng';
 
@@ -32,9 +32,9 @@ const PAIR_LABEL_OFFSETS = [
 ];
 
 const RELATION_COLOR: Record<OhaengRelation, string> = {
-  '상생': palette.teal,
-  '상극': palette.vermillion,
-  '동일': palette.borderMd,
+  '상생': colors.positive,
+  '상극': colors.negative,
+  '동일': colors.borderStrong,
 };
 
 interface DirectedPair {
@@ -172,25 +172,25 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
 
 function OhaengNode({ data }: { data: OhaengNodeData }) {
   const { character, ohaeng, positionLabel } = data;
-  const colors = ohaeng ? ohaengColors[ohaeng] : null;
+  const oc = ohaeng ? ohaengColors[ohaeng] : null;
   return (
     <View
       style={[
         styles.node,
-        colors
-          ? { backgroundColor: colors.light, borderColor: colors.border }
+        oc
+          ? { backgroundColor: oc.light, borderColor: oc.border }
           : styles.nodeEmpty,
       ]}
     >
-      <Text style={[textStyles.hanjaSm, { color: palette.ink, lineHeight: 19, fontSize: 18 }]}>
+      <Text style={[textStyles.hanjaSm, { color: colors.textPrimary, lineHeight: 19, fontSize: 18 }]}>
         {character ?? '?'}
       </Text>
       {ohaeng ? (
-        <Text style={[textStyles.caption, { color: colors?.base, lineHeight: 13, letterSpacing: 0 }]}>
+        <Text style={[textStyles.caption, { color: oc?.base, lineHeight: 13, letterSpacing: 0 }]}>
           {ohaeng}({ohaengLabel(ohaeng)})
         </Text>
       ) : null}
-      <Text style={[textStyles.overline, { color: colors?.base ?? palette.inkFaint, fontSize: 8, lineHeight: 10, letterSpacing: 0 }]}>
+      <Text style={[textStyles.overline, { color: oc?.base ?? colors.textDisabled, fontSize: 8, lineHeight: 10, letterSpacing: 0 }]}>
         {positionLabel}
       </Text>
     </View>
@@ -201,17 +201,17 @@ function Legend() {
   return (
     <View style={styles.legend}>
       <View style={styles.legendItem}>
-        <View style={[styles.legendLine, { backgroundColor: palette.teal }]} />
-        <View style={[styles.legendArrowHead, { borderLeftColor: palette.teal }]} />
+        <View style={[styles.legendLine, { backgroundColor: colors.positive }]} />
+        <View style={[styles.legendArrowHead, { borderLeftColor: colors.positive }]} />
         <Text style={styles.legendLabel}>생(生) 좋음</Text>
       </View>
       <View style={styles.legendItem}>
-        <View style={[styles.legendLine, { backgroundColor: palette.vermillion }]} />
-        <View style={[styles.legendArrowHead, { borderLeftColor: palette.vermillion }]} />
+        <View style={[styles.legendLine, { backgroundColor: colors.negative }]} />
+        <View style={[styles.legendArrowHead, { borderLeftColor: colors.negative }]} />
         <Text style={styles.legendLabel}>극(剋) 나쁨</Text>
       </View>
       <View style={styles.legendItem}>
-        <View style={[styles.legendDash, { borderTopColor: palette.borderMd }]} />
+        <View style={[styles.legendDash, { borderTopColor: colors.borderStrong }]} />
         <Text style={styles.legendLabel}>중립</Text>
       </View>
     </View>
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   legendLabel: {
     ...textStyles.caption,
-    color: palette.inkMid,
+    color: colors.textSecondary,
     letterSpacing: 0,
     marginLeft: 3,
   },
@@ -309,8 +309,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   nodeEmpty: {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderStyle: 'dashed',
   },
 });
