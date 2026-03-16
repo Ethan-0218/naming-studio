@@ -95,6 +95,8 @@ All models use frozen Python dataclasses. Korean is used for file names, class n
 
 The mobile app is currently a minimal Expo stub. `constants/config.ts` exports `BACKEND_URL` (set via `EXPO_PUBLIC_BACKEND_URL` env var).
 
+**UI / 스크린 플로우:** 모바일 화면 흐름, 사주 기준 진입, 로그인·결제·저장 플로우 등 기획 스펙은 **[mobile/docs/UI_FLOW.md](mobile/docs/UI_FLOW.md)** 에 정리되어 있음. UI·네비게이션·신규 스크린 작업 시 해당 문서를 참고할 것.
+
 ## Key Conventions
 
 - Domain layer files and identifiers use Korean Hangul (e.g., `음양조화.py`, class `음양조화`)
