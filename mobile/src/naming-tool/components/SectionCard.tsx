@@ -54,6 +54,8 @@ const styles = StyleSheet.create({
     backgroundColor: palette.card,
     borderRadius: radius.lg,
     padding: spacing['4'],
+    borderWidth: 1,
+    borderColor: palette.border,
   },
   badge: {
     paddingHorizontal: spacing['2'],

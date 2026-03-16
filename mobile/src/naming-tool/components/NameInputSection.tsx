@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     borderColor: palette.inkMid,
   },
   card: {
-    backgroundColor: 'white',
+    backgroundColor: palette.card,
     borderRadius: radius.lg,
     padding: spacing['4'],
     gap: spacing['3'],
