@@ -273,6 +273,7 @@ def _build_candidate_from_combo(
     gender: str,
     harmony_level: str,
     harmony_reason: str,
+    harmony_description: str,
     발음오행_norm: float,
     부족한_오행_list: list[str],
     combos_by_name: dict,
@@ -297,6 +298,7 @@ def _build_candidate_from_combo(
         "syllables": syllables,
         "발음오행_조화": harmony_level,
         "발음오행_조화_이유": harmony_reason,
+        "발음오행_조화_설명": harmony_description,
         "rarity_signal": "희귀" if rn_count < 100 else ("보통" if rn_count < 1000 else "흔한"),
         "reason": "",
         "score_breakdown": {
@@ -506,8 +508,9 @@ def find_name_candidates(
             syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
 
             harmony_score = 0
-            harmony_level = "반길"
+            harmony_level = "평"
             harmony_reason = ""
+            harmony_description = ""
             if surname_오행 and len(name) >= 1:
                 첫음절_오행 = syllable_오행_list[0]
                 두번째_오행 = syllable_오행_list[1] if len(name) >= 2 else None
@@ -516,6 +519,7 @@ def find_name_candidates(
                     harmony_score = harmony.total_score
                     harmony_level = harmony.level
                     harmony_reason = harmony.reason
+                    harmony_description = harmony.description
 
             발음오행_norm = (harmony_score + 4) / 8
             용신_val = 1.0 if ohaeng_covered else 0.0
@@ -554,6 +558,7 @@ def find_name_candidates(
                 gender=gender,
                 harmony_level=harmony_level,
                 harmony_reason=harmony_reason,
+                harmony_description=harmony_description,
                 발음오행_norm=발음오행_norm,
                 부족한_오행_list=부족한_오행_list,
                 combos_by_name={name: [(h1, h2)]},
@@ -676,8 +681,9 @@ def find_name_candidates(
         syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
 
         harmony_score = 0
-        harmony_level = "반길"
+        harmony_level = "평"
         harmony_reason = ""
+        harmony_description = ""
         if surname_오행 and len(name) >= 1:
             첫음절_오행 = syllable_오행_list[0]
             두번째_오행 = syllable_오행_list[1] if len(name) >= 2 else None
@@ -686,6 +692,7 @@ def find_name_candidates(
                 harmony_score = harmony.total_score
                 harmony_level = harmony.level
                 harmony_reason = harmony.reason
+                harmony_description = harmony.description
 
         발음오행_norm = (harmony_score + 4) / 8
 

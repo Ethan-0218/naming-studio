@@ -24,32 +24,24 @@ const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 
 function PickerColumn({
   items,
-  selectedValue,
-  onValueChange,
+  initialIndex,
+  offsetRef,
   formatLabel,
   unit,
 }: {
   items: number[];
-  selectedValue: number;
-  onValueChange: (v: number) => void;
+  initialIndex: number;
+  offsetRef: React.MutableRefObject<number>;
   formatLabel?: (v: number) => string;
   unit: string;
 }) {
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    const index = items.indexOf(selectedValue);
-    if (index !== -1) {
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({ y: index * ITEM_HEIGHT, animated: false });
-      }, 50);
-    }
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: initialIndex * ITEM_HEIGHT, animated: false });
+    }, 50);
   }, []);
-
-  function handleScrollEnd(y: number) {
-    const index = Math.max(0, Math.min(Math.round(y / ITEM_HEIGHT), items.length - 1));
-    onValueChange(items[index]);
-  }
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>
@@ -75,8 +67,8 @@ function PickerColumn({
         snapToInterval={ITEM_HEIGHT}
         snapToAlignment="start"
         decelerationRate="fast"
-        onMomentumScrollEnd={(e) => handleScrollEnd(e.nativeEvent.contentOffset.y)}
-        onScrollEndDrag={(e) => handleScrollEnd(e.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={16}
+        onScroll={(e) => { offsetRef.current = e.nativeEvent.contentOffset.y; }}
         contentContainerStyle={{ paddingVertical: ITEM_HEIGHT * 2 }}
       >
         {items.map((v) => {
@@ -125,19 +117,32 @@ function PickerColumn({
 }
 
 export default function DatePickerSheet({ visible, year, month, day, onConfirm, onClose }: Props) {
-  const [tempYear, setTempYear] = useState(year);
-  const [tempMonth, setTempMonth] = useState(month);
-  const [tempDay, setTempDay] = useState(day);
-  // isOpen: 닫기 애니메이션 완료 후 Modal이 사라짐
   const [isOpen, setIsOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(400)).current;
+
+  // 각 열의 현재 스크롤 오프셋을 추적
+  const yearOffsetRef = useRef(YEARS.indexOf(year) * ITEM_HEIGHT);
+  const monthOffsetRef = useRef((month - 1) * ITEM_HEIGHT);
+  const dayOffsetRef = useRef((day - 1) * ITEM_HEIGHT);
+
+  // 초기 인덱스 (열 마운트 시 초기 스크롤 위치용)
+  const [initialIndexes, setInitialIndexes] = useState({
+    year: YEARS.indexOf(year),
+    month: month - 1,
+    day: day - 1,
+  });
 
   // visible → isOpen 전환 (닫기 애니메이션 포함)
   useEffect(() => {
     if (visible && !isOpen) {
-      setTempYear(year);
-      setTempMonth(month);
-      setTempDay(day);
+      // 오픈 시 오프셋 ref와 초기 인덱스를 현재 props 값으로 리셋
+      const yi = Math.max(0, YEARS.indexOf(year));
+      const mi = month - 1;
+      const di = day - 1;
+      yearOffsetRef.current = yi * ITEM_HEIGHT;
+      monthOffsetRef.current = mi * ITEM_HEIGHT;
+      dayOffsetRef.current = di * ITEM_HEIGHT;
+      setInitialIndexes({ year: yi, month: mi, day: di });
       slideAnim.setValue(400);
       setIsOpen(true);
     } else if (!visible && isOpen) {
@@ -160,6 +165,14 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
       }).start();
     }
   }, [isOpen]);
+
+  function handleConfirm() {
+    const yIdx = Math.max(0, Math.min(Math.round(yearOffsetRef.current / ITEM_HEIGHT), YEARS.length - 1));
+    const mIdx = Math.max(0, Math.min(Math.round(monthOffsetRef.current / ITEM_HEIGHT), MONTHS.length - 1));
+    const dIdx = Math.max(0, Math.min(Math.round(dayOffsetRef.current / ITEM_HEIGHT), DAYS.length - 1));
+    onConfirm(YEARS[yIdx], MONTHS[mIdx], DAYS[dIdx]);
+    onClose();
+  }
 
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
@@ -201,21 +214,21 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
               <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingTop: 8 }}>
                 <PickerColumn
                   items={YEARS}
-                  selectedValue={tempYear}
-                  onValueChange={setTempYear}
+                  initialIndex={initialIndexes.year}
+                  offsetRef={yearOffsetRef}
                   unit="년"
                 />
                 <PickerColumn
                   items={MONTHS}
-                  selectedValue={tempMonth}
-                  onValueChange={setTempMonth}
+                  initialIndex={initialIndexes.month}
+                  offsetRef={monthOffsetRef}
                   formatLabel={(v) => String(v).padStart(2, '0')}
                   unit="월"
                 />
                 <PickerColumn
                   items={DAYS}
-                  selectedValue={tempDay}
-                  onValueChange={setTempDay}
+                  initialIndex={initialIndexes.day}
+                  offsetRef={dayOffsetRef}
                   formatLabel={(v) => String(v).padStart(2, '0')}
                   unit="일"
                 />
@@ -232,10 +245,7 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
                     justifyContent: 'center',
                     opacity: pressed ? 0.85 : 1,
                   })}
-                  onPress={() => {
-                    onConfirm(tempYear, tempMonth, tempDay);
-                    onClose();
-                  }}
+                  onPress={handleConfirm}
                 >
                   <Text style={{
                     fontFamily: fontFamily.serifMedium,

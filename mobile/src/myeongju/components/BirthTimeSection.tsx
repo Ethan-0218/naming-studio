@@ -9,6 +9,7 @@ interface Props {
   isAm: boolean;
   hour: number;   // 1–12
   minute: number; // 0–50 (10분 단위)
+  regionOffset: number | null; // 지방시 보정 분 (null = 해외, 보정 없음)
   onToggleUnknown: () => void;
   onAmPmChange: (isAm: boolean) => void;
   onHourChange: (hour: number) => void;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 export default function BirthTimeSection({
-  timeUnknown, isAm, hour, minute,
+  timeUnknown, isAm, hour, minute, regionOffset,
   onToggleUnknown, onAmPmChange, onHourChange, onMinuteChange,
 }: Props) {
   // 24시간제 변환
@@ -24,7 +25,18 @@ export default function BirthTimeSection({
     ? (hour === 12 ? 0 : hour)
     : (hour === 12 ? 12 : hour + 12);
 
-  const sijan = getSijan(hour24);
+  // 지방시 보정: 한국 사주는 지방태양시 기준 (KST에서 offset 분 빼기)
+  const totalMinutes = hour24 * 60 + minute - (regionOffset ?? 0);
+  const adjustedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+  const adjustedHour24 = Math.floor(adjustedMinutes / 60);
+  const adjustedMin = adjustedMinutes % 60;
+
+  const sijan = getSijan(adjustedHour24);
+
+  // 보정된 지방시 표시용 AM/PM 포맷
+  const adjustedIsAm = adjustedHour24 < 12;
+  const adjustedHourDisplay = adjustedHour24 % 12 === 0 ? 12 : adjustedHour24 % 12;
+  const adjustedAmPm = adjustedIsAm ? '오전' : '오후';
 
   return (
     <View style={{
@@ -270,6 +282,17 @@ export default function BirthTimeSection({
               }}>
                 사주의 시주(時柱)로 사용됩니다
               </Text>
+              {/* 지방시 보정 표시 */}
+              {regionOffset != null && regionOffset !== 0 && (
+                <Text style={{
+                  fontFamily: fontFamily.sansRegular,
+                  fontSize: 10,
+                  color: colors.textTertiary,
+                  marginTop: 3,
+                }}>
+                  {`지역 보정 후: ${adjustedAmPm} ${adjustedHourDisplay}:${String(adjustedMin).padStart(2, '0')}`}
+                </Text>
+              )}
             </View>
           </View>
         </>

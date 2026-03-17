@@ -86,6 +86,7 @@ export default function AddMyeongJuScreen() {
           isAm={isAm}
           hour={hour}
           minute={minute}
+          regionOffset={selectedRegion.offset}
           onToggleUnknown={() => setTimeUnknown((prev) => !prev)}
           onAmPmChange={setIsAm}
           onHourChange={setHour}
