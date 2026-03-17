@@ -10,48 +10,10 @@ import MyeongJuNavBar from './MyeongJuNavBar';
 import AddMyeongJuButton from './AddMyeongJuButton';
 import ProfileCard from './ProfileCard';
 import { MyeongJuProfile } from '../types';
+import { MOCK_PROFILES } from '../data';
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'MyeongJuList'>;
 type ScreenRoute = RouteProp<RootStackParamList, 'MyeongJuList'>;
-
-// TODO: 실제 데이터로 교체
-const MOCK_PROFILES: MyeongJuProfile[] = [
-  {
-    id: '1',
-    ilgan: '壬', ohaeng: '수',
-    iljoo: '임수일주', iljooHanja: '壬子',
-    gender: 'male', calendarType: '양력',
-    birthDate: '2024년 3월 12일',
-    birthTime: '묘시(卯時) · 오전 5:30',
-    analysisCount: 3, savedCount: 2,
-  },
-  {
-    id: '2',
-    ilgan: '甲', ohaeng: '목',
-    iljoo: '갑목일주', iljooHanja: '甲午',
-    gender: 'female', calendarType: '음력',
-    birthDate: '2023년 11월 5일',
-    birthTime: '자시(子時) · 오전 0:10',
-    analysisCount: 1,
-  },
-  {
-    id: '3',
-    ilgan: '丙', ohaeng: '화',
-    iljoo: '병화일주', iljooHanja: '丙午',
-    gender: 'male', calendarType: '양력',
-    birthDate: '2023년 8월 20일',
-    birthTime: '오시(午時) · 오후 12:45',
-    analysisCount: 2, savedCount: 5,
-  },
-  {
-    id: '4',
-    ilgan: '庚', ohaeng: '금',
-    iljoo: '경금일주', iljooHanja: '庚申',
-    gender: 'female', calendarType: '양력',
-    birthDate: '2022년 6월 1일',
-    birthTime: '미시(未時) · 오후 2:20',
-  },
-];
 
 export default function MyeongJuListScreen() {
   const navigation = useNavigation<NavProp>();
@@ -74,7 +36,7 @@ export default function MyeongJuListScreen() {
         style={{ flex: 1, backgroundColor: colors.bg }}
         showsVerticalScrollIndicator={false}
       >
-        <AddMyeongJuButton />
+        <AddMyeongJuButton onPress={() => navigation.navigate('AddMyeongJu', { mode })} />
 
         {/* 명주 수 */}
         <View style={{ paddingHorizontal: 20, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: colors.border }}>

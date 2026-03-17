@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/design-system';
 import { RootStackParamList } from '../../navigation/types';
+import { MOCK_PROFILES } from '../../myeongju/data';
 import AppHeader from './AppHeader';
 import HeroSection from './HeroSection';
 import ActionCardsSection from './ActionCardsSection';
@@ -21,6 +22,16 @@ function Divider() {
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
+  // 명주 목록이 비어 있으면 바로 추가 화면으로 이동
+  const hasProfiles = MOCK_PROFILES.length > 0;
+
+  function handleNaming(mode: 'ai' | 'self') {
+    if (hasProfiles) {
+      navigation.navigate('MyeongJuList', { mode });
+    } else {
+      navigation.navigate('AddMyeongJu', { mode });
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgSubtle }}>
@@ -32,8 +43,8 @@ export default function HomeScreen() {
       >
         <HeroSection />
         <ActionCardsSection
-          onAINaming={() => navigation.navigate('MyeongJuList', { mode: 'ai' })}
-          onSelfNaming={() => navigation.navigate('MyeongJuList', { mode: 'self' })}
+          onAINaming={() => handleNaming('ai')}
+          onSelfNaming={() => handleNaming('self')}
         />
         <Divider />
         <RecentNamesSection />
