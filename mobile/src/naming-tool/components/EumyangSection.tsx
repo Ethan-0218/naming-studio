@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { colors, fontFamily } from '@/design-system';
 import { Eumyang, EumyangHarmonyResult, NameInput } from '../types';
+import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
 import SectionCard from './SectionCard';
 
 type EumyangSectionVariant = { variant: 'baleum' } | { variant: 'hoeksu' };
@@ -30,7 +31,7 @@ function deriveSlotData(
   i: number,
 ) {
   if (variant === 'baleum') {
-    const ey = chars[i] ?? slot.soundEumyang;
+    const ey = chars[i] ?? slot.soundEumyang ?? soundEumyangFromHangul(slot.hangul);
     return { label: slot.hangul || '?', eumyang: ey, subLabel: null };
   } else {
     const ey = slot.strokeEumyang;
@@ -41,7 +42,7 @@ function deriveSlotData(
 
 function hasData(slot: NameInput['surname'], variant: 'baleum' | 'hoeksu') {
   return variant === 'baleum'
-    ? slot.soundEumyang !== null
+    ? slot.soundEumyang !== null || !!slot.hangul
     : slot.strokeEumyang !== null || slot.strokeCount !== null;
 }
 
