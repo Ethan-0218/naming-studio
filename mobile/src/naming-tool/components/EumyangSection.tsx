@@ -20,7 +20,7 @@ const EUMYANG_COLOR = {
 };
 
 const VARIANT_META = {
-  baleum: { title: '발음음양', emptyText: '한자를 선택하면 발음음양이 표시됩니다' },
+  baleum: { title: '발음음양', emptyText: '이름을 입력하면 발음음양이 표시됩니다' },
   hoeksu: { title: '획수음양', emptyText: '한자를 선택하면 획수음양이 표시됩니다' },
 } as const;
 
@@ -89,6 +89,7 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
   const badgeColor = result ? (result.harmonious ? colors.positive : colors.negative) : undefined;
 
   const dataAvailable = slots.some((s) => hasData(s, variant));
+  const allNamesEntered = slots.every((s) => !!s.hangul);
 
   const slotDataList = slots.map((slot, i) => deriveSlotData(slot, variant, chars, i));
   const yinCount = slotDataList.filter((d) => d.eumyang === '음').length;
@@ -97,7 +98,7 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
   return (
     <SectionCard title={title} badge={badge} badgeColor={badgeColor}>
       <View className="gap-3">
-      <EumyangBalanceBar yinCount={yinCount} yangCount={yangCount} />
+      {allNamesEntered && <EumyangBalanceBar yinCount={yinCount} yangCount={yangCount} />}
       {dataAvailable ? (
         <View className="flex-row gap-2">
           {slotDataList.map(({ label, eumyang, subLabel }, i) => {
