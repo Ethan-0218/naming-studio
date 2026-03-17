@@ -14,9 +14,9 @@ interface Props {
 }
 
 const HARMONY_COLOR: Record<HarmonyLevel, string> = {
-  '대길': colors.positive,
-  '반길': colors.fillAccent,
-  '대흉': colors.negative,
+  '大吉': colors.positive,
+  '平': colors.fillAccent,
+  '大凶': colors.negative,
 };
 
 export function harmonyBadgeColor(level: HarmonyLevel): string {

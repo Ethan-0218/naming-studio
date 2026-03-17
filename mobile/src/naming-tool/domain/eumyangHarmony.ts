@@ -1,4 +1,5 @@
 import { Eumyang, EumyangHarmonyResult } from '../types';
+import { EUMYANG_COMBINATION_DESCRIPTIONS } from './eumyangCombinationDescriptions';
 
 /**
  * 음양조화 계산
@@ -29,5 +30,6 @@ export function computeEumyangHarmony(chars: (Eumyang | null)[]): EumyangHarmony
   }
 
   const combinationKey = valid.join('');
-  return { harmonious, chars, reason, combinationKey };
+  const rating = EUMYANG_COMBINATION_DESCRIPTIONS[combinationKey]?.rating ?? (harmonious ? '吉' : '凶');
+  return { harmonious, chars, reason, combinationKey, rating };
 }

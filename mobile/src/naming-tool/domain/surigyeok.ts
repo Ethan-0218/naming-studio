@@ -1,14 +1,6 @@
-import { SuriEntry, SurigyeokResult, SuriLevel, Gender } from '../types';
+import { SuriEntry, SurigyeokResult, Gender } from '../types';
 import { SURIGYEOK_81 } from '../data/surigyeok81';
-
-const SURI_SCORE: Record<SuriLevel, number> = {
-  '大吉': 10,
-  '吉': 8,
-  '中吉': 4,
-  '中凶': 2,
-  '凶': 0,
-  '大凶': -5,
-};
+import { toScore } from './ratingScore';
 
 function computeSuriEntry(strokeSum: number, gender: Gender): SuriEntry {
   const key = String(strokeSum % 81);
@@ -17,7 +9,7 @@ function computeSuriEntry(strokeSum: number, gender: Gender): SuriEntry {
   return {
     number: strokeSum % 81,
     level,
-    score: SURI_SCORE[level],
+    score: toScore(level),
     name1: row.name1,
     name2: row.name2,
     interpretation: row.interpretation,
@@ -52,7 +44,7 @@ export function computeSurigyeok(
     ? computeSuriEntry(sungStroke + ireum1Stroke + ireum2Stroke, gender)
     : computeSuriEntry(sungStroke + ireum1Stroke, gender);
 
-  const totalScore = wongyeok.score + hyeongyeok.score + igyeok.score + jeongyeok.score;
+  const totalScore = (wongyeok.score + hyeongyeok.score + igyeok.score + jeongyeok.score) / 4;
 
   return { wongyeok, hyeongyeok, igyeok, jeongyeok, totalScore };
 }

@@ -65,7 +65,7 @@ def _build_char_fe_lookup() -> dict[tuple[str, str, str], float]:
                         h1_o = 오행.from_string(h1)
                         h2_o = 오행.from_string(h2) if h2 else None
                         harmony = 오행조화.from_오행(s_o, h1_o, h2_o)
-                        result[(s, h1, h2)] = (harmony.total_score + 4) / 8
+                        result[(s, h1, h2)] = harmony.total_score
                     else:
                         result[(s, h1, h2)] = 0.5
                 except Exception:
@@ -77,6 +77,7 @@ def _build_yin_lookup() -> dict[tuple[str, str, str], float]:
     """음양 조화 점수 lookup: (s_yin, h1_yin, h2_yin) → float."""
     from domain.jakmyeong.음양조화 import 음양조화
     from domain.saju.음양 import 음양
+    import domain.rating_score as rating_score
 
     def _parse(v: str) -> 음양 | None:
         if v == "음":
@@ -94,7 +95,7 @@ def _build_yin_lookup() -> dict[tuple[str, str, str], float]:
                     sv, h1v, h2v = _parse(s), _parse(h1), _parse(h2)
                     if sv and h1v:
                         harmony = 음양조화.from_yin_yang(sv, h1v, h2v)
-                        result[(s, h1, h2)] = 1.0 if harmony.harmonious else 0.0
+                        result[(s, h1, h2)] = rating_score.to_score(harmony.level)
                     else:
                         result[(s, h1, h2)] = 0.5
                 except Exception:
@@ -116,12 +117,7 @@ def _build_numerology_lookup(
                 for g in ("male", "female"):
                     try:
                         nr = 이름수리격.from_strokes(ss, ns1, ns2, g)
-                        if nr.has_worst_numerology():
-                            v = 0.0
-                        elif nr.has_bad_numerology():
-                            v = 0.2
-                        else:
-                            v = (nr.total_score + 20) / 60
+                        v = nr.total_score
                     except Exception:
                         v = 0.5
                     result[(ss, ns1, ns2, g)] = v

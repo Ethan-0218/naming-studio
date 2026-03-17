@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 from typing import Literal, Optional
 
+import domain.rating_score as rating_score
 from domain.saju.오행 import 오행
 from domain.jakmyeong.오행조화_데이터 import get_오행조화_데이터
 
@@ -12,40 +13,14 @@ from domain.jakmyeong.오행조화_데이터 import get_오행조화_데이터
 Relation = Literal["상생", "동일", "상극"]
 Level = Literal["大吉", "吉", "平", "凶", "大凶"]
 
-# 5단계 등급 → 점수 (-4 ~ +4). 정규화: (score + 4) / 8 → [0, 1]
-_LEVEL_SCORE: dict[str, int] = {
-    "大吉": 4,
-    "吉": 2,
-    "平": 0,
-    "凶": -2,
-    "大凶": -4,
-}
-
-# 2글자 폴백용: 쌍 관계 → 점수
-_PAIR_SCORE: dict[Relation, int] = {"상생": 2, "동일": 0, "상극": -2}
-
-# 2글자 폴백용: 알고리즘 3단계 → 5단계 매핑
-_FALLBACK_LEVEL: dict[str, Level] = {"大吉": "大吉", "반길": "平", "大凶": "大凶"}
-
-
-def _relation(a: 오행, b: 오행) -> Relation:
-    if a.equals(b):
-        return "동일"
-    if b.equals(a.get아생오행()):
-        return "상생"
-    if b.equals(a.get극아오행()) or a.equals(b.get극아오행()):
-        return "상극"
-    return "동일"
-
 
 @dataclass(frozen=True)
 class 쌍별_결과:
-    """인접 두 글자의 오행 관계와 점수."""
+    """인접 두 글자의 오행 관계."""
 
     앞_오행: 오행
     뒤_오행: 오행
     relation: Relation
-    score: int
 
 
 @dataclass(frozen=True)
@@ -54,7 +29,7 @@ class 오행조화:
 
     글자별_오행: tuple[오행, ...]
     쌍별_결과: tuple[쌍별_결과, ...]
-    total_score: int   # -4 ~ +4 (정규화 기준: (score + 4) / 8 → [0, 1])
+    total_score: float   # [0, 1] — rating_scores.json 기준
     level: Level
     harmonious: bool   # 상극 없음 여부
     reason: str        # 기계적 이유 (예: "목-화 상생, 화-토 상생")
@@ -71,7 +46,7 @@ class 오행조화:
         성·이름1·이름2(선택)의 오행으로 조화를 판단합니다.
 
         3글자 이름: data/오행조합.json 조회 → 5단계 등급 + 설명 반환.
-        2글자 이름: 인접 쌍 알고리즘(상생+2/동일0/상극-2) 폴백.
+        2글자 이름: 인접 쌍 알고리즘(상생/동일/상극) 폴백.
         """
         if 이름2_오행 is None:
             # ── 2글자 폴백 ──────────────────────────────────────────────────
@@ -81,23 +56,20 @@ class 오행조화:
             results: list[쌍별_결과] = []
             for 앞, 뒤 in pairs:
                 rel = _relation(앞, 뒤)
-                results.append(쌍별_결과(앞_오행=앞, 뒤_오행=뒤, relation=rel, score=_PAIR_SCORE[rel]))
+                results.append(쌍별_결과(앞_오행=앞, 뒤_오행=뒤, relation=rel))
             쌍별 = tuple(results)
-            pair_score = sum(r.score for r in 쌍별)
 
             상생수 = sum(1 for r in 쌍별 if r.relation == "상생")
             상극수 = sum(1 for r in 쌍별 if r.relation == "상극")
 
             harmonious = 상극수 == 0
             if 상극수 > 0:
-                algo_level = "반길" if 상극수 < len(쌍별) else "大凶"
+                level: Level = "平" if 상극수 < len(쌍별) else "大凶"
             elif 상생수 >= 1:
-                algo_level = "大吉"
+                level = "大吉"
             else:
-                algo_level = "반길"
+                level = "平"
 
-            level: Level = _FALLBACK_LEVEL[algo_level]
-            total_score = _LEVEL_SCORE[level]
             description = ""
 
         else:
@@ -108,7 +80,7 @@ class 오행조화:
             results_3: list[쌍별_결과] = []
             for 앞, 뒤 in pairs_3:
                 rel = _relation(앞, 뒤)
-                results_3.append(쌍별_결과(앞_오행=앞, 뒤_오행=뒤, relation=rel, score=_PAIR_SCORE[rel]))
+                results_3.append(쌍별_결과(앞_오행=앞, 뒤_오행=뒤, relation=rel))
             쌍별 = tuple(results_3)
 
             상극수 = sum(1 for r in 쌍별 if r.relation == "상극")
@@ -122,15 +94,14 @@ class 오행조화:
                 # JSON에서 찾지 못한 경우 알고리즘 폴백
                 상생수 = sum(1 for r in 쌍별 if r.relation == "상생")
                 if 상극수 > 0:
-                    algo_level = "반길" if 상극수 < len(쌍별) else "大凶"
+                    level = "平" if 상극수 < len(쌍별) else "大凶"
                 elif 상생수 >= 1:
-                    algo_level = "大吉"
+                    level = "大吉"
                 else:
-                    algo_level = "반길"
-                level = _FALLBACK_LEVEL[algo_level]
+                    level = "平"
                 description = ""
 
-            total_score = _LEVEL_SCORE[level]
+        total_score = rating_score.to_score(level)
 
         reason_parts = [f"{r.앞_오행.value}-{r.뒤_오행.value} {r.relation}" for r in 쌍별]
         reason = ", ".join(reason_parts)
@@ -144,3 +115,13 @@ class 오행조화:
             reason=reason,
             description=description,
         )
+
+
+def _relation(a: 오행, b: 오행) -> Relation:
+    if a.equals(b):
+        return "동일"
+    if b.equals(a.get아생오행()):
+        return "상생"
+    if b.equals(a.get극아오행()) or a.equals(b.get극아오행()):
+        return "상극"
+    return "동일"

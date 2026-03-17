@@ -30,11 +30,11 @@ export function computeOhaengHarmony(elements: (Ohaeng | null)[]): OhaengHarmony
 
   let level: HarmonyLevel;
   if (allSanggeuk) {
-    level = '대흉';
+    level = '大凶';
   } else if (!hasSanggeuk && hasSangsaeng) {
-    level = '대길';
+    level = '大吉';
   } else {
-    level = '반길';
+    level = '平';
   }
 
   const reason = buildReason(pairs);

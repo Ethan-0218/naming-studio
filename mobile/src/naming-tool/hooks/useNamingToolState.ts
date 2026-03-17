@@ -8,6 +8,7 @@ import { computeOhaengHarmony } from '../domain/ohaengHarmony';
 import { computeEumyangHarmony } from '../domain/eumyangHarmony';
 import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
 import { computeSurigyeok } from '../domain/surigyeok';
+import { toScore } from '../domain/ratingScore';
 
 type SlotKey = 'surname' | 'first1' | 'first2';
 
@@ -42,11 +43,6 @@ function resolveSlot(hangul: string, hanja: HanjaSelection | null): CharSlotData
   };
 }
 
-/** Map 수리격 totalScore [-20, 40] → [0, 25] */
-function mapSuriScore(rawScore: number): number {
-  const clamped = Math.max(-20, Math.min(40, rawScore));
-  return Math.round(((clamped + 20) / 60) * 25);
-}
 
 function computeAnalysis(
   hangulInput: HangulInput,
@@ -100,19 +96,19 @@ function computeAnalysis(
   if (baleumOhaengResult || baleumEumyangResult || surigyeokResult || jawonOhaengResult || hoeksuEumyangResult) {
     let score = 0;
     if (baleumOhaengResult) {
-      score += baleumOhaengResult.level === '대길' ? 25 : baleumOhaengResult.level === '반길' ? 15 : 0;
+      score += toScore(baleumOhaengResult.level) * 25;
     }
     if (baleumEumyangResult) {
-      score += baleumEumyangResult.harmonious ? 15 : 5;
+      score += toScore(baleumEumyangResult.rating) * 15;
     }
     if (surigyeokResult) {
-      score += mapSuriScore(surigyeokResult.totalScore);
+      score += surigyeokResult.totalScore * 25;
     }
     if (jawonOhaengResult) {
-      score += jawonOhaengResult.level === '대길' ? 25 : jawonOhaengResult.level === '반길' ? 15 : 0;
+      score += toScore(jawonOhaengResult.level) * 25;
     }
     if (hoeksuEumyangResult) {
-      score += hoeksuEumyangResult.harmonious ? 10 : 0;
+      score += toScore(hoeksuEumyangResult.rating) * 10;
     }
     totalScore = Math.min(100, score);
   }

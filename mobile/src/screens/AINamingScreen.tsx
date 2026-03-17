@@ -124,7 +124,9 @@ const WELCOME_MESSAGE: ChatMessage = {
 
 // ── Constants ──────────────────────────────────────────────────────────
 const harmonyColor: Record<string, string> = {
-  대길: colors.positive, 반길: colors.fillAccent, 대흉: ohaengColors['화'].base,
+  大吉: colors.positive, 吉: colors.positive,
+  平: colors.fillAccent,
+  凶: colors.negative, 大凶: colors.negative,
 };
 const rarityColor: Record<string, string> = {
   희귀: colors.positive, 보통: colors.textSecondary, 흔한: colors.textDisabled,

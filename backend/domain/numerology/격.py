@@ -3,17 +3,10 @@
 from dataclasses import dataclass
 from typing import Literal
 
+import domain.rating_score as rating_score
+
 Level = Literal["大凶", "凶", "中凶", "中吉", "吉", "大吉"]
 GenderKey = Literal["male", "female"]
-
-_SCORE: dict[Level, int] = {
-    "大吉": 10,
-    "吉": 8,
-    "中吉": 4,
-    "中凶": 2,
-    "凶": 0,
-    "大凶": -5,
-}
 
 
 @dataclass(frozen=True)
@@ -21,7 +14,7 @@ class 격:
     """81수리 한 개의 격. stroke_count % 81로 수를 정하고, 성별에 따라 level/점수/이름/해석 반환."""
 
     level: Level
-    score: int
+    score: float   # [0, 1] — rating_scores.json 기준
     name1: str
     name2: str
     interpretation: str
@@ -35,7 +28,7 @@ class 격:
         key = str(stroke_count % 81)
         row = data[key]
         level = row["level"][gender]
-        score = _SCORE[level]
+        score = rating_score.to_score(level)
         return cls(
             level=level,
             score=score,

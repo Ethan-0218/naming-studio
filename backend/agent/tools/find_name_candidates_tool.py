@@ -2,6 +2,8 @@
 
 import logging
 
+import domain.rating_score as rating_score
+
 logger = logging.getLogger(__name__)
 
 from domain.saju.성별 import 성별
@@ -179,7 +181,7 @@ def _자원오행_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]
 
     try:
         harmony = 오행조화.from_오행(성_o, 이름1_o, 이름2_o)
-        return (harmony.total_score + 4) / 8
+        return harmony.total_score
     except Exception:
         return 0.5
 
@@ -200,11 +202,7 @@ def _수리격_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None], g
     gender_key = "female" if gender == "여" else "male"
     try:
         nr = 이름수리격.from_strokes(성_s, 이름1_s, 이름2_s, gender_key)
-        if nr.has_worst_numerology():
-            return 0.0
-        if nr.has_bad_numerology():
-            return 0.2
-        return (nr.total_score + 20) / 60
+        return nr.total_score
     except Exception:
         return 0.5
 
@@ -224,9 +222,7 @@ def _발음음양_harmony(성_hanja: Hanja | None, name_hanjas: list[Hanja | Non
 
 def _발음음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
     h = _발음음양_harmony(성_hanja, name_hanjas)
-    if h is None:
-        return 0.5
-    return 1.0 if h.harmonious else 0.0
+    return rating_score.to_score(h.level) if h else 0.5
 
 
 def _획수음양_harmony(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> 음양조화 | None:
@@ -244,9 +240,7 @@ def _획수음양_harmony(성_hanja: Hanja | None, name_hanjas: list[Hanja | Non
 
 def _획수음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
     h = _획수음양_harmony(성_hanja, name_hanjas)
-    if h is None:
-        return 0.5
-    return 1.0 if h.harmonious else 0.0
+    return rating_score.to_score(h.level) if h else 0.5
 
 
 def _용신_score(
@@ -316,8 +310,8 @@ def _build_candidate_from_combo(
             "발음오행": round(발음오행_norm, 3),
             "자원오행": round(_자원오행_score(성_hanja_obj, best_name_hanjas), 3),
             "수리격": round(_수리격_score(성_hanja_obj, best_name_hanjas, gender), 3),
-            "획수음양": round(1.0 if 획수음양_h and 획수음양_h.harmonious else (0.5 if 획수음양_h is None else 0.0), 3),
-            "발음음양": round(1.0 if 발음음양_h and 발음음양_h.harmonious else (0.5 if 발음음양_h is None else 0.0), 3),
+            "획수음양": round(rating_score.to_score(획수음양_h.level) if 획수음양_h else 0.5, 3),
+            "발음음양": round(rating_score.to_score(발음음양_h.level) if 발음음양_h else 0.5, 3),
             "용신": round(
                 용신_override if 용신_override is not None
                 else _용신_score(best_name_hanjas, syllable_오행_list, 부족한_오행_list),
@@ -518,7 +512,7 @@ def find_name_candidates(
                     continue
             syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
 
-            harmony_score = 0
+            발음오행_norm = 0.5
             harmony_level = "평"
             harmony_reason = ""
             harmony_description = ""
@@ -527,12 +521,11 @@ def find_name_candidates(
                 두번째_오행 = syllable_오행_list[1] if len(name) >= 2 else None
                 if 첫음절_오행:
                     harmony = 오행조화.from_오행(surname_오행, 첫음절_오행, 두번째_오행)
-                    harmony_score = harmony.total_score
+                    발음오행_norm = harmony.total_score
                     harmony_level = harmony.level
                     harmony_reason = harmony.reason
                     harmony_description = harmony.description
 
-            발음오행_norm = (harmony_score + 4) / 8
             용신_val = 1.0 if ohaeng_covered else 0.0
 
             rarity_tiebreak = 0.0
@@ -691,7 +684,7 @@ def find_name_candidates(
         name = rn.name
         syllable_오행_list: list[오행 | None] = [발음오행_from_초성(c) for c in name]
 
-        harmony_score = 0
+        발음오행_norm = 0.5
         harmony_level = "평"
         harmony_reason = ""
         harmony_description = ""
@@ -700,12 +693,10 @@ def find_name_candidates(
             두번째_오행 = syllable_오행_list[1] if len(name) >= 2 else None
             if 첫음절_오행:
                 harmony = 오행조화.from_오행(surname_오행, 첫음절_오행, 두번째_오행)
-                harmony_score = harmony.total_score
+                발음오행_norm = harmony.total_score
                 harmony_level = harmony.level
                 harmony_reason = harmony.reason
                 harmony_description = harmony.description
-
-        발음오행_norm = (harmony_score + 4) / 8
 
         rarity_tiebreak = 0.0
         if rarity_preference == "희귀":
@@ -785,6 +776,7 @@ def find_name_candidates(
             gender=gender,
             harmony_level=harmony_level,
             harmony_reason=harmony_reason,
+            harmony_description=harmony_description,
             발음오행_norm=발음오행_norm,
             부족한_오행_list=부족한_오행_list,
             combos_by_name=combos_for_options,

@@ -35,27 +35,27 @@ class Test격(unittest.TestCase):
     def test_stroke_count_0_남_吉(self):
         g = 격.from_stroke_count(0, "male")
         assert g.level == "吉"
-        assert g.score == 8
+        assert g.score == 0.75
         assert g.name1 == "환원격"
         assert g.name2 == "성대운"
 
     def test_stroke_count_81_남_吉(self):
         g = 격.from_stroke_count(81, "male")
         assert g.level == "吉"
-        assert g.score == 8
+        assert g.score == 0.75
 
     def test_stroke_count_4_大凶(self):
         g = 격.from_stroke_count(4, "male")
         assert g.level == "大凶"
-        assert g.score == -5
+        assert g.score == 0.0
 
     def test_stroke_count_21_남길여흉(self):
         g_m = 격.from_stroke_count(21, "male")
         g_f = 격.from_stroke_count(21, "female")
         assert g_m.level == "大吉"
         assert g_f.level == "大凶"
-        assert g_m.score == 10
-        assert g_f.score == -5
+        assert g_m.score == 1.0
+        assert g_f.score == 0.0
 
     def test_to_dict(self):
         g = 격.from_stroke_count(1, "female")
@@ -75,7 +75,7 @@ class Test이름수리격(unittest.TestCase):
         assert n.형격.level == "大凶"  # 12
         assert n.이격.level == "吉"    # 13
         assert n.정격.level == "吉"    # 17
-        assert n.total_score == n.원격.score + n.형격.score + n.이격.score + n.정격.score
+        assert n.total_score == (n.원격.score + n.형격.score + n.이격.score + n.정격.score) / 4
 
     def test_외자_원격_이름_x2(self):
         # 외자: 성 8, 이름 4 → 원격 4+4=8, 형격=이격=정격 8+4=12
@@ -85,17 +85,15 @@ class Test이름수리격(unittest.TestCase):
         assert n.이격.level == n.형격.level
         assert n.정격.level == n.형격.level
 
-    def test_has_worst_numerology(self):
-        n_bad = 이름수리격.from_strokes(8, 4, 5, "male")  # 원격 9, 형격 12 대흉
-        assert n_bad.has_worst_numerology() is True
-        n_ok = 이름수리격.from_strokes(1, 1, 1, "male")   # 2, 2, 2, 3 모두 吉/吉
-        assert n_ok.has_worst_numerology() is False
+    def test_total_score_is_average(self):
+        n = 이름수리격.from_strokes(8, 4, 5, "male")
+        expected = (n.원격.score + n.형격.score + n.이격.score + n.정격.score) / 4
+        assert n.total_score == expected
 
-    def test_has_bad_numerology(self):
-        # 10획 = 凶 (score 0)
+    def test_凶_score(self):
+        # 10획 = 凶 → score 0.25
         n = 이름수리격.from_strokes(5, 5, None, "male")  # 원격 10
-        assert n.원격.score == 0
-        assert n.has_bad_numerology() is True
+        assert n.원격.score == 0.25
 
     def test_to_dict(self):
         n = 이름수리격.from_strokes(1, 1, 1, "female")

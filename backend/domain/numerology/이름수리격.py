@@ -10,13 +10,13 @@ GenderKey = str  # "male" | "female"
 
 @dataclass
 class 이름수리격:
-    """원격·형격·이격·정격 4격과 총점, 흉격 판별. 입력은 획수 3개(외자 시 이름2 생략) + 성별."""
+    """원격·형격·이격·정격 4격과 총점. 입력은 획수 3개(외자 시 이름2 생략) + 성별."""
 
     원격: 격
     형격: 격
     이격: 격
     정격: 격
-    total_score: int
+    total_score: float  # 4格 score [0, 1] 평균
 
     @classmethod
     def from_strokes(
@@ -48,26 +48,8 @@ class 이름수리격:
         형격 = 격.from_stroke_count(형격_합, gender)
         이격 = 격.from_stroke_count(이격_합, gender)
         정격 = 격.from_stroke_count(정격_합, gender)
-        total_score = 원격.score + 형격.score + 이격.score + 정격.score
+        total_score = (원격.score + 형격.score + 이격.score + 정격.score) / 4
         return cls(원격=원격, 형격=형격, 이격=이격, 정격=정격, total_score=total_score)
-
-    def has_worst_numerology(self) -> bool:
-        """대흉(score < 0)이 하나라도 있으면 True."""
-        return (
-            self.원격.score < 0
-            or self.형격.score < 0
-            or self.이격.score < 0
-            or self.정격.score < 0
-        )
-
-    def has_bad_numerology(self) -> bool:
-        """흉(score == 0)이 하나라도 있으면 True."""
-        return (
-            self.원격.score == 0
-            or self.형격.score == 0
-            or self.이격.score == 0
-            or self.정격.score == 0
-        )
 
     def to_dict(self) -> dict:
         """API 호환 (원격/형격/이격/정격 각각 to_dict)."""

@@ -1,6 +1,6 @@
 export type Ohaeng = '목' | '화' | '토' | '금' | '수';
 export type Eumyang = '음' | '양';
-export type HarmonyLevel = '대길' | '반길' | '대흉';
+export type HarmonyLevel = '大吉' | '平' | '大凶';
 export type SuriLevel = '大吉' | '吉' | '中吉' | '中凶' | '凶' | '大凶';
 export type Gender = 'male' | 'female';
 export type OhaengRelation = '상생' | '동일' | '상극';
@@ -56,6 +56,7 @@ export interface EumyangHarmonyResult {
   chars: (Eumyang | null)[];
   reason: string;
   combinationKey: string;
+  rating: string;  // 吉 | 凶 — 음양조화.json 기준
 }
 
 export interface SuriEntry {
