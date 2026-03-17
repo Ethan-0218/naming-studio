@@ -200,25 +200,24 @@ function OhaengNode({ data }: { data: OhaengNodeData }) {
       >
         {character ?? '?'}
       </Text>
-      {ohaeng ? (
-        <Text
-          className="text-caption"
+      <Text
+          className="text-caption mt-[2px]"
           style={{
             fontFamily: fontFamily.sansMedium,
-            color: oc?.base,
+            fontSize: 10,
+            color: oc?.base ?? colors.textDisabled,
             lineHeight: 13,
             letterSpacing: 0,
           }}
         >
-          {ohaeng}({ohaengLabel(ohaeng)})
+          {ohaeng ? `${ohaeng}(${ohaengLabel(ohaeng)})` : '미선택'}
         </Text>
-      ) : null}
       <Text
-        className="text-overline"
+        className="text-overline mt-[2px]"
         style={{
           fontFamily: fontFamily.sansMedium,
           color: oc?.base ?? colors.textDisabled,
-          fontSize: 8,
+          fontSize: 9,
           lineHeight: 10,
           letterSpacing: 0,
         }}
@@ -294,7 +293,7 @@ export default function OhaengRelationDiagram({ nodes }: Props) {
   return (
     <View className="items-center py-2">
       <Legend />
-      <View className="w-[260px] h-[225px] relative" style={{ width: 260, height: 225 }}>
+      <View className="w-[260px] h-[189px] relative">
         {directedPairs.map((pair, i) => (
           <ArrowEdge key={i} pair={pair} pairIndex={i} nodes={nodes} />
         ))}
