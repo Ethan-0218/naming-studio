@@ -1,5 +1,5 @@
 # 작명학 오행 조화 판단.
-# 3글자 이름: naming-studio/data/오행조합.json의 5단계 등급(대길/길/평/흉/대흉) 사용.
+# 3글자 이름: naming-studio/data/오행조화.json의 5단계 등급(大吉/吉/平/凶/大凶) 사용.
 # 2글자 이름(이름2_오행=None): 인접 쌍 상생/동일/상극 알고리즘 폴백.
 
 from dataclasses import dataclass
@@ -10,22 +10,22 @@ from domain.jakmyeong.오행조화_데이터 import get_오행조화_데이터
 
 
 Relation = Literal["상생", "동일", "상극"]
-Level = Literal["대길", "길", "평", "흉", "대흉"]
+Level = Literal["大吉", "吉", "平", "凶", "大凶"]
 
 # 5단계 등급 → 점수 (-4 ~ +4). 정규화: (score + 4) / 8 → [0, 1]
 _LEVEL_SCORE: dict[str, int] = {
-    "대길": 4,
-    "길": 2,
-    "평": 0,
-    "흉": -2,
-    "대흉": -4,
+    "大吉": 4,
+    "吉": 2,
+    "平": 0,
+    "凶": -2,
+    "大凶": -4,
 }
 
 # 2글자 폴백용: 쌍 관계 → 점수
 _PAIR_SCORE: dict[Relation, int] = {"상생": 2, "동일": 0, "상극": -2}
 
 # 2글자 폴백용: 알고리즘 3단계 → 5단계 매핑
-_FALLBACK_LEVEL: dict[str, Level] = {"대길": "대길", "반길": "평", "대흉": "대흉"}
+_FALLBACK_LEVEL: dict[str, Level] = {"大吉": "大吉", "반길": "平", "大凶": "大凶"}
 
 
 def _relation(a: 오행, b: 오행) -> Relation:
@@ -90,9 +90,9 @@ class 오행조화:
 
             harmonious = 상극수 == 0
             if 상극수 > 0:
-                algo_level = "반길" if 상극수 < len(쌍별) else "대흉"
+                algo_level = "반길" if 상극수 < len(쌍별) else "大凶"
             elif 상생수 >= 1:
-                algo_level = "대길"
+                algo_level = "大吉"
             else:
                 algo_level = "반길"
 
@@ -122,9 +122,9 @@ class 오행조화:
                 # JSON에서 찾지 못한 경우 알고리즘 폴백
                 상생수 = sum(1 for r in 쌍별 if r.relation == "상생")
                 if 상극수 > 0:
-                    algo_level = "반길" if 상극수 < len(쌍별) else "대흉"
+                    algo_level = "반길" if 상극수 < len(쌍별) else "大凶"
                 elif 상생수 >= 1:
-                    algo_level = "대길"
+                    algo_level = "大吉"
                 else:
                     algo_level = "반길"
                 level = _FALLBACK_LEVEL[algo_level]
