@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '@/design-system';
 import { RootStackParamList } from '../../navigation/types';
 import { REGIONS, Region } from '../data';
+import { createMyeongJu } from '../api';
 import AddMyeongJuNavBar from './AddMyeongJuNavBar';
 import GenderSection from './GenderSection';
 import BirthDateSection from './BirthDateSection';
@@ -36,13 +37,34 @@ export default function AddMyeongJuScreen() {
 
   // 지역 바텀시트
   const [regionSheetOpen, setRegionSheetOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit() {
-    // TODO: 실제 저장 로직 추가
-    if (mode === 'ai') {
-      navigation.navigate('AINaming');
-    } else {
-      navigation.navigate('SelfNaming');
+  async function handleSubmit() {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await createMyeongJu({
+        gender,
+        calendarType,
+        year,
+        month,
+        day,
+        timeUnknown,
+        isAm,
+        hour,
+        minute,
+        regionName: selectedRegion.name,
+        regionOffset: selectedRegion.offset,
+      });
+      if (mode === 'ai') {
+        navigation.navigate('AINaming');
+      } else {
+        navigation.navigate('SelfNaming');
+      }
+    } catch {
+      Alert.alert('오류', '명주 등록에 실패했습니다. 다시 시도해 주세요.');
+    } finally {
+      setSubmitting(false);
     }
   }
 

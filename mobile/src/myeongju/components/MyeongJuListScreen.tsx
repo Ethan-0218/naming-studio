@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,7 +10,7 @@ import MyeongJuNavBar from './MyeongJuNavBar';
 import AddMyeongJuButton from './AddMyeongJuButton';
 import ProfileCard from './ProfileCard';
 import { MyeongJuProfile } from '../types';
-import { MOCK_PROFILES } from '../data';
+import { listMyeongJu } from '../api';
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'MyeongJuList'>;
 type ScreenRoute = RouteProp<RootStackParamList, 'MyeongJuList'>;
@@ -19,6 +19,15 @@ export default function MyeongJuListScreen() {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<ScreenRoute>();
   const { mode } = route.params;
+
+  const [profiles, setProfiles] = useState<MyeongJuProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    listMyeongJu()
+      .then(setProfiles)
+      .finally(() => setLoading(false));
+  }, []);
 
   function handleSelectProfile(_profile: MyeongJuProfile) {
     if (mode === 'ai') {
@@ -43,22 +52,27 @@ export default function MyeongJuListScreen() {
           <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, color: colors.textTertiary, letterSpacing: 0.6 }}>
             {'명주 '}
             <Text style={{ fontFamily: 'NotoSansKR_500Medium', color: colors.textSecondary }}>
-              {MOCK_PROFILES.length}
+              {profiles.length}
             </Text>
             {'명'}
           </Text>
         </View>
 
-        {/* 카드 목록 */}
-        <View style={{ padding: 12, paddingHorizontal: 16, paddingBottom: 20, gap: 9 }}>
-          {MOCK_PROFILES.map((profile) => (
-            <ProfileCard
-              key={profile.id}
-              profile={profile}
-              onPress={() => handleSelectProfile(profile)}
-            />
-          ))}
-        </View>
+        {loading ? (
+          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+            <ActivityIndicator color={colors.textTertiary} />
+          </View>
+        ) : (
+          <View style={{ padding: 12, paddingHorizontal: 16, paddingBottom: 20, gap: 9 }}>
+            {profiles.map((profile) => (
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                onPress={() => handleSelectProfile(profile)}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       <BottomNav activeTab="명주" />

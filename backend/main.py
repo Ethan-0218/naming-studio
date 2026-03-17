@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import router as api_router
+from api.myeongju_routes import router as myeongju_router
 
 
 @asynccontextmanager
@@ -55,6 +56,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix="/api", tags=["api"])
+app.include_router(myeongju_router, prefix="/api", tags=["myeongju"])
 
 
 @app.get("/health")

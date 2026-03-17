@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/design-system';
 import { RootStackParamList } from '../../navigation/types';
-import { MOCK_PROFILES } from '../../myeongju/data';
+import { listMyeongJu } from '../../myeongju/api';
 import AppHeader from './AppHeader';
 import HeroSection from './HeroSection';
 import ActionCardsSection from './ActionCardsSection';
@@ -22,8 +22,13 @@ function Divider() {
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
-  // 명주 목록이 비어 있으면 바로 추가 화면으로 이동
-  const hasProfiles = MOCK_PROFILES.length > 0;
+  const [hasProfiles, setHasProfiles] = useState(false);
+
+  useEffect(() => {
+    listMyeongJu()
+      .then((profiles) => setHasProfiles(profiles.length > 0))
+      .catch(() => setHasProfiles(false));
+  }, []);
 
   function handleNaming(mode: 'ai' | 'self') {
     if (hasProfiles) {
