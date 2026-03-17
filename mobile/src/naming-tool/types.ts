@@ -37,6 +37,7 @@ export interface OhaengHarmonyResult {
   pairs: OhaengPair[];
   totalScore: number;
   reason: string;
+  combinationKey: string;
 }
 
 export interface EumyangHarmonyResult {

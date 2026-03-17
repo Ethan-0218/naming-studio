@@ -38,8 +38,9 @@ export function computeOhaengHarmony(elements: (Ohaeng | null)[]): OhaengHarmony
   }
 
   const reason = buildReason(pairs);
+  const combinationKey = valid.join('');
 
-  return { level, pairs, totalScore, reason };
+  return { level, pairs, totalScore, reason, combinationKey };
 }
 
 function buildReason(pairs: OhaengPair[]): string {

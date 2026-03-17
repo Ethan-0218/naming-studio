@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { fontFamily } from '@/design-system';
 import { NameInput, OhaengHarmonyResult } from '../types';
+import { getOhaengCombinationDescription } from '../domain/ohaengCombinationDescriptions';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
 import SectionCard, { harmonyBadgeColor } from './SectionCard';
 
@@ -36,17 +37,21 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
             한자를 선택하면 자원오행이 표시됩니다
           </Text>
         )}
-        {result && (
-          <>
-            <View className="border-b border-border" />
-            <Text
-              className="text-bodySm text-textSecondary"
-              style={{ fontFamily: fontFamily.sansRegular }}
-            >
-              {result.reason}
-            </Text>
-          </>
-        )}
+        {result && (() => {
+          const desc = getOhaengCombinationDescription(result.combinationKey);
+          if (!desc) return null;
+          return (
+            <>
+              <View className="border-b border-border" />
+              <Text
+                className="text-bodySm text-textSecondary"
+                style={{ fontFamily: fontFamily.sansRegular, lineHeight: 18 }}
+              >
+                {desc.description}
+              </Text>
+            </>
+          );
+        })()}
       </View>
     </SectionCard>
   );

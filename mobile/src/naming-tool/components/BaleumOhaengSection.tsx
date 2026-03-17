@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { colors, fontFamily } from '@/design-system';
 import { NameInput, OhaengHarmonyResult } from '../types';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
+import { getOhaengCombinationDescription } from '../domain/ohaengCombinationDescriptions';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
 import SectionCard, { harmonyBadgeColor } from './SectionCard';
 
@@ -37,17 +38,21 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
             이름을 입력하면 발음오행이 표시됩니다
           </Text>
         )}
-        {result && (
-          <>
-            <View className="border-b border-border" />
-            <Text
-              className="text-bodySm text-textSecondary"
-              style={{ fontFamily: fontFamily.sansRegular, lineHeight: 18 }}
-            >
-              {result.reason}
-            </Text>
-          </>
-        )}
+        {result && (() => {
+          const desc = getOhaengCombinationDescription(result.combinationKey);
+          if (!desc) return null;
+          return (
+            <>
+              <View className="border-b border-border" />
+              <Text
+                className="text-bodySm text-textSecondary"
+                style={{ fontFamily: fontFamily.sansRegular, lineHeight: 18 }}
+              >
+                {desc.description}
+              </Text>
+            </>
+          );
+        })()}
       </View>
     </SectionCard>
   );
