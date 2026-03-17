@@ -103,3 +103,11 @@ The mobile app is currently a minimal Expo stub. `constants/config.ts` exports `
 - Models are immutable (`@dataclass(frozen=True)`)
 - Repository pattern for all DB access
 - LangGraph agent graph is lazily initialized on first request
+
+### Mobile — UI Component Rules
+
+- **1파일 1컴포넌트:** 컴포넌트는 반드시 파일 하나에 하나만 정의한다. 한 파일에 여러 컴포넌트를 선언하지 않는다.
+- **components/ 폴더:** 모든 컴포넌트 파일은 해당 feature 폴더 하위의 `components/` 디렉터리에 둔다 (예: `myeongju/components/ProfileCard.tsx`).
+- **공유 타입·상수:** feature 내 공유 타입과 상수는 `types.ts`에 분리한다.
+- **스크린 파일 역할:** 스크린 컴포넌트(`*Screen.tsx`)는 하위 컴포넌트들을 조합하는 오케스트레이터 역할만 수행한다. UI 로직은 각 컴포넌트로 위임한다.
+- **SafeAreaView:** `react-native`의 `SafeAreaView`는 deprecated이므로 반드시 `react-native-safe-area-context`에서 import한다.
