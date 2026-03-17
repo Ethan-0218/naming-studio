@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, fontFamily } from '@/design-system';
 import { useNamingToolState } from '../hooks/useNamingToolState';
 import NameInputSection from './NameInputSection';
@@ -49,12 +50,7 @@ export default function NamingToolScreen({ onBack }: Props) {
         style={{ paddingTop: Platform.OS === 'ios' ? 56 : 16 }}
       >
         <Pressable onPress={onBack} className="w-[60px] py-2">
-          <Text
-            className="text-bodySm text-textSecondary"
-            style={{ fontFamily: fontFamily.sansRegular }}
-          >
-            ← 채팅
-          </Text>
+          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
         </Pressable>
         <View className="flex-1 items-center justify-center px-2 flex-col gap-1">
           <Text
