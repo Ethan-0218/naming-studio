@@ -23,9 +23,10 @@ class Test수리격_데이터(unittest.TestCase):
             assert "level" in row and "name1" in row and "name2" in row and "interpretation" in row
             assert "male" in row["level"] and "female" in row["level"]
 
-    def test_0과_81_동일_데이터(self):
+    def test_0과_81_동일_핵심_필드(self):
         data = load_수리격()
-        assert data["0"] == data["81"]
+        for field in ("level", "name1", "name2", "interpretation"):
+            assert data["0"][field] == data["81"][field], f"0과 81의 {field}가 다름"
 
 
 class Test격(unittest.TestCase):

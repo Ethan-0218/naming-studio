@@ -6,8 +6,8 @@ from typing import Any
 
 _수리격_캐시: dict[str, Any] | None = None
 
-_DATA_DIR = Path(__file__).resolve().parent.parent.parent
-_JSON_PATH = _DATA_DIR / "data" / "수리격_81.json"
+# 체인: 수리격_데이터.py → numerology/ → domain/ → backend/ → naming-studio/
+_JSON_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "수리격.json"
 
 
 def load_수리격() -> dict[str, Any]:
