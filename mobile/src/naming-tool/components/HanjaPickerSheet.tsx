@@ -17,7 +17,7 @@ import {
   View,
 } from 'react-native';
 import { ohaengColors, colors, fontFamily } from '@/design-system';
-import { CharSlotData } from '../types';
+import { HanjaSelection } from '../types';
 import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
 interface Props {
@@ -25,7 +25,7 @@ interface Props {
   onClose: () => void;
   hangul: string;
   role: 'surname' | 'name';
-  onSelect: (data: Partial<CharSlotData>) => void;
+  onSelect: (data: Omit<HanjaSelection, 'forHangul'>) => void;
 }
 
 const SHEET_HEIGHT = 480;
@@ -68,7 +68,6 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
       mean: r.mean,
       strokeCount: r.strokeCount,
       charOhaeng: r.charOhaeng,
-      baleumOhaeng: r.baleumOhaeng,
       soundEumyang: r.soundEumyang,
       strokeEumyang: r.strokeEumyang,
     });

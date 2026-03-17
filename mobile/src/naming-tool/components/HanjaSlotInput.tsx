@@ -8,18 +8,18 @@ import React, { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import clsx from 'clsx';
 import { ohaengColors, colors, fontFamily } from '@/design-system';
-import { CharSlotData } from '../types';
+import { CharSlotData, HanjaSelection } from '../types';
 import HanjaPickerSheet from './HanjaPickerSheet';
 
 interface Props {
   label: string;
   hangul: string;
   value: CharSlotData;
-  onUpdate: (data: Partial<CharSlotData>) => void;
+  onUpdateHanja: (selection: HanjaSelection) => void;
   role: 'surname' | 'name';
 }
 
-export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }: Props) {
+export default function HanjaSlotInput({ label, hangul, value, onUpdateHanja, role }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const hasHanja = !!value.hanja;
@@ -95,7 +95,7 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
         onClose={() => setSheetOpen(false)}
         hangul={hangul}
         role={role}
-        onSelect={onUpdate}
+        onSelect={(data) => onUpdateHanja({ forHangul: hangul, ...data })}
       />
     </View>
   );

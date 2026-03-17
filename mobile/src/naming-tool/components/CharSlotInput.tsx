@@ -32,7 +32,6 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
       mean: result.mean,
       strokeCount: result.strokeCount,
       charOhaeng: result.charOhaeng,
-      baleumOhaeng: result.baleumOhaeng,
       soundEumyang: result.soundEumyang,
       strokeEumyang: result.strokeEumyang,
     });

@@ -5,15 +5,26 @@ export type SuriLevel = '大吉' | '吉' | '中吉' | '中凶' | '凶' | '大凶
 export type Gender = 'male' | 'female';
 export type OhaengRelation = '상생' | '동일' | '상극';
 
+/** 한자 선택 정보 — 어떤 한글에 대한 선택인지(forHangul)를 함께 저장해 한글 변경 시 자동 무효화 */
+export interface HanjaSelection {
+  forHangul: string;
+  hanja: string;
+  mean: string;
+  strokeCount: number | null;
+  charOhaeng: Ohaeng | null;
+  soundEumyang: Eumyang | null;
+  strokeEumyang: Eumyang | null;
+}
+
+/** 컴포넌트 표시용 computed view — useNamingToolState에서 hangulInput + resolvedHanjaInput으로 파생 */
 export interface CharSlotData {
   hangul: string;
   hanja: string;
   mean: string;
   strokeCount: number | null;
-  charOhaeng: Ohaeng | null;    // character_five_elements (자원오행)
-  baleumOhaeng: Ohaeng | null;  // pronunciation_five_elements (발음오행)
-  soundEumyang: Eumyang | null; // sound_based_yin_yang (발음음양)
-  strokeEumyang: Eumyang | null;// stroke_based_yin_yang (획수음양)
+  charOhaeng: Ohaeng | null;
+  soundEumyang: Eumyang | null;
+  strokeEumyang: Eumyang | null;
 }
 
 export interface NameInput {

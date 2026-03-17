@@ -34,7 +34,8 @@ export default function NamingToolScreen({ onBack }: Props) {
     gender,
     setGender,
     analysis,
-    updateSlot,
+    updateHangul,
+    updateHanja,
     updateSaju,
   } = useNamingToolState();
 
@@ -78,7 +79,8 @@ export default function NamingToolScreen({ onBack }: Props) {
         <NameInputSection
           analysis={analysis}
           nameInput={nameInput}
-          onUpdate={updateSlot}
+          onUpdateHangul={updateHangul}
+          onUpdateHanja={updateHanja}
           gender={gender}
           onGenderChange={setGender}
         />

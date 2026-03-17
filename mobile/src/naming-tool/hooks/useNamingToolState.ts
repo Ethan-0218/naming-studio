@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
-  CharSlotData, Gender, NameInput, NamingAnalysis, SajuInput,
+  HanjaSelection, CharSlotData, Gender, NameInput, NamingAnalysis, SajuInput,
   OhaengHarmonyResult, EumyangHarmonyResult,
 } from '../types';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
@@ -9,20 +9,37 @@ import { computeEumyangHarmony } from '../domain/eumyangHarmony';
 import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
 import { computeSurigyeok } from '../domain/surigyeok';
 
-function emptySlot(): CharSlotData {
+type SlotKey = 'surname' | 'first1' | 'first2';
+
+interface HangulInput {
+  surname: string;
+  first1: string;
+  first2: string;
+}
+
+interface HanjaInput {
+  surname: HanjaSelection | null;
+  first1: HanjaSelection | null;
+  first2: HanjaSelection | null;
+}
+
+/** 현재 한글과 선택이 일치할 때만 반환 — 한글이 바뀐 경우 null */
+function getValidHanja(hangul: string, selection: HanjaSelection | null): HanjaSelection | null {
+  if (!selection || selection.forHangul !== hangul) return null;
+  return selection;
+}
+
+/** 한글 + 유효한 한자 선택 → 컴포넌트 표시용 CharSlotData */
+function resolveSlot(hangul: string, hanja: HanjaSelection | null): CharSlotData {
   return {
-    hangul: '', hanja: '', mean: '',
-    strokeCount: null, charOhaeng: null,
-    baleumOhaeng: null, soundEumyang: null, strokeEumyang: null,
+    hangul,
+    hanja: hanja?.hanja ?? '',
+    mean: hanja?.mean ?? '',
+    strokeCount: hanja?.strokeCount ?? null,
+    charOhaeng: hanja?.charOhaeng ?? null,
+    soundEumyang: hanja?.soundEumyang ?? null,
+    strokeEumyang: hanja?.strokeEumyang ?? null,
   };
-}
-
-function emptyNameInput(): NameInput {
-  return { surname: emptySlot(), first1: emptySlot(), first2: emptySlot() };
-}
-
-function emptySajuInput(): SajuInput {
-  return { yongsin: null };
 }
 
 /** Map 수리격 totalScore [-20, 40] → [0, 25] */
@@ -32,45 +49,48 @@ function mapSuriScore(rawScore: number): number {
 }
 
 function computeAnalysis(
-  nameInput: NameInput,
+  hangulInput: HangulInput,
+  resolvedHanja: HanjaInput,
   sajuInput: SajuInput,
   gender: Gender,
 ): NamingAnalysis {
-  const { surname, first1, first2 } = nameInput;
+  const sH = resolvedHanja.surname;
+  const f1H = resolvedHanja.first1;
+  const f2H = resolvedHanja.first2;
 
-  // 발음오행: derived from hangul characters' initial consonants
+  // 발음오행: hangul 초성에서 직접 계산
   const baleumElements = [
-    surname.hangul ? baleumOhaengFromChar(surname.hangul) : null,
-    first1.hangul ? baleumOhaengFromChar(first1.hangul) : null,
-    first2.hangul ? baleumOhaengFromChar(first2.hangul) : null,
+    hangulInput.surname ? baleumOhaengFromChar(hangulInput.surname) : null,
+    hangulInput.first1 ? baleumOhaengFromChar(hangulInput.first1) : null,
+    hangulInput.first2 ? baleumOhaengFromChar(hangulInput.first2) : null,
   ];
   const baleumOhaengResult: OhaengHarmonyResult | null = computeOhaengHarmony(baleumElements);
 
-  // 발음음양: API 데이터 없으면 한글 발음 폴백 (카드 표시 로직과 동일)
+  // 발음음양: 한자 데이터 우선, 없으면 hangul 폴백
   const soundEumyangs = [
-    surname.soundEumyang ?? soundEumyangFromHangul(surname.hangul),
-    first1.soundEumyang ?? soundEumyangFromHangul(first1.hangul),
-    first2.soundEumyang ?? soundEumyangFromHangul(first2.hangul),
+    sH?.soundEumyang ?? soundEumyangFromHangul(hangulInput.surname),
+    f1H?.soundEumyang ?? soundEumyangFromHangul(hangulInput.first1),
+    f2H?.soundEumyang ?? soundEumyangFromHangul(hangulInput.first2),
   ];
   const baleumEumyangResult: EumyangHarmonyResult | null =
     soundEumyangs.some(e => e !== null) ? computeEumyangHarmony(soundEumyangs) : null;
 
-  // 자원오행: from hanja char_ohaeng
-  const jawonElements = [surname.charOhaeng, first1.charOhaeng, first2.charOhaeng];
+  // 자원오행: 유효한 한자 선택의 charOhaeng
+  const jawonElements = [sH?.charOhaeng ?? null, f1H?.charOhaeng ?? null, f2H?.charOhaeng ?? null];
   const jawonOhaengResult: OhaengHarmonyResult | null = computeOhaengHarmony(jawonElements);
 
-  // 획수음양: from stroke count parity (odd=양, even=음)
-  const strokeEumyangs = [surname.strokeEumyang, first1.strokeEumyang, first2.strokeEumyang];
+  // 획수음양: 유효한 한자 선택의 strokeEumyang
+  const strokeEumyangs = [sH?.strokeEumyang ?? null, f1H?.strokeEumyang ?? null, f2H?.strokeEumyang ?? null];
   const hoeksuEumyangResult: EumyangHarmonyResult | null =
     strokeEumyangs.some(e => e !== null) ? computeEumyangHarmony(strokeEumyangs) : null;
 
-  // 수리격
+  // 수리격: 유효한 한자 선택의 strokeCount
   let surigyeokResult = null;
-  if (surname.strokeCount != null && first1.strokeCount != null) {
+  if (sH?.strokeCount != null && f1H?.strokeCount != null) {
     surigyeokResult = computeSurigyeok(
-      surname.strokeCount,
-      first1.strokeCount,
-      first2.strokeCount,
+      sH.strokeCount,
+      f1H.strokeCount,
+      f2H?.strokeCount ?? null,
       gender,
     );
   }
@@ -108,17 +128,35 @@ function computeAnalysis(
 }
 
 export function useNamingToolState() {
-  const [nameInput, setNameInput] = useState<NameInput>(emptyNameInput);
-  const [sajuInput, setSajuInput] = useState<SajuInput>(emptySajuInput);
+  const [hangulInput, setHangulInput] = useState<HangulInput>({ surname: '', first1: '', first2: '' });
+  const [hanjaInput, setHanjaInput] = useState<HanjaInput>({ surname: null, first1: null, first2: null });
+  const [sajuInput, setSajuInput] = useState<SajuInput>({ yongsin: null });
   const [gender, setGender] = useState<Gender>('male');
 
+  const resolvedHanjaInput = useMemo<HanjaInput>(() => ({
+    surname: getValidHanja(hangulInput.surname, hanjaInput.surname),
+    first1: getValidHanja(hangulInput.first1, hanjaInput.first1),
+    first2: getValidHanja(hangulInput.first2, hanjaInput.first2),
+  }), [hangulInput, hanjaInput]);
+
+  /** 컴포넌트 표시용 computed view */
+  const nameInput: NameInput = useMemo(() => ({
+    surname: resolveSlot(hangulInput.surname, resolvedHanjaInput.surname),
+    first1: resolveSlot(hangulInput.first1, resolvedHanjaInput.first1),
+    first2: resolveSlot(hangulInput.first2, resolvedHanjaInput.first2),
+  }), [hangulInput, resolvedHanjaInput]);
+
   const analysis = useMemo(
-    () => computeAnalysis(nameInput, sajuInput, gender),
-    [nameInput, sajuInput, gender],
+    () => computeAnalysis(hangulInput, resolvedHanjaInput, sajuInput, gender),
+    [hangulInput, resolvedHanjaInput, sajuInput, gender],
   );
 
-  function updateSlot(slot: 'surname' | 'first1' | 'first2', data: Partial<CharSlotData>) {
-    setNameInput(prev => ({ ...prev, [slot]: { ...prev[slot], ...data } }));
+  function updateHangul(slot: SlotKey, hangul: string) {
+    setHangulInput(prev => ({ ...prev, [slot]: hangul }));
+  }
+
+  function updateHanja(slot: SlotKey, selection: HanjaSelection) {
+    setHanjaInput(prev => ({ ...prev, [slot]: selection }));
   }
 
   function updateSaju(data: Partial<SajuInput>) {
@@ -127,6 +165,6 @@ export function useNamingToolState() {
 
   return {
     nameInput, sajuInput, gender, setGender,
-    analysis, updateSlot, updateSaju,
+    analysis, updateHangul, updateHanja, updateSaju,
   };
 }

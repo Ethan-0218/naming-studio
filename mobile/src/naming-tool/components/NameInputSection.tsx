@@ -2,42 +2,46 @@ import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import clsx from 'clsx';
 import { colors, fontFamily } from '@/design-system';
-import { CharSlotData, Gender, NameInput, NamingAnalysis } from '../types';
+import { HanjaSelection, Gender, NameInput, NamingAnalysis } from '../types';
 import HanjaSlotInput from './HanjaSlotInput';
 import ScoreSummarySection from './ScoreSummarySection';
 import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
+type SlotKey = 'surname' | 'first1' | 'first2';
+
 interface Props {
   analysis: NamingAnalysis;
   nameInput: NameInput;
-  onUpdate: (slot: 'surname' | 'first1' | 'first2', data: Partial<CharSlotData>) => void;
+  onUpdateHangul: (slot: SlotKey, hangul: string) => void;
+  onUpdateHanja: (slot: SlotKey, selection: HanjaSelection) => void;
   gender: Gender;
   onGenderChange: (g: Gender) => void;
 }
 
 const SLOT_LABELS = { surname: '성', first1: '첫째', first2: '둘째' } as const;
-type SlotKey = 'surname' | 'first1' | 'first2';
 const SLOTS: SlotKey[] = ['surname', 'first1', 'first2'];
 
 export default function NameInputSection({
   analysis,
   nameInput,
-  onUpdate,
+  onUpdateHangul,
+  onUpdateHanja,
   gender,
   onGenderChange,
 }: Props) {
   const { results: surnameResults, search: searchSurname } = useHanjaSearch('surname');
   const autoSelectPending = useRef(false);
+  const surnameSearchedFor = useRef('');
 
   useEffect(() => {
     if (autoSelectPending.current && surnameResults.length === 1) {
       const r = surnameResults[0];
-      onUpdate('surname', {
+      onUpdateHanja('surname', {
+        forHangul: surnameSearchedFor.current,
         hanja: r.hanja,
         mean: r.mean,
         strokeCount: r.strokeCount,
         charOhaeng: r.charOhaeng,
-        baleumOhaeng: r.baleumOhaeng,
         soundEumyang: r.soundEumyang,
         strokeEumyang: r.strokeEumyang,
       });
@@ -108,19 +112,15 @@ export default function NameInputSection({
                   value={nameInput[slot].hangul}
                   onChangeText={(text) => {
                     const last = text.slice(-1);
-                    onUpdate(slot, {
-                      hangul: last,
-                      hanja: '',
-                      mean: '',
-                      strokeCount: null,
-                      charOhaeng: null,
-                      baleumOhaeng: null,
-                      soundEumyang: null,
-                      strokeEumyang: null,
-                    });
-                    if (slot === 'surname' && last) {
-                      autoSelectPending.current = true;
-                      searchSurname(last);
+                    onUpdateHangul(slot, last);
+                    if (slot === 'surname') {
+                      if (last) {
+                        autoSelectPending.current = true;
+                        surnameSearchedFor.current = last;
+                        searchSurname(last);
+                      } else {
+                        autoSelectPending.current = false;
+                      }
                     }
                   }}
                   placeholder="ㅡ"
@@ -149,7 +149,7 @@ export default function NameInputSection({
                   label={SLOT_LABELS[slot]}
                   hangul={nameInput[slot].hangul}
                   value={nameInput[slot]}
-                  onUpdate={(d) => onUpdate(slot, d)}
+                  onUpdateHanja={(sel) => onUpdateHanja(slot, sel)}
                   role={slot === 'surname' ? 'surname' : 'name'}
                 />
               </View>
