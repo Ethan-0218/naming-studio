@@ -140,7 +140,7 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
                     className="text-overline"
                     style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
                   >
-                    {eumyang === '음' ? '음(陰)' : eumyang === '양' ? '양(陽)' : '–'}
+                    {eumyang === '음' ? '음(陰)' : eumyang === '양' ? '양(陽)' : '미선택'}
                   </Text>
                 </View>
               </View>
