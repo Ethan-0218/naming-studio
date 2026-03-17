@@ -35,7 +35,7 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdate, role }:
       </Text>
 
       <Pressable
-        onPress={() => setSheetOpen(true)}
+        onPress={() => { if (hangul) setSheetOpen(true); }}
         className={clsx(
           'w-full rounded-md border-[1.5px] items-center justify-center',
           !hasHanja && 'border-dashed bg-surface border-border',

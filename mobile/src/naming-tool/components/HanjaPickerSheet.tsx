@@ -3,7 +3,7 @@
  * - Modal + 슬라이드 애니메이션
  * - 검색 입력 + 결과 목록 (자원오행 색상 표시)
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -32,10 +32,12 @@ const SHEET_HEIGHT = 480;
 
 export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSelect }: Props) {
   const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
-  const { query, results, loading, search, clearResults } = useHanjaSearch(role);
+  const { results, loading, search, clearResults } = useHanjaSearch(role);
+  const [meanFilter, setMeanFilter] = useState('');
 
   useEffect(() => {
     if (visible) {
+      setMeanFilter('');
       if (hangul) search(hangul);
       Animated.spring(slideAnim, {
         toValue: 0,
@@ -55,6 +57,10 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
   useEffect(() => {
     if (visible && hangul) search(hangul);
   }, [hangul]);
+
+  const filteredResults = meanFilter.trim()
+    ? results.filter((r) => r.mean.includes(meanFilter.trim()))
+    : results;
 
   function handleSelect(r: ReturnType<typeof useHanjaSearch>['results'][0]) {
     onSelect({
@@ -119,9 +125,9 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
           <TextInput
             className="border-[1.5px] border-border rounded-md px-3 py-2 mb-2 bg-surfaceRaised text-textPrimary"
             style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, lineHeight: 19 }}
-            value={query}
-            onChangeText={search}
-            placeholder={role === 'surname' ? '성씨 검색 (예: 김)' : '음 검색 (예: 민)'}
+            value={meanFilter}
+            onChangeText={setMeanFilter}
+            placeholder="뜻으로 필터 (예: 빛날, 강한)"
             placeholderTextColor={colors.textDisabled}
             autoFocus={visible}
             returnKeyType="search"
@@ -131,7 +137,7 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
             <ActivityIndicator size="small" color={colors.textTertiary} className="mt-4" />
           )}
 
-          {!loading && results.length === 0 && query.length > 0 && (
+          {!loading && filteredResults.length === 0 && (results.length > 0 || meanFilter.length > 0) && (
             <Text
               className="text-bodySm text-textDisabled text-center mt-5"
               style={{ fontFamily: fontFamily.sansRegular }}
@@ -140,13 +146,13 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
             </Text>
           )}
 
-          {results.length > 0 && (
+          {filteredResults.length > 0 && (
             <ScrollView
               className="flex-1"
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-              {results.map((r, i) => {
+              {filteredResults.map((r, i) => {
                 const oc = r.charOhaeng ? ohaengColors[r.charOhaeng] : null;
                 return (
                   <Pressable

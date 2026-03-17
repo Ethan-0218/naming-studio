@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import clsx from 'clsx';
 import { colors, fontFamily } from '@/design-system';
 import { CharSlotData, Gender, NameInput, NamingAnalysis } from '../types';
 import HanjaSlotInput from './HanjaSlotInput';
 import ScoreSummarySection from './ScoreSummarySection';
+import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
 interface Props {
   analysis: NamingAnalysis;
@@ -25,6 +26,25 @@ export default function NameInputSection({
   gender,
   onGenderChange,
 }: Props) {
+  const { results: surnameResults, search: searchSurname } = useHanjaSearch('surname');
+  const autoSelectPending = useRef(false);
+
+  useEffect(() => {
+    if (autoSelectPending.current && surnameResults.length === 1) {
+      const r = surnameResults[0];
+      onUpdate('surname', {
+        hanja: r.hanja,
+        mean: r.mean,
+        strokeCount: r.strokeCount,
+        charOhaeng: r.charOhaeng,
+        baleumOhaeng: r.baleumOhaeng,
+        soundEumyang: r.soundEumyang,
+        strokeEumyang: r.strokeEumyang,
+      });
+    }
+    autoSelectPending.current = false;
+  }, [surnameResults]);
+
   return (
     <View>
       <View className="flex-row items-center justify-between mb-2">
@@ -89,6 +109,10 @@ export default function NameInputSection({
                   onChangeText={(text) => {
                     const last = text.slice(-1);
                     onUpdate(slot, { hangul: last });
+                    if (slot === 'surname' && last) {
+                      autoSelectPending.current = true;
+                      searchSurname(last);
+                    }
                   }}
                   placeholder="ㅡ"
                   placeholderTextColor={colors.textDisabled}
