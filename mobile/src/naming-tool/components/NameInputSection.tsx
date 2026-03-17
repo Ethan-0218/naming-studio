@@ -108,7 +108,16 @@ export default function NameInputSection({
                   value={nameInput[slot].hangul}
                   onChangeText={(text) => {
                     const last = text.slice(-1);
-                    onUpdate(slot, { hangul: last });
+                    onUpdate(slot, {
+                      hangul: last,
+                      hanja: '',
+                      mean: '',
+                      strokeCount: null,
+                      charOhaeng: null,
+                      baleumOhaeng: null,
+                      soundEumyang: null,
+                      strokeEumyang: null,
+                    });
                     if (slot === 'surname' && last) {
                       autoSelectPending.current = true;
                       searchSurname(last);

@@ -53,8 +53,8 @@ function EumyangBalanceBar({
   yinCount: number;
   yangCount: number;
 }) {
-  const yin = yinCount || 1;
-  const yang = yangCount || 1;
+  const yin = yinCount;
+  const yang = yangCount;
   return (
     <View className="flex-row items-center gap-2">
       <Text
