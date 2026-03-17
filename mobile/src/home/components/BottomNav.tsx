@@ -3,14 +3,20 @@ import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/design-system';
 
-const TABS = [
-  { label: '홈', icon: 'home', active: true },
-  { label: '검색', icon: 'search', active: false },
-  { label: '저장', icon: 'bookmark', active: false },
-  { label: '내 정보', icon: 'person', active: false },
-] as const;
+export type BottomNavTab = '홈' | '검색' | '명주' | '저장';
 
-export default function BottomNav() {
+const TABS: { label: BottomNavTab; icon: string }[] = [
+  { label: '홈',  icon: 'home' },
+  { label: '검색', icon: 'search' },
+  { label: '명주', icon: 'person' },
+  { label: '저장', icon: 'bookmark' },
+];
+
+interface Props {
+  activeTab?: BottomNavTab;
+}
+
+export default function BottomNav({ activeTab = '홈' }: Props) {
   return (
     <View style={{
       height: 80,
@@ -21,22 +27,25 @@ export default function BottomNav() {
       alignItems: 'flex-start',
       paddingTop: 10,
     }}>
-      {TABS.map((tab) => (
-        <View key={tab.label} style={{ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 4 }}>
-          <Ionicons
-            name={tab.active ? tab.icon : `${tab.icon}-outline` as any}
-            size={22}
-            color={tab.active ? colors.fillAccent : colors.textDisabled}
-          />
-          <Text style={{
-            fontFamily: tab.active ? 'NotoSansKR_500Medium' : 'NotoSansKR_400Regular',
-            fontSize: 10,
-            color: tab.active ? colors.fillAccent : colors.textDisabled,
-          }}>
-            {tab.label}
-          </Text>
-        </View>
-      ))}
+      {TABS.map((tab) => {
+        const isActive = tab.label === activeTab;
+        return (
+          <View key={tab.label} style={{ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 4 }}>
+            <Ionicons
+              name={(isActive ? tab.icon : `${tab.icon}-outline`) as any}
+              size={22}
+              color={isActive ? colors.fillAccent : colors.textDisabled}
+            />
+            <Text style={{
+              fontFamily: isActive ? 'NotoSansKR_500Medium' : 'NotoSansKR_400Regular',
+              fontSize: 10,
+              color: isActive ? colors.fillAccent : colors.textDisabled,
+            }}>
+              {tab.label}
+            </Text>
+          </View>
+        );
+      })}
     </View>
   );
 }

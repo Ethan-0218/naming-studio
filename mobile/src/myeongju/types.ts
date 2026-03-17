@@ -1,0 +1,23 @@
+export type OhaengType = '목' | '화' | '토' | '금' | '수';
+
+export const OHAENG_LABEL: Record<OhaengType, string> = {
+  '목': '목(木)',
+  '화': '화(火)',
+  '토': '토(土)',
+  '금': '금(金)',
+  '수': '수(水)',
+};
+
+export interface MyeongJuProfile {
+  id: string;
+  ilgan: string;        // 일간 한자 (e.g. '壬')
+  ohaeng: OhaengType;
+  iljoo: string;        // 일주명 한글 (e.g. '임수일주')
+  iljooHanja: string;   // 일주 한자 (e.g. '壬子')
+  gender: 'male' | 'female';
+  calendarType: '양력' | '음력';
+  birthDate: string;
+  birthTime: string;
+  analysisCount?: number;
+  savedCount?: number;
+}

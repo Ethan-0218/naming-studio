@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/design-system';
@@ -31,8 +32,8 @@ export default function HomeScreen() {
       >
         <HeroSection />
         <ActionCardsSection
-          onAINaming={() => navigation.navigate('AINaming')}
-          onSelfNaming={() => navigation.navigate('SelfNaming')}
+          onAINaming={() => navigation.navigate('MyeongJuList', { mode: 'ai' })}
+          onSelfNaming={() => navigation.navigate('MyeongJuList', { mode: 'self' })}
         />
         <Divider />
         <RecentNamesSection />
