@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/design-system';
 import { RootStackParamList } from '../../navigation/types';
-import { listMyeongJu } from '../../myeongju/api';
+import { useMyeongJuList } from '../../myeongju/hooks/useMyeongJuList';
 import AppHeader from './AppHeader';
 import HeroSection from './HeroSection';
 import ActionCardsSection from './ActionCardsSection';
@@ -22,13 +22,8 @@ function Divider() {
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
-  const [hasProfiles, setHasProfiles] = useState(false);
-
-  useEffect(() => {
-    listMyeongJu()
-      .then((profiles) => setHasProfiles(profiles.length > 0))
-      .catch(() => setHasProfiles(false));
-  }, []);
+  const { data: profiles = [] } = useMyeongJuList();
+  const hasProfiles = profiles.length > 0;
 
   function handleNaming(mode: 'ai' | 'self') {
     if (hasProfiles) {

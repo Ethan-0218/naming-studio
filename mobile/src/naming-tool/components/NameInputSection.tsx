@@ -29,12 +29,18 @@ export default function NameInputSection({
   gender,
   onGenderChange,
 }: Props) {
-  const { results: surnameResults, search: searchSurname } = useHanjaSearch('surname');
+  const { results: surnameResults, search: searchSurname, activeQuery: surnameActiveQuery, hasResults: surnameHasResults } = useHanjaSearch('surname');
   const autoSelectPending = useRef(false);
   const surnameSearchedFor = useRef('');
 
   useEffect(() => {
-    if (autoSelectPending.current && surnameResults.length === 1) {
+    if (!autoSelectPending.current) return;
+    // 현재 기다리는 쿼리에 대한 결과가 fetch 완료된 경우에만 처리.
+    // 이전 쿼리의 stale 결과가 도착하거나 fetch 중인 빈 결과가
+    // autoSelectPending을 잘못 리셋하는 타이밍 이슈를 방지한다.
+    if (!surnameHasResults || surnameActiveQuery !== surnameSearchedFor.current) return;
+
+    if (surnameResults.length === 1) {
       const r = surnameResults[0];
       onUpdateHanja('surname', {
         forHangul: surnameSearchedFor.current,
@@ -47,7 +53,7 @@ export default function NameInputSection({
       });
     }
     autoSelectPending.current = false;
-  }, [surnameResults]);
+  }, [surnameResults, surnameActiveQuery, surnameHasResults]);
 
   return (
     <View>

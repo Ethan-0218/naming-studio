@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ActivityIndicator, ScrollView, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -10,7 +10,7 @@ import MyeongJuNavBar from './MyeongJuNavBar';
 import AddMyeongJuButton from './AddMyeongJuButton';
 import ProfileCard from './ProfileCard';
 import { MyeongJuProfile } from '../types';
-import { listMyeongJu } from '../api';
+import { useMyeongJuList } from '../hooks/useMyeongJuList';
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'MyeongJuList'>;
 type ScreenRoute = RouteProp<RootStackParamList, 'MyeongJuList'>;
@@ -20,14 +20,7 @@ export default function MyeongJuListScreen() {
   const route = useRoute<ScreenRoute>();
   const { mode } = route.params;
 
-  const [profiles, setProfiles] = useState<MyeongJuProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    listMyeongJu()
-      .then(setProfiles)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: profiles = [], isLoading: loading } = useMyeongJuList();
 
   function handleSelectProfile(_profile: MyeongJuProfile) {
     if (mode === 'ai') {
