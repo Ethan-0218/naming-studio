@@ -209,38 +209,44 @@ def _수리격_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None], g
         return 0.5
 
 
-def _발음음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
+def _발음음양_harmony(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> 음양조화 | None:
     성_yin = _parse_음양(성_hanja.sound_based_yin_yang) if 성_hanja else None
     name_yins = [_parse_음양(h.sound_based_yin_yang) if h else None for h in name_hanjas]
-
     이름1_yin = name_yins[0] if name_yins else None
     이름2_yin = name_yins[1] if len(name_yins) >= 2 else None
-
     if 성_yin is None or 이름1_yin is None:
-        return 0.5
-
+        return None
     try:
-        harmony = 음양조화.from_yin_yang(성_yin, 이름1_yin, 이름2_yin)
-        return 1.0 if harmony.harmonious else 0.0
+        return 음양조화.from_yin_yang(성_yin, 이름1_yin, 이름2_yin)
     except Exception:
+        return None
+
+
+def _발음음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
+    h = _발음음양_harmony(성_hanja, name_hanjas)
+    if h is None:
         return 0.5
+    return 1.0 if h.harmonious else 0.0
+
+
+def _획수음양_harmony(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> 음양조화 | None:
+    성_yin = _parse_음양(성_hanja.stroke_based_yin_yang) if 성_hanja else None
+    name_yins = [_parse_음양(h.stroke_based_yin_yang) if h else None for h in name_hanjas]
+    이름1_yin = name_yins[0] if name_yins else None
+    이름2_yin = name_yins[1] if len(name_yins) >= 2 else None
+    if 성_yin is None or 이름1_yin is None:
+        return None
+    try:
+        return 음양조화.from_yin_yang(성_yin, 이름1_yin, 이름2_yin)
+    except Exception:
+        return None
 
 
 def _획수음양_score(성_hanja: Hanja | None, name_hanjas: list[Hanja | None]) -> float:
-    성_yin = _parse_음양(성_hanja.stroke_based_yin_yang) if 성_hanja else None
-    name_yins = [_parse_음양(h.stroke_based_yin_yang) if h else None for h in name_hanjas]
-
-    이름1_yin = name_yins[0] if name_yins else None
-    이름2_yin = name_yins[1] if len(name_yins) >= 2 else None
-
-    if 성_yin is None or 이름1_yin is None:
+    h = _획수음양_harmony(성_hanja, name_hanjas)
+    if h is None:
         return 0.5
-
-    try:
-        harmony = 음양조화.from_yin_yang(성_yin, 이름1_yin, 이름2_yin)
-        return 1.0 if harmony.harmonious else 0.0
-    except Exception:
-        return 0.5
+    return 1.0 if h.harmonious else 0.0
 
 
 def _용신_score(
@@ -292,6 +298,9 @@ def _build_candidate_from_combo(
             "hanja_options": [],
         })
 
+    발음음양_h = _발음음양_harmony(성_hanja_obj, best_name_hanjas)
+    획수음양_h = _획수음양_harmony(성_hanja_obj, best_name_hanjas)
+
     candidate = {
         "한글": name,
         "full_name": surname + name,
@@ -299,14 +308,16 @@ def _build_candidate_from_combo(
         "발음오행_조화": harmony_level,
         "발음오행_조화_이유": harmony_reason,
         "발음오행_조화_설명": harmony_description,
+        "발음음양_설명": 발음음양_h.description if 발음음양_h else "",
+        "획수음양_설명": 획수음양_h.description if 획수음양_h else "",
         "rarity_signal": "희귀" if rn_count < 100 else ("보통" if rn_count < 1000 else "흔한"),
         "reason": "",
         "score_breakdown": {
             "발음오행": round(발음오행_norm, 3),
             "자원오행": round(_자원오행_score(성_hanja_obj, best_name_hanjas), 3),
             "수리격": round(_수리격_score(성_hanja_obj, best_name_hanjas, gender), 3),
-            "획수음양": round(_획수음양_score(성_hanja_obj, best_name_hanjas), 3),
-            "발음음양": round(_발음음양_score(성_hanja_obj, best_name_hanjas), 3),
+            "획수음양": round(1.0 if 획수음양_h and 획수음양_h.harmonious else (0.5 if 획수음양_h is None else 0.0), 3),
+            "발음음양": round(1.0 if 발음음양_h and 발음음양_h.harmonious else (0.5 if 발음음양_h is None else 0.0), 3),
             "용신": round(
                 용신_override if 용신_override is not None
                 else _용신_score(best_name_hanjas, syllable_오행_list, 부족한_오행_list),
