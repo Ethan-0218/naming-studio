@@ -7,7 +7,7 @@ import { colors } from '@/design-system';
 import { RootStackParamList } from '../../navigation/types';
 import { REGIONS, Region } from '../data';
 import { useCreateMyeongJu } from '../hooks/useCreateMyeongJu';
-import AddMyeongJuNavBar from './AddMyeongJuNavBar';
+import NavBar from '@/components/NavBar';
 import GenderSection from './GenderSection';
 import BirthDateSection from './BirthDateSection';
 import BirthTimeSection from './BirthTimeSection';
@@ -63,7 +63,7 @@ export default function AddMyeongJuScreen() {
       style={{ flex: 1, backgroundColor: colors.bgSubtle }}
       edges={['top', 'bottom']}
     >
-      <AddMyeongJuNavBar onBack={() => navigation.goBack()} />
+      <NavBar title="새 명주 추가" subtitle="命主 · 이름 주인 등록" onBack={() => navigation.goBack()} />
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}

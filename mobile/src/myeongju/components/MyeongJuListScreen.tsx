@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '@/design-system';
 import { RootStackParamList } from '../../navigation/types';
 import BottomNav from '../../home/components/BottomNav';
-import MyeongJuNavBar from './MyeongJuNavBar';
+import NavBar from '@/components/NavBar';
 import AddMyeongJuButton from './AddMyeongJuButton';
 import ProfileCard from './ProfileCard';
 import { MyeongJuProfile } from '../types';
@@ -32,7 +32,7 @@ export default function MyeongJuListScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgSubtle }}>
-      <MyeongJuNavBar onBack={() => navigation.goBack()} />
+      <NavBar title="명주 목록" subtitle="命主 · 이름 주인" onBack={() => navigation.goBack()} />
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}

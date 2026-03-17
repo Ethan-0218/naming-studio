@@ -2,13 +2,12 @@ import React from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
-  Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, fontFamily } from '@/design-system';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '@/design-system';
+import NavBar from '@/components/NavBar';
 import { useNamingToolState } from '../hooks/useNamingToolState';
 import NameInputSection from './NameInputSection';
 import BaleumOhaengSection from './BaleumOhaengSection';
@@ -42,37 +41,27 @@ export default function NamingToolScreen({ onBack }: Props) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="bg-bgSubtle flex-1 flex-col"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 }}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 100,
+        backgroundColor: colors.bgSubtle,
+      }}
     >
-      <View
-        className="w-full bg-surfaceRaised flex-row items-center justify-between
-        px-4 pb-3 bg-bg border-b border-border border-solid"
-        style={{ paddingTop: Platform.OS === 'ios' ? 56 : 16 }}
-      >
-        <Pressable onPress={onBack} className="w-[60px] py-2">
-          <Ionicons name="chevron-back" size={24} color={colors.textSecondary} />
-        </Pressable>
-        <View className="flex-1 items-center justify-center px-2 flex-col gap-1">
-          <Text
-            className="text-title1 text-textPrimary"
-            style={{ fontFamily: fontFamily.serifMedium }}
-          >
-            스스로 이름짓기
-          </Text>
-          <Text
-            className="text-overline text-textTertiary mt-0.5"
-            style={{ fontFamily: fontFamily.sansMedium }}
-          >
-            이름 분석 및 작명
-          </Text>
-        </View>
-        <View className="w-[60px]" />
-      </View>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: colors.bgSubtle }}>
+        <NavBar title="스스로 이름짓기" subtitle="이름 분석 및 작명" onBack={onBack} />
+      </SafeAreaView>
 
       <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 32, backgroundColor: colors.bg }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: 32,
+          backgroundColor: colors.bg,
+        }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -87,15 +76,25 @@ export default function NamingToolScreen({ onBack }: Props) {
 
         <Divider />
 
-        <BaleumOhaengSection nameInput={nameInput} result={analysis.baleumOhaeng} />
+        <BaleumOhaengSection
+          nameInput={nameInput}
+          result={analysis.baleumOhaeng}
+        />
 
         <Divider />
 
-        <BaleumEumyangSection nameInput={nameInput} result={analysis.baleumEumyang} />
+        <BaleumEumyangSection
+          nameInput={nameInput}
+          result={analysis.baleumEumyang}
+        />
 
         <Divider />
 
-        <YongsinSection sajuInput={sajuInput} nameInput={nameInput} onUpdate={updateSaju} />
+        <YongsinSection
+          sajuInput={sajuInput}
+          nameInput={nameInput}
+          onUpdate={updateSaju}
+        />
 
         <Divider />
 
@@ -107,7 +106,10 @@ export default function NamingToolScreen({ onBack }: Props) {
 
         <Divider />
 
-        <JawonOhaengSection nameInput={nameInput} result={analysis.jawonOhaeng} />
+        <JawonOhaengSection
+          nameInput={nameInput}
+          result={analysis.jawonOhaeng}
+        />
 
         <Divider />
 
@@ -115,7 +117,6 @@ export default function NamingToolScreen({ onBack }: Props) {
           nameInput={nameInput}
           result={analysis.hoeksuEumyang}
         />
-
       </ScrollView>
     </KeyboardAvoidingView>
   );

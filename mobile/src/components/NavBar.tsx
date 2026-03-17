@@ -4,10 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fontFamily } from '@/design-system';
 
 interface Props {
+  title: string;
+  subtitle: string;
   onBack: () => void;
 }
 
-export default function AddMyeongJuNavBar({ onBack }: Props) {
+export default function NavBar({ title, subtitle, onBack }: Props) {
   return (
     <View style={{
       height: 52,
@@ -16,20 +18,12 @@ export default function AddMyeongJuNavBar({ onBack }: Props) {
       alignItems: 'center',
       gap: 10,
       backgroundColor: colors.bgSubtle,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
     }}>
-      <Pressable
-        style={({ pressed }) => ({
-          width: 30, height: 30, borderRadius: 15,
-          backgroundColor: colors.surface,
-          borderWidth: 1, borderColor: colors.border,
-          alignItems: 'center', justifyContent: 'center',
-          opacity: pressed ? 0.7 : 1,
-        })}
-        onPress={onBack}
-      >
-        <Ionicons name="chevron-back" size={16} color={colors.textSecondary} />
+      <Pressable onPress={onBack} style={{ padding: 4 }}>
+        <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
       </Pressable>
-
       <View>
         <Text style={{
           fontFamily: fontFamily.serifMedium,
@@ -37,7 +31,7 @@ export default function AddMyeongJuNavBar({ onBack }: Props) {
           letterSpacing: 1.5,
           color: colors.textPrimary,
         }}>
-          새 명주 추가
+          {title}
         </Text>
         <Text style={{
           fontFamily: fontFamily.sansRegular,
@@ -46,7 +40,7 @@ export default function AddMyeongJuNavBar({ onBack }: Props) {
           color: colors.textTertiary,
           marginTop: 1,
         }}>
-          命主 · 이름 주인 등록
+          {subtitle}
         </Text>
       </View>
     </View>
