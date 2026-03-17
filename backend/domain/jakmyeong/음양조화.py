@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from domain.saju.음양 import 음양
-from domain.jakmyeong.음양조화_데이터 import get_음양조화_설명
+from domain.jakmyeong.음양조화_데이터 import get_음양조화_데이터
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,7 @@ class 음양조화:
     harmonious: bool
     글자별_음양: tuple[음양, ...]
     reason: str
+    level: str        # 吉 / 凶
     description: str
 
     @classmethod
@@ -61,5 +62,7 @@ class 음양조화:
                 else:
                     reason = "세 글자 모두 양(양양양)으로 불조화"
         key = "".join(y.value for y in 글자별)
-        description = get_음양조화_설명(key) or ""
-        return cls(harmonious=harmonious, 글자별_음양=글자별, reason=reason, description=description)
+        data = get_음양조화_데이터(key)
+        level = data["rating"] if data else ("吉" if harmonious else "凶")
+        description = data["description"] if data else ""
+        return cls(harmonious=harmonious, 글자별_음양=글자별, reason=reason, level=level, description=description)
