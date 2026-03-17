@@ -28,5 +28,6 @@ export function computeEumyangHarmony(chars: (Eumyang | null)[]): EumyangHarmony
       : `${ratio} — 모두 같은 음양으로 불조화입니다.`;
   }
 
-  return { harmonious, chars, reason };
+  const combinationKey = valid.join('');
+  return { harmonious, chars, reason, combinationKey };
 }

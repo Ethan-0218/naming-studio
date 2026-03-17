@@ -6,6 +6,7 @@ import {
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
 import { computeOhaengHarmony } from '../domain/ohaengHarmony';
 import { computeEumyangHarmony } from '../domain/eumyangHarmony';
+import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
 import { computeSurigyeok } from '../domain/surigyeok';
 
 function emptySlot(): CharSlotData {
@@ -45,8 +46,12 @@ function computeAnalysis(
   ];
   const baleumOhaengResult: OhaengHarmonyResult | null = computeOhaengHarmony(baleumElements);
 
-  // 발음음양: from API sound_based_yin_yang
-  const soundEumyangs = [surname.soundEumyang, first1.soundEumyang, first2.soundEumyang];
+  // 발음음양: API 데이터 없으면 한글 발음 폴백 (카드 표시 로직과 동일)
+  const soundEumyangs = [
+    surname.soundEumyang ?? soundEumyangFromHangul(surname.hangul),
+    first1.soundEumyang ?? soundEumyangFromHangul(first1.hangul),
+    first2.soundEumyang ?? soundEumyangFromHangul(first2.hangul),
+  ];
   const baleumEumyangResult: EumyangHarmonyResult | null =
     soundEumyangs.some(e => e !== null) ? computeEumyangHarmony(soundEumyangs) : null;
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { colors, fontFamily } from '@/design-system';
 import { Eumyang, EumyangHarmonyResult, NameInput } from '../types';
+import { getEumyangCombinationDescription } from '../domain/eumyangCombinationDescriptions';
 import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
 import SectionCard from './SectionCard';
 
@@ -85,6 +86,9 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
   const chars = result?.chars ?? [];
   const { title, emptyText } = VARIANT_META[variant];
 
+  const combinationDescription = result
+    ? getEumyangCombinationDescription(result.combinationKey)
+    : null;
   const badge = result ? (result.harmonious ? '균형' : '불균형') : undefined;
   const badgeColor = result ? (result.harmonious ? colors.positive : colors.negative) : undefined;
 
@@ -155,14 +159,14 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
           {emptyText}
         </Text>
       )}
-      {result && (
+      {result && combinationDescription && (
         <>
           <View className="border-b border-border" />
           <Text
             className="text-bodySm text-textSecondary"
             style={{ fontFamily: fontFamily.sansRegular }}
           >
-            {result.reason}
+            {combinationDescription}
           </Text>
         </>
       )}

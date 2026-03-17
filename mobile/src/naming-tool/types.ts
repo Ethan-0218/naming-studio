@@ -43,6 +43,7 @@ export interface EumyangHarmonyResult {
   harmonious: boolean;
   chars: (Eumyang | null)[];
   reason: string;
+  combinationKey: string;
 }
 
 export interface SuriEntry {
