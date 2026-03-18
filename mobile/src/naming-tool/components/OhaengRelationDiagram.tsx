@@ -73,9 +73,9 @@ const DASH_LEN = 5;
 const GAP_LEN = 4;
 
 function DashedLine({ width, color }: { width: number; color: string }) {
-  const count = Math.floor(width / (DASH_LEN + GAP_LEN));
+  const count = Math.ceil(width / (DASH_LEN + GAP_LEN));
   return (
-    <>
+    <View style={{ width, height: 18, overflow: 'hidden' }}>
       {Array.from({ length: count }).map((_, i) => (
         <View
           key={i}
@@ -89,7 +89,7 @@ function DashedLine({ width, color }: { width: number; color: string }) {
           }}
         />
       ))}
-    </>
+    </View>
   );
 }
 
@@ -301,15 +301,8 @@ function Legend() {
         </Font>
       </View>
       <View className="flex-row items-center">
-        <View
-          style={{
-            width: 14,
-            height: 18,
-            position: 'relative',
-            marginRight: 4,
-          }}
-        >
-          <DashedLine width={14} color={colors.borderStrong} />
+        <View style={{ marginRight: 4 }}>
+          <DashedLine width={28} color={colors.borderStrong} />
         </View>
         <Font
           tag="secondaryMedium"
