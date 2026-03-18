@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Font } from '@/components/Font';
 
 interface Props {
   onSubmit: () => void;
@@ -14,12 +15,13 @@ export default function AddMyeongJuFooter({ onSubmit }: Props) {
         style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
         onPress={onSubmit}
       >
-        <Text
-          className="font-serif-medium text-textInverse"
+        <Font
+          tag="primaryMedium"
+          className="text-textInverse"
           style={{ fontSize: 16, letterSpacing: 0.5 }}
         >
           명주 등록하기
-        </Text>
+        </Font>
         <Ionicons name="chevron-forward" size={18} color="rgba(251,247,238,0.5)" />
       </Pressable>
     </View>

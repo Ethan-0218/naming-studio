@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { primitives } from '@/design-system';
+import { Font } from '@/components/Font';
 
 export type BottomNavTab = '홈' | '검색' | '명주' | '저장';
 
@@ -28,12 +29,13 @@ export default function BottomNav({ activeTab = '홈' }: Props) {
               size={22}
               color={isActive ? primitives.gold600 : primitives.ink300}
             />
-            <Text
-              className={isActive ? 'font-sans-medium text-fillAccent' : 'font-sans-regular text-textDisabled'}
+            <Font
+              tag={isActive ? 'secondaryMedium' : 'secondary'}
+              className={isActive ? 'text-fillAccent' : 'text-textDisabled'}
               style={{ fontSize: 10 }}
             >
               {tab.label}
-            </Text>
+            </Font>
           </View>
         );
       })}

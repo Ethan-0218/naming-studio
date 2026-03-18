@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
-  View, Text, Modal, ScrollView, Pressable,
+  View, Modal, ScrollView, Pressable,
   Animated, Platform,
 } from 'react-native';
+import { Font } from '@/components/Font';
 
 interface Props {
   visible: boolean;
@@ -69,12 +70,13 @@ function PickerColumn({
               className="items-center justify-center"
               style={{ height: ITEM_HEIGHT }}
             >
-              <Text
-                className="font-serif-regular text-textPrimary"
+              <Font
+                tag="primary"
+                className="text-textPrimary"
                 style={{ fontSize: 20, letterSpacing: -0.5 }}
               >
                 {label}
-              </Text>
+              </Font>
             </View>
           );
         })}
@@ -86,9 +88,9 @@ function PickerColumn({
         className="absolute right-1.5 justify-end z-20"
         style={{ bottom: ITEM_HEIGHT * 2 - 2, height: ITEM_HEIGHT, paddingBottom: 9 }}
       >
-        <Text className="font-sans-regular text-textTertiary" style={{ fontSize: 11 }}>
+        <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 11 }}>
           {unit}
-        </Text>
+        </Font>
       </View>
     </View>
   );
@@ -176,12 +178,13 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
             <View className="w-10 h-1 rounded-full bg-borderStrong self-center mt-[14px] mb-1" />
 
             {/* 제목 */}
-            <Text
-              className="font-serif-medium text-textPrimary text-center py-[14px]"
+            <Font
+              tag="primaryMedium"
+              className="text-textPrimary text-center py-[14px]"
               style={{ fontSize: 16, letterSpacing: 0.5 }}
             >
               생시 선택
-            </Text>
+            </Font>
 
             <View className="h-px bg-border" />
 
@@ -216,12 +219,13 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
                     className="flex-1 py-[7px] rounded-full items-center"
                     onPress={() => selectAmPm(label)}
                   >
-                    <Text
-                      className={`text-[13px] ${active ? 'font-sans-medium text-textInverse' : 'font-sans-regular text-textTertiary'}`}
-                      style={{ letterSpacing: 0.4 }}
+                    <Font
+                      tag={active ? 'secondaryMedium' : 'secondary'}
+                      className={active ? 'text-textInverse' : 'text-textTertiary'}
+                      style={{ fontSize: 13, letterSpacing: 0.4 }}
                     >
                       {label}
-                    </Text>
+                    </Font>
                   </Pressable>
                 );
               })}
@@ -252,12 +256,13 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
                 style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                 onPress={handleConfirm}
               >
-                <Text
-                  className="font-serif-medium text-textInverse"
+                <Font
+                  tag="primaryMedium"
+                  className="text-textInverse"
                   style={{ fontSize: 16, letterSpacing: 0.5 }}
                 >
                   확인
-                </Text>
+                </Font>
               </Pressable>
             </View>
           </View>

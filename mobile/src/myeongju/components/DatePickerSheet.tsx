@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
-  View, Text, Modal, ScrollView, Pressable,
+  View, Modal, ScrollView, Pressable,
   Animated, Platform,
 } from 'react-native';
-import { primitives } from '@/design-system';
+import { Font } from '@/components/Font';
 
 interface Props {
   visible: boolean;
@@ -71,12 +71,13 @@ function PickerColumn({
               className="items-center justify-center"
               style={{ height: ITEM_HEIGHT }}
             >
-              <Text
-                className="font-serif-regular text-textPrimary"
+              <Font
+                tag="primary"
+                className="text-textPrimary"
                 style={{ fontSize: 20, letterSpacing: -0.5 }}
               >
                 {label}
-              </Text>
+              </Font>
             </View>
           );
         })}
@@ -92,9 +93,9 @@ function PickerColumn({
           paddingBottom: 9,
         }}
       >
-        <Text className="font-sans-regular text-textTertiary" style={{ fontSize: 11 }}>
+        <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 11 }}>
           {unit}
-        </Text>
+        </Font>
       </View>
     </View>
   );
@@ -174,12 +175,13 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
               <View className="w-10 h-1 rounded-full bg-borderStrong self-center mt-[14px] mb-1" />
 
               {/* 제목 */}
-              <Text
-                className="font-serif-medium text-textPrimary text-center py-[14px]"
+              <Font
+                tag="primaryMedium"
+                className="text-textPrimary text-center py-[14px]"
                 style={{ fontSize: 16, letterSpacing: 0.5 }}
               >
                 생년월일 선택
-              </Text>
+              </Font>
 
               <View className="h-px bg-border" />
 
@@ -214,12 +216,13 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
                   style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                   onPress={handleConfirm}
                 >
-                  <Text
-                    className="font-serif-medium text-textInverse"
+                  <Font
+                    tag="primaryMedium"
+                    className="text-textInverse"
                     style={{ fontSize: 16, letterSpacing: 0.5 }}
                   >
                     확인
-                  </Text>
+                  </Font>
                 </Pressable>
               </View>
             </View>

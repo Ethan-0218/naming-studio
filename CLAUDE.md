@@ -111,3 +111,4 @@ The mobile app is currently a minimal Expo stub. `constants/config.ts` exports `
 - **공유 타입·상수:** feature 내 공유 타입과 상수는 `types.ts`에 분리한다.
 - **스크린 파일 역할:** 스크린 컴포넌트(`*Screen.tsx`)는 하위 컴포넌트들을 조합하는 오케스트레이터 역할만 수행한다. UI 로직은 각 컴포넌트로 위임한다.
 - **SafeAreaView:** `react-native`의 `SafeAreaView`는 deprecated이므로 반드시 `react-native-safe-area-context`에서 import한다.
+- **Text 렌더링:** React Native의 `Text` 컴포넌트를 직접 사용하지 않는다. 반드시 `Font` 컴포넌트(`@/components/Font`)를 사용해 `tag` prop으로 폰트를 지정한다. 단, `Animated.Text`나 서드파티 컴포넌트 내부에서 불가피한 경우는 예외. 폰트 교체 시 `src/components/Font.tsx`의 `FONT_MAP`만 수정하면 앱 전체에 반영된다.

@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { primitives } from '@/design-system';
+import { Font } from '@/components/Font';
 
 const RECENT_NAMES = [
   { hanja: '金敏俊', name: '김 민 준', date: '오늘 · 발음오행 · 수리책', score: 87, label: '매우 좋음' },
@@ -18,15 +19,16 @@ export default function RecentNamesSection() {
   return (
     <View className="px-4 pt-5">
       <View className="flex-row items-center justify-between mb-3 px-1">
-        <Text
-          className="font-sans-regular text-textTertiary"
+        <Font
+          tag="secondary"
+          className="text-textTertiary"
           style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
         >
           최근 분석 이름
-        </Text>
-        <Text className="font-sans-regular text-textTertiary" style={{ fontSize: 11, letterSpacing: 0.5 }}>
+        </Font>
+        <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 11, letterSpacing: 0.5 }}>
           전체 보기 →
-        </Text>
+        </Font>
       </View>
 
       <View className="rounded-[14px] border border-border overflow-hidden gap-px bg-border">
@@ -38,33 +40,35 @@ export default function RecentNamesSection() {
               backgroundColor: pressed ? primitives.hanji200 : primitives.hanji50,
             })}
           >
-            <Text
-              className="font-serif-medium text-textSecondary shrink-0"
+            <Font
+              tag="primaryMedium"
+              className="text-textSecondary shrink-0"
               style={{ fontSize: 15, width: 42, letterSpacing: 2 }}
             >
               {item.hanja}
-            </Text>
+            </Font>
             <View className="flex-1">
-              <Text
-                className="font-serif-medium text-textPrimary"
+              <Font
+                tag="primaryMedium"
+                className="text-textPrimary"
                 style={{ fontSize: 16, letterSpacing: 1.5 }}
               >
                 {item.name}
-              </Text>
-              <Text className="font-sans-regular text-textDisabled mt-0.5" style={{ fontSize: 11 }}>
+              </Font>
+              <Font tag="secondary" className="text-textDisabled mt-0.5" style={{ fontSize: 11 }}>
                 {item.date}
-              </Text>
+              </Font>
             </View>
             <View className="items-end gap-0.5">
-              <Text
-                className="font-serif-medium"
+              <Font
+                tag="primaryMedium"
                 style={{ fontSize: 20, color: scoreColor(item.score), lineHeight: 20 }}
               >
                 {item.score}
-              </Text>
-              <Text className="font-sans-regular text-textDisabled" style={{ fontSize: 10 }}>
+              </Font>
+              <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 10 }}>
                 {item.label}
-              </Text>
+              </Font>
             </View>
           </Pressable>
         ))}

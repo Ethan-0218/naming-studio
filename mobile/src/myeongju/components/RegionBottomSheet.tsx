@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, Modal, Pressable, FlatList,
+  View, Modal, Pressable, FlatList,
   TextInput, Animated, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { primitives } from '@/design-system';
+import { Font, FONT_MAP } from '@/components/Font';
 import { Region, REGIONS } from '../data';
 
 interface Props {
@@ -78,12 +79,13 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
 
             {/* 헤더 */}
             <View className="px-5 pb-3">
-              <Text
-                className="font-serif-medium text-textPrimary text-center py-[14px]"
+              <Font
+                tag="primaryMedium"
+                className="text-textPrimary text-center py-[14px]"
                 style={{ fontSize: 16, letterSpacing: 0.5 }}
               >
                 출생 지역 선택
-              </Text>
+              </Font>
 
               {/* 검색창 */}
               <View className="relative">
@@ -92,8 +94,8 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
                 </View>
                 <TextInput
                   ref={searchRef}
-                  className="bg-surface border-[1.5px] border-border rounded-lg py-2.5 pl-9 pr-3 font-sans-regular text-textPrimary"
-                  style={{ fontSize: 14 }}
+                  className="bg-surface border-[1.5px] border-border rounded-lg py-2.5 pl-9 pr-3 text-textPrimary"
+                  style={{ fontFamily: FONT_MAP.secondary, fontSize: 14 }}
                   placeholder="지역명 검색   예) 서울, 부산, 제주"
                   placeholderTextColor={primitives.ink300}
                   value={query}
@@ -109,9 +111,9 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
             {/* 목록 */}
             {filtered.length === 0 ? (
               <View className="p-10 items-center">
-                <Text className="font-sans-regular text-textDisabled" style={{ fontSize: 14 }}>
+                <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 14 }}>
                   검색 결과가 없습니다
-                </Text>
+                </Font>
               </View>
             ) : (
               <FlatList
@@ -135,29 +137,32 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
                     >
                       {/* 왼쪽: 지역명 + 전체명 */}
                       <View className="flex-row items-end gap-2 flex-1">
-                        <Text
-                          className={isSelected ? 'font-serif-medium text-fillAccent' : 'font-serif-regular text-textPrimary'}
+                        <Font
+                          tag={isSelected ? 'primaryMedium' : 'primary'}
+                          className={isSelected ? 'text-fillAccent' : 'text-textPrimary'}
                           style={{ fontSize: 16 }}
                         >
                           {item.name}
-                        </Text>
-                        <Text
-                          className={`font-sans-regular shrink ${isSelected ? 'text-warningBorder' : 'text-textTertiary'}`}
+                        </Font>
+                        <Font
+                          tag="secondary"
+                          className={`shrink ${isSelected ? 'text-warningBorder' : 'text-textTertiary'}`}
                           style={{ fontSize: 11.5 }}
                         >
                           {item.full}
-                        </Text>
+                        </Font>
                       </View>
 
                       {/* 오른쪽: 보정 분 + 체크 */}
                       <View className="flex-row items-center gap-2">
                         {item.offset !== null && (
-                          <Text
-                            className={`font-sans-regular ${isSelected ? 'text-warningBorder' : 'text-textDisabled'}`}
+                          <Font
+                            tag="secondary"
+                            className={isSelected ? 'text-warningBorder' : 'text-textDisabled'}
                             style={{ fontSize: 11, letterSpacing: 0.4 }}
                           >
                             약 {item.offset}분
-                          </Text>
+                          </Font>
                         )}
                         {isSelected && (
                           <Ionicons name="checkmark" size={16} color={primitives.gold600} />

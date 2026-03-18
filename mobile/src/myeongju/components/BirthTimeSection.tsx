@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, Pressable, Animated } from 'react-native';
+import { View, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { primitives } from '@/design-system';
+import { Font } from '@/components/Font';
 import { getSijan } from '../data';
 import TimePickerSheet from './TimePickerSheet';
 
@@ -65,10 +66,10 @@ export default function BirthTimeSection({
     <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
       <View className="flex-row items-end gap-1.5 mb-3.5">
-        <Text className="text-overline text-textTertiary">생시</Text>
-        <Text className="text-[9px] text-textDisabled" style={{ letterSpacing: 0.8 }}>
+        <Font tag="secondaryMedium" className="text-overline text-textTertiary">생시</Font>
+        <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 9, letterSpacing: 0.8 }}>
           태어난 시각
-        </Text>
+        </Font>
       </View>
 
       {/* 생시 모름 토글 */}
@@ -79,9 +80,9 @@ export default function BirthTimeSection({
       >
         <View className="flex-row items-center gap-2">
           <Ionicons name="information-circle-outline" size={15} color={primitives.ink500} />
-          <Text className="text-[13px] font-sans-regular text-textSecondary">
+          <Font tag="secondary" className="text-textSecondary" style={{ fontSize: 13 }}>
             생시를 모릅니다
-          </Text>
+          </Font>
         </View>
 
         {/* 애니메이션 토글 스위치 */}
@@ -116,12 +117,13 @@ export default function BirthTimeSection({
                 style={{ minHeight: 34 }}
                 onPress={() => onAmPmChange(true)}
               >
-                <Text
-                  className={`font-sans-medium text-[12px] ${isAm ? 'text-textInverse' : 'text-textDisabled'}`}
-                  style={{ letterSpacing: 0.4 }}
+                <Font
+                  tag="secondaryMedium"
+                  className={isAm ? 'text-textInverse' : 'text-textDisabled'}
+                  style={{ fontSize: 12, letterSpacing: 0.4 }}
                 >
                   오전
-                </Text>
+                </Font>
               </Pressable>
 
               <View className="h-px bg-border" />
@@ -131,12 +133,13 @@ export default function BirthTimeSection({
                 style={{ minHeight: 34 }}
                 onPress={() => onAmPmChange(false)}
               >
-                <Text
-                  className={`font-sans-medium text-[12px] ${!isAm ? 'text-textInverse' : 'text-textDisabled'}`}
-                  style={{ letterSpacing: 0.4 }}
+                <Font
+                  tag="secondaryMedium"
+                  className={!isAm ? 'text-textInverse' : 'text-textDisabled'}
+                  style={{ fontSize: 12, letterSpacing: 0.4 }}
                 >
                   오후
-                </Text>
+                </Font>
               </Pressable>
             </View>
 
@@ -146,24 +149,27 @@ export default function BirthTimeSection({
               style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
               onPress={() => setPickerVisible(true)}
             >
-              <Text
-                className="font-serif-regular text-textPrimary text-center"
+              <Font
+                tag="primary"
+                className="text-textPrimary text-center"
                 style={{ fontSize: 34, lineHeight: 44, letterSpacing: -1, minWidth: 48 }}
               >
                 {String(hour).padStart(2, '0')}
-              </Text>
-              <Text
-                className="font-serif-regular text-textTertiary"
+              </Font>
+              <Font
+                tag="primary"
+                className="text-textTertiary"
                 style={{ fontSize: 28, lineHeight: 44, paddingBottom: 2 }}
               >
                 :
-              </Text>
-              <Text
-                className="font-serif-regular text-textPrimary text-center"
+              </Font>
+              <Font
+                tag="primary"
+                className="text-textPrimary text-center"
                 style={{ fontSize: 34, lineHeight: 44, letterSpacing: -1, minWidth: 48 }}
               >
                 {String(minute).padStart(2, '0')}
-              </Text>
+              </Font>
             </Pressable>
           </View>
 
@@ -173,54 +179,59 @@ export default function BirthTimeSection({
             style={{ borderColor: primitives.gold400 }}
           >
             {/* 대표 한자 */}
-            <Text
-              className="font-serif-medium text-fillAccent shrink-0"
+            <Font
+              tag="primaryMedium"
+              className="text-fillAccent shrink-0"
               style={{ fontSize: 36, lineHeight: 44 }}
             >
               {sijan.hanja}
-            </Text>
+            </Font>
 
             <View>
               {/* 시진 이름 + 한자 */}
               <View className="flex-row items-end gap-1.5 mb-[3px]">
-                <Text
-                  className="font-serif-medium text-fillAccent"
+                <Font
+                  tag="primaryMedium"
+                  className="text-fillAccent"
                   style={{ fontSize: 18, letterSpacing: 0.5 }}
                 >
                   {sijan.name}
-                </Text>
-                <Text
-                  className="font-serif"
+                </Font>
+                <Font
+                  tag="primaryLight"
                   style={{ fontSize: 14, letterSpacing: 1, color: primitives.gold400 }}
                 >
                   {sijan.hanjaFull}
-                </Text>
+                </Font>
               </View>
 
               {/* 시간 범위 */}
-              <Text
-                className="font-sans-regular text-textTertiary"
+              <Font
+                tag="secondary"
+                className="text-textTertiary"
                 style={{ fontSize: 12, letterSpacing: 0.4 }}
               >
                 {sijan.range}
-              </Text>
+              </Font>
 
               {/* 안내 */}
-              <Text
-                className="font-sans-regular mt-[2px]"
+              <Font
+                tag="secondary"
+                className="mt-[2px]"
                 style={{ fontSize: 11, color: primitives.gold400 }}
               >
                 사주의 시주(時柱)로 사용됩니다
-              </Text>
+              </Font>
 
               {/* 지방시 보정 표시 */}
               {regionOffset != null && regionOffset !== 0 && (
-                <Text
-                  className="font-sans-regular text-textTertiary mt-[3px]"
+                <Font
+                  tag="secondary"
+                  className="text-textTertiary mt-[3px]"
                   style={{ fontSize: 10 }}
                 >
                   {`지역 보정 후: ${adjustedAmPm} ${adjustedHourDisplay}:${String(adjustedMin).padStart(2, '0')}`}
-                </Text>
+                </Font>
               )}
             </View>
           </View>

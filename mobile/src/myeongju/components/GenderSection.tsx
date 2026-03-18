@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ohaengColors } from '@/design-system';
+import { Font } from '@/components/Font';
 
 interface Props {
   gender: 'male' | 'female';
@@ -47,8 +48,9 @@ function GenderCard({
       </View>
 
       {/* glyph */}
-      <Text
-        className="font-serif text-center"
+      <Font
+        tag="primaryLight"
+        className="text-center"
         style={{
           fontSize: 38,
           lineHeight: 48,
@@ -57,12 +59,13 @@ function GenderCard({
         }}
       >
         {glyph}
-      </Text>
+      </Font>
 
       {/* labels */}
       <View>
-        <Text
-          className="font-serif-medium mb-1"
+        <Font
+          tag="primaryMedium"
+          className="mb-1"
           style={{
             fontSize: 16,
             letterSpacing: 0.5,
@@ -70,9 +73,9 @@ function GenderCard({
           }}
         >
           {name}
-        </Text>
-        <Text
-          className="font-sans-regular"
+        </Font>
+        <Font
+          tag="secondary"
           style={{
             fontSize: 11,
             letterSpacing: 0.8,
@@ -80,7 +83,7 @@ function GenderCard({
           }}
         >
           {ohaengLabel}
-        </Text>
+        </Font>
       </View>
     </Pressable>
   );
@@ -89,7 +92,7 @@ function GenderCard({
 export default function GenderSection({ gender, onChange }: Props) {
   return (
     <View className="px-5 py-[22px] border-b border-border">
-      <Text className="text-overline text-textTertiary mb-3.5">성별</Text>
+      <Font tag="secondaryMedium" className="text-overline text-textTertiary mb-3.5">성별</Font>
       <View className="flex-row gap-[9px]">
         <GenderCard
           type="male"
