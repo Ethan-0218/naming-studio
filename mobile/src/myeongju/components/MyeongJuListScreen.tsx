@@ -37,7 +37,10 @@ export default function MyeongJuListScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgSubtle }}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bgSubtle }}
+      edges={['top']}
+    >
       <NavBar
         title="명주 목록"
         subtitle="命主 · 이름 주인"

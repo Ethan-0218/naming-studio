@@ -42,7 +42,10 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgSubtle }}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.bgSubtle }}
+      edges={['top']}
+    >
       <AppHeader />
       <ScrollView
         style={{ flex: 1 }}
