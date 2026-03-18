@@ -4,6 +4,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
 import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Font } from '@/components/Font';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -25,7 +26,15 @@ interface Props {
 }
 
 function Divider() {
-  return <View className="h-[1px] bg-border my-4" />;
+  return <View className="h-[1px] bg-border my-5" />;
+}
+
+function GroupTitle({ children }: { children: string }) {
+  return (
+    <Font tag="primaryMedium" className="text-heading text-textPrimary mb-3">
+      {children}
+    </Font>
+  );
 }
 
 export default function NamingToolScreen({
@@ -94,48 +103,42 @@ export default function NamingToolScreen({
 
         <Divider />
 
-        <BaleumOhaengSection
-          nameInput={nameInput}
-          result={analysis.baleumOhaeng}
-        />
+        <GroupTitle>한글 이름 평가</GroupTitle>
+        <View style={{ gap: 12 }}>
+          <BaleumOhaengSection
+            nameInput={nameInput}
+            result={analysis.baleumOhaeng}
+          />
+          <BaleumEumyangSection
+            nameInput={nameInput}
+            result={analysis.baleumEumyang}
+          />
+        </View>
 
         <Divider />
 
-        <BaleumEumyangSection
-          nameInput={nameInput}
-          result={analysis.baleumEumyang}
-        />
-
-        <Divider />
-
-        <YongsinSection
-          sajuInput={sajuInput}
-          nameInput={nameInput}
-          onUpdate={updateSaju}
-          isPurchased={auth.profile?.isPremium ?? false}
-        />
-
-        <Divider />
-
-        <SurigyeokSection
-          nameInput={nameInput}
-          gender={gender}
-          result={analysis.surigyeok}
-        />
-
-        <Divider />
-
-        <JawonOhaengSection
-          nameInput={nameInput}
-          result={analysis.jawonOhaeng}
-        />
-
-        <Divider />
-
-        <HoeksuEumyangSection
-          nameInput={nameInput}
-          result={analysis.hoeksuEumyang}
-        />
+        <GroupTitle>한자 이름 평가</GroupTitle>
+        <View style={{ gap: 12 }}>
+          <YongsinSection
+            sajuInput={sajuInput}
+            nameInput={nameInput}
+            onUpdate={updateSaju}
+            isPurchased={auth.profile?.isPremium ?? false}
+          />
+          <SurigyeokSection
+            nameInput={nameInput}
+            gender={gender}
+            result={analysis.surigyeok}
+          />
+          <JawonOhaengSection
+            nameInput={nameInput}
+            result={analysis.jawonOhaeng}
+          />
+          <HoeksuEumyangSection
+            nameInput={nameInput}
+            result={analysis.hoeksuEumyang}
+          />
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

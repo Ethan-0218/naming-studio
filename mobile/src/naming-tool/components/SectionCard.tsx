@@ -32,9 +32,12 @@ export default function SectionCard({
   children,
 }: Props) {
   return (
-    <View>
-      <View className="flex-row items-center justify-between mb-2">
-        <Font tag="primaryMedium" className="text-heading text-textPrimary">
+    <View className="bg-surfaceRaised rounded-lg p-4 border border-border">
+      <View className="flex-row items-center justify-between mb-3">
+        <Font
+          tag="secondaryMedium"
+          className="text-serifLabel text-textTertiary"
+        >
           {title}
         </Font>
         {badge && (
@@ -52,9 +55,7 @@ export default function SectionCard({
           </View>
         )}
       </View>
-      <View className="bg-surfaceRaised rounded-lg p-4 border border-border">
-        {children}
-      </View>
+      {children}
     </View>
   );
 }
