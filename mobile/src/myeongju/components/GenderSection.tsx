@@ -51,7 +51,7 @@ function GenderCard({
         className="font-serif text-center"
         style={{
           fontSize: 38,
-          lineHeight: 38,
+          lineHeight: 48,
           color: selected ? scheme.base : '#d6d3d1',
           width: 46,
         }}

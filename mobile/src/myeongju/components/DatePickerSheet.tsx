@@ -160,13 +160,15 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
 
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
+      {/* 딤 오버레이 — sheet와 분리해서 ScrollView 터치 간섭 방지 */}
       <Pressable
-        className="flex-1 justify-end"
-        style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+        style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.4)' }}
         onPress={onClose}
-      >
+      />
+
+      {/* 시트 컨테이너 */}
+      <View style={{ flex: 1, justifyContent: 'flex-end' }} pointerEvents="box-none">
         <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
-          <Pressable onPress={(e) => e.stopPropagation()}>
             <View className="bg-surfaceRaised rounded-t-[28px]">
               {/* 핸들 */}
               <View className="w-10 h-1 rounded-full bg-borderStrong self-center mt-[14px] mb-1" />
@@ -221,9 +223,8 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
                 </Pressable>
               </View>
             </View>
-          </Pressable>
         </Animated.View>
-      </Pressable>
+      </View>
     </Modal>
   );
 }

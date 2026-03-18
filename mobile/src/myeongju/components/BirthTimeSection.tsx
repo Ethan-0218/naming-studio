@@ -1,14 +1,15 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { primitives } from '@/design-system';
 import { getSijan } from '../data';
+import TimePickerSheet from './TimePickerSheet';
 
 interface Props {
   timeUnknown: boolean;
   isAm: boolean;
   hour: number;   // 1–12
-  minute: number; // 0–50 (10분 단위)
+  minute: number; // 0–59
   regionOffset: number | null;
   onToggleUnknown: () => void;
   onAmPmChange: (isAm: boolean) => void;
@@ -16,7 +17,6 @@ interface Props {
   onMinuteChange: (minute: number) => void;
 }
 
-// 스위치 thumb 이동 거리: container(42) - padding*2(6) - thumb(18) = 18px
 const THUMB_TRAVEL = 18;
 
 export default function BirthTimeSection({
@@ -33,13 +33,14 @@ export default function BirthTimeSection({
   const adjustedHourDisplay = adjustedHour24 % 12 === 0 ? 12 : adjustedHour24 % 12;
   const adjustedAmPm = adjustedIsAm ? '오전' : '오후';
 
+  const [pickerVisible, setPickerVisible] = useState(false);
+
   // 스위치 애니메이션
   const switchAnim = useRef(new Animated.Value(timeUnknown ? 1 : 0)).current;
-
   useEffect(() => {
     Animated.spring(switchAnim, {
       toValue: timeUnknown ? 1 : 0,
-      useNativeDriver: true,
+      useNativeDriver: false,
       damping: 18,
       stiffness: 280,
     }).start();
@@ -49,11 +50,16 @@ export default function BirthTimeSection({
     inputRange: [0, 1],
     outputRange: [0, THUMB_TRAVEL],
   });
-
   const trackBg = switchAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [primitives.hanji500, primitives.ink700],
   });
+
+  function handleTimeConfirm(newIsAm: boolean, newHour: number, newMinute: number) {
+    onAmPmChange(newIsAm);
+    onHourChange(newHour);
+    onMinuteChange(newMinute);
+  }
 
   return (
     <View className="px-5 py-[22px] border-b border-border">
@@ -134,33 +140,31 @@ export default function BirthTimeSection({
               </Pressable>
             </View>
 
-            {/* 시:분 표시 */}
-            <View className="flex-1 flex-row items-center justify-center gap-1 px-4 h-[68px] bg-surfaceRaised border-[1.5px] border-borderStrong rounded-lg">
-              <Pressable onPress={() => onHourChange(hour % 12 + 1)}>
-                <Text
-                  className="font-serif-regular text-textPrimary text-center"
-                  style={{ fontSize: 34, lineHeight: 34, letterSpacing: -1, minWidth: 48 }}
-                >
-                  {String(hour).padStart(2, '0')}
-                </Text>
-              </Pressable>
-
+            {/* 시:분 표시 — 탭하면 피커 오픈 */}
+            <Pressable
+              className="flex-1 flex-row items-center justify-center gap-1 px-4 h-[68px] bg-surfaceRaised border-[1.5px] border-borderStrong rounded-lg"
+              style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+              onPress={() => setPickerVisible(true)}
+            >
+              <Text
+                className="font-serif-regular text-textPrimary text-center"
+                style={{ fontSize: 34, lineHeight: 44, letterSpacing: -1, minWidth: 48 }}
+              >
+                {String(hour).padStart(2, '0')}
+              </Text>
               <Text
                 className="font-serif-regular text-textTertiary"
-                style={{ fontSize: 28, lineHeight: 28, paddingBottom: 4 }}
+                style={{ fontSize: 28, lineHeight: 44, paddingBottom: 2 }}
               >
                 :
               </Text>
-
-              <Pressable onPress={() => onMinuteChange((minute + 10) % 60)}>
-                <Text
-                  className="font-serif-regular text-textPrimary text-center"
-                  style={{ fontSize: 34, lineHeight: 34, letterSpacing: -1, minWidth: 48 }}
-                >
-                  {String(minute).padStart(2, '0')}
-                </Text>
-              </Pressable>
-            </View>
+              <Text
+                className="font-serif-regular text-textPrimary text-center"
+                style={{ fontSize: 34, lineHeight: 44, letterSpacing: -1, minWidth: 48 }}
+              >
+                {String(minute).padStart(2, '0')}
+              </Text>
+            </Pressable>
           </View>
 
           {/* 시진 결과 카드 */}
@@ -171,7 +175,7 @@ export default function BirthTimeSection({
             {/* 대표 한자 */}
             <Text
               className="font-serif-medium text-fillAccent shrink-0"
-              style={{ fontSize: 36, lineHeight: 36 }}
+              style={{ fontSize: 36, lineHeight: 44 }}
             >
               {sijan.hanja}
             </Text>
@@ -220,6 +224,15 @@ export default function BirthTimeSection({
               )}
             </View>
           </View>
+
+          <TimePickerSheet
+            visible={pickerVisible}
+            isAm={isAm}
+            hour={hour}
+            minute={minute}
+            onConfirm={handleTimeConfirm}
+            onClose={() => setPickerVisible(false)}
+          />
         </>
       )}
     </View>
