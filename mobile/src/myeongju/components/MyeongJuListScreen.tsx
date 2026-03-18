@@ -14,6 +14,11 @@ import { MyeongJuProfile } from '../types';
 import { useMyeongJuList } from '../hooks/useMyeongJuList';
 import { useDeleteMyeongJu } from '../hooks/useDeleteMyeongJu';
 
+const MODE_DESCRIPTION: Record<'ai' | 'self', string> = {
+  ai: 'AI 작명에 사용할 명주를 선택해주세요.',
+  self: '스스로 작명에 사용할 명주를 선택해주세요.',
+};
+
 export default function MyeongJuListScreen() {
   const { bottom } = useSafeAreaInsets();
   const navigation = useNavigation<any>();
@@ -69,6 +74,17 @@ export default function MyeongJuListScreen() {
         contentContainerStyle={{ paddingBottom: bottom }}
         showsVerticalScrollIndicator={false}
       >
+        {mode && (
+          <View style={{ paddingHorizontal: 20, paddingVertical: 14 }}>
+            <Font
+              tag="secondary"
+              style={{ fontSize: 14, color: colors.textSecondary }}
+            >
+              {MODE_DESCRIPTION[mode]}
+            </Font>
+          </View>
+        )}
+
         <AddMyeongJuButton onPress={handleAddPress} />
 
         {/* 명주 수 */}
