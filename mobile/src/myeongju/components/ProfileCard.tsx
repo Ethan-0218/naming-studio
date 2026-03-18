@@ -5,25 +5,13 @@ import { ohaengColors, primitives } from '@/design-system';
 import { Font } from '@/components/Font';
 import { MyeongJuProfile, OHAENG_LABEL } from '../types';
 
-const GENDER_COLORS = {
-  male: {
-    bg: primitives.water200,
-    text: primitives.water600,
-    border: primitives.water400,
-  },
-  female: {
-    bg: primitives.fire200,
-    text: primitives.fire600,
-    border: primitives.fire400,
-  },
-} as const;
-
 interface Props {
   profile: MyeongJuProfile;
   onPress: () => void;
+  onDelete: () => void;
 }
 
-export default function ProfileCard({ profile, onPress }: Props) {
+export default function ProfileCard({ profile, onPress, onDelete }: Props) {
   const ohaeng = ohaengColors[profile.ohaeng];
   const genderLabel = profile.gender === 'male' ? '남' : '여';
   const hasAnalysis = profile.analysisCount !== undefined;
@@ -133,45 +121,56 @@ export default function ProfileCard({ profile, onPress }: Props) {
           </Font>
         </View>
 
-        {/* 메타 칩 */}
-        <View className="flex-row items-center gap-1.5 flex-wrap">
-          {!hasAnalysis ? (
-            <Font
-              tag="secondary"
-              className="text-textDisabled"
-              style={{ fontSize: 10.5 }}
-            >
-              미분석
-            </Font>
-          ) : (
-            <>
+        {/* 메타 칩 + 삭제 버튼 */}
+        <View className="flex-row items-center">
+          <View className="flex-1 flex-row items-center gap-1.5 flex-wrap">
+            {!hasAnalysis ? (
               <Font
                 tag="secondary"
-                className="text-textTertiary"
+                className="text-textDisabled"
                 style={{ fontSize: 10.5 }}
               >
-                분석 {profile.analysisCount}회
+                미분석
               </Font>
-              {profile.savedCount !== undefined && (
-                <>
-                  <View className="w-1 h-1 rounded-full bg-borderStrong" />
-                  <Font
-                    tag="secondary"
-                    className="text-textTertiary"
-                    style={{ fontSize: 10.5 }}
-                  >
-                    저장 {profile.savedCount}개
-                  </Font>
-                </>
-              )}
-            </>
-          )}
+            ) : (
+              <>
+                <Font
+                  tag="secondary"
+                  className="text-textTertiary"
+                  style={{ fontSize: 10.5 }}
+                >
+                  분석 {profile.analysisCount}회
+                </Font>
+                {profile.savedCount !== undefined && (
+                  <>
+                    <View className="w-1 h-1 rounded-full bg-borderStrong" />
+                    <Font
+                      tag="secondary"
+                      className="text-textTertiary"
+                      style={{ fontSize: 10.5 }}
+                    >
+                      저장 {profile.savedCount}개
+                    </Font>
+                  </>
+                )}
+              </>
+            )}
+          </View>
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            hitSlop={8}
+            className="p-1"
+          >
+            <Ionicons
+              name="trash-outline"
+              size={15}
+              color={primitives.ink300}
+            />
+          </Pressable>
         </View>
-      </View>
-
-      {/* chevron */}
-      <View className="justify-center px-[14px]">
-        <Ionicons name="chevron-forward" size={18} color={primitives.ink300} />
       </View>
     </Pressable>
   );

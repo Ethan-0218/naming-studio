@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -12,6 +12,7 @@ import AddMyeongJuButton from './AddMyeongJuButton';
 import ProfileCard from './ProfileCard';
 import { MyeongJuProfile } from '../types';
 import { useMyeongJuList } from '../hooks/useMyeongJuList';
+import { useDeleteMyeongJu } from '../hooks/useDeleteMyeongJu';
 
 export default function MyeongJuListScreen() {
   const { bottom } = useSafeAreaInsets();
@@ -22,6 +23,18 @@ export default function MyeongJuListScreen() {
   const isManageMode = !mode;
 
   const { data: profiles = [], isLoading: loading } = useMyeongJuList();
+  const deleteMutation = useDeleteMyeongJu();
+
+  function handleDelete(profile: MyeongJuProfile) {
+    Alert.alert('명주 삭제', `${profile.iljoo} 명주를 삭제하시겠습니까?`, [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '삭제',
+        style: 'destructive',
+        onPress: () => deleteMutation.mutate(profile.id),
+      },
+    ]);
+  }
 
   function handleSelectProfile(profile: MyeongJuProfile) {
     if (mode === 'ai') {
@@ -101,6 +114,7 @@ export default function MyeongJuListScreen() {
                 key={profile.id}
                 profile={profile}
                 onPress={() => handleSelectProfile(profile)}
+                onDelete={() => handleDelete(profile)}
               />
             ))}
           </View>

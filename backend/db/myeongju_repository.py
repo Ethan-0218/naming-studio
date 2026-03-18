@@ -69,6 +69,14 @@ class MyeongJuRepository:
             ).fetchone()
         return dict(row)
 
+    def delete(self, id: str, user_id: str) -> bool:
+        with self._pool.connection() as conn:
+            result = conn.execute(
+                "DELETE FROM myeongju WHERE id = %s AND user_id = %s",
+                (id, user_id),
+            )
+        return result.rowcount > 0
+
     def list_by_user(self, user_id: str) -> list[dict]:
         with self._pool.connection() as conn:
             rows = conn.execute(

@@ -189,6 +189,23 @@ async def create_myeongju(
     return _row_to_response(row)
 
 
+@router.delete("/myeongju/{id}", status_code=204)
+async def delete_myeongju(
+    id: str,
+    request: Request,
+    user_id: str = Depends(get_current_user),
+):
+    from db.postgres_pool import _pool_instance
+    if _pool_instance is None:
+        raise HTTPException(status_code=503, detail="DB 미연결")
+
+    from db.myeongju_repository import MyeongJuRepository
+
+    deleted = MyeongJuRepository(_pool_instance).delete(id, user_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="명주를 찾을 수 없습니다.")
+
+
 @router.get("/myeongju", response_model=list[MyeongJuResponse])
 async def list_myeongju(
     request: Request,

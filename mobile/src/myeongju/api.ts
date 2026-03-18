@@ -91,6 +91,14 @@ export async function createMyeongJu(
   return toProfile(data);
 }
 
+export async function deleteMyeongJu(id: string): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/api/myeongju/${id}`, {
+    method: 'DELETE',
+    headers: await authHeaders(),
+  });
+  if (!res.ok) throw new Error(`명주 삭제 실패: ${res.status}`);
+}
+
 export async function listMyeongJu(): Promise<MyeongJuProfile[]> {
   const res = await fetch(`${BACKEND_URL}/api/myeongju`, {
     headers: await authHeaders(),
