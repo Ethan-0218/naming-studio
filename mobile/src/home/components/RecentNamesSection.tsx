@@ -19,12 +19,12 @@ export default function RecentNamesSection() {
     <View className="px-4 pt-5">
       <View className="flex-row items-center justify-between mb-3 px-1">
         <Text
-          className="font-sansRegular text-textTertiary"
+          className="font-sans-regular text-textTertiary"
           style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
         >
           최근 분석 이름
         </Text>
-        <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11, letterSpacing: 0.5 }}>
+        <Text className="font-sans-regular text-textTertiary" style={{ fontSize: 11, letterSpacing: 0.5 }}>
           전체 보기 →
         </Text>
       </View>
@@ -51,7 +51,7 @@ export default function RecentNamesSection() {
               >
                 {item.name}
               </Text>
-              <Text className="font-sansRegular text-textDisabled mt-0.5" style={{ fontSize: 11 }}>
+              <Text className="font-sans-regular text-textDisabled mt-0.5" style={{ fontSize: 11 }}>
                 {item.date}
               </Text>
             </View>
@@ -62,7 +62,7 @@ export default function RecentNamesSection() {
               >
                 {item.score}
               </Text>
-              <Text className="font-sansRegular text-textDisabled" style={{ fontSize: 10 }}>
+              <Text className="font-sans-regular text-textDisabled" style={{ fontSize: 10 }}>
                 {item.label}
               </Text>
             </View>

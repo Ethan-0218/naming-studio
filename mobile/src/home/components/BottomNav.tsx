@@ -29,7 +29,7 @@ export default function BottomNav({ activeTab = '홈' }: Props) {
               color={isActive ? primitives.gold600 : primitives.ink300}
             />
             <Text
-              className={isActive ? 'font-sansMedium text-fillAccent' : 'font-sansRegular text-textDisabled'}
+              className={isActive ? 'font-sans-medium text-fillAccent' : 'font-sans-regular text-textDisabled'}
               style={{ fontSize: 10 }}
             >
               {tab.label}

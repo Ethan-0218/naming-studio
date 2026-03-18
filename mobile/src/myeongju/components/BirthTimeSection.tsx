@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { primitives } from '@/design-system';
 import { getSijan } from '../data';
@@ -16,6 +16,9 @@ interface Props {
   onMinuteChange: (minute: number) => void;
 }
 
+// 스위치 thumb 이동 거리: container(42) - padding*2(6) - thumb(18) = 18px
+const THUMB_TRAVEL = 18;
+
 export default function BirthTimeSection({
   timeUnknown, isAm, hour, minute, regionOffset,
   onToggleUnknown, onAmPmChange, onHourChange, onMinuteChange,
@@ -29,6 +32,28 @@ export default function BirthTimeSection({
   const adjustedIsAm = adjustedHour24 < 12;
   const adjustedHourDisplay = adjustedHour24 % 12 === 0 ? 12 : adjustedHour24 % 12;
   const adjustedAmPm = adjustedIsAm ? '오전' : '오후';
+
+  // 스위치 애니메이션
+  const switchAnim = useRef(new Animated.Value(timeUnknown ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.spring(switchAnim, {
+      toValue: timeUnknown ? 1 : 0,
+      useNativeDriver: true,
+      damping: 18,
+      stiffness: 280,
+    }).start();
+  }, [timeUnknown]);
+
+  const thumbTranslateX = switchAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, THUMB_TRAVEL],
+  });
+
+  const trackBg = switchAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [primitives.hanji500, primitives.ink700],
+  });
 
   return (
     <View className="px-5 py-[22px] border-b border-border">
@@ -47,21 +72,22 @@ export default function BirthTimeSection({
         onPress={onToggleUnknown}
       >
         <View className="flex-row items-center gap-2">
-          <Ionicons name="information-circle-outline" size={15} color={primitives.stone400} />
-          <Text className="text-[13px] font-sansRegular text-textSecondary">
+          <Ionicons name="information-circle-outline" size={15} color={primitives.ink500} />
+          <Text className="text-[13px] font-sans-regular text-textSecondary">
             생시를 모릅니다
           </Text>
         </View>
 
-        {/* custom toggle switch */}
-        <View
-          className={`rounded-full justify-center px-[3px] ${timeUnknown ? 'bg-textSecondary' : 'bg-borderStrong'}`}
-          style={{ width: 42, height: 24 }}
+        {/* 애니메이션 토글 스위치 */}
+        <Animated.View
+          className="rounded-full justify-center px-[3px]"
+          style={{ width: 42, height: 24, backgroundColor: trackBg }}
         >
-          <View
-            className={`rounded-full bg-white ${timeUnknown ? 'self-end' : 'self-start'}`}
+          <Animated.View
+            className="rounded-full bg-white"
             style={{
               width: 18, height: 18,
+              transform: [{ translateX: thumbTranslateX }],
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.2,
@@ -69,7 +95,7 @@ export default function BirthTimeSection({
               elevation: 2,
             }}
           />
-        </View>
+        </Animated.View>
       </Pressable>
 
       {/* 시간 입력 (생시 모름이 아닐 때) */}
@@ -112,7 +138,7 @@ export default function BirthTimeSection({
             <View className="flex-1 flex-row items-center justify-center gap-1 px-4 h-[68px] bg-surfaceRaised border-[1.5px] border-borderStrong rounded-lg">
               <Pressable onPress={() => onHourChange(hour % 12 + 1)}>
                 <Text
-                  className="font-serif text-textPrimary text-center"
+                  className="font-serif-regular text-textPrimary text-center"
                   style={{ fontSize: 34, lineHeight: 34, letterSpacing: -1, minWidth: 48 }}
                 >
                   {String(hour).padStart(2, '0')}
@@ -120,7 +146,7 @@ export default function BirthTimeSection({
               </Pressable>
 
               <Text
-                className="font-serif text-textTertiary"
+                className="font-serif-regular text-textTertiary"
                 style={{ fontSize: 28, lineHeight: 28, paddingBottom: 4 }}
               >
                 :
@@ -128,7 +154,7 @@ export default function BirthTimeSection({
 
               <Pressable onPress={() => onMinuteChange((minute + 10) % 60)}>
                 <Text
-                  className="font-serif text-textPrimary text-center"
+                  className="font-serif-regular text-textPrimary text-center"
                   style={{ fontSize: 34, lineHeight: 34, letterSpacing: -1, minWidth: 48 }}
                 >
                   {String(minute).padStart(2, '0')}
@@ -144,7 +170,7 @@ export default function BirthTimeSection({
           >
             {/* 대표 한자 */}
             <Text
-              className="font-serif text-fillAccent shrink-0"
+              className="font-serif-medium text-fillAccent shrink-0"
               style={{ fontSize: 36, lineHeight: 36 }}
             >
               {sijan.hanja}
@@ -169,7 +195,7 @@ export default function BirthTimeSection({
 
               {/* 시간 범위 */}
               <Text
-                className="font-sansRegular text-textTertiary"
+                className="font-sans-regular text-textTertiary"
                 style={{ fontSize: 12, letterSpacing: 0.4 }}
               >
                 {sijan.range}
@@ -177,7 +203,7 @@ export default function BirthTimeSection({
 
               {/* 안내 */}
               <Text
-                className="font-sansRegular mt-[2px]"
+                className="font-sans-regular mt-[2px]"
                 style={{ fontSize: 11, color: primitives.gold400 }}
               >
                 사주의 시주(時柱)로 사용됩니다
@@ -186,7 +212,7 @@ export default function BirthTimeSection({
               {/* 지방시 보정 표시 */}
               {regionOffset != null && regionOffset !== 0 && (
                 <Text
-                  className="font-sansRegular text-textTertiary mt-[3px]"
+                  className="font-sans-regular text-textTertiary mt-[3px]"
                   style={{ fontSize: 10 }}
                 >
                   {`지역 보정 후: ${adjustedAmPm} ${adjustedHourDisplay}:${String(adjustedMin).padStart(2, '0')}`}

@@ -72,7 +72,7 @@ function PickerColumn({
               style={{ height: ITEM_HEIGHT }}
             >
               <Text
-                className="font-serif text-textPrimary"
+                className="font-serif-regular text-textPrimary"
                 style={{ fontSize: 20, letterSpacing: -0.5 }}
               >
                 {label}
@@ -92,7 +92,7 @@ function PickerColumn({
           paddingBottom: 9,
         }}
       >
-        <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11 }}>
+        <Text className="font-sans-regular text-textTertiary" style={{ fontSize: 11 }}>
           {unit}
         </Text>
       </View>

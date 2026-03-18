@@ -11,7 +11,7 @@ export default function InfoBanner() {
         <Text className="font-serif-medium text-fillAccent mb-1" style={{ fontSize: 14 }}>
           오행이란 무엇인가요?
         </Text>
-        <Text className="font-sansRegular text-textSecondary" style={{ fontSize: 12, lineHeight: 20 }}>
+        <Text className="font-sans-regular text-textSecondary" style={{ fontSize: 12, lineHeight: 20 }}>
           목·화·토·금·수의 기운이 이름의 소리와 글자에 담깁니다. 상생·상극 관계가 이름의 조화를 결정합니다.
         </Text>
       </View>

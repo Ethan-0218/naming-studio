@@ -82,7 +82,9 @@ module.exports = {
         full: 9999,
       },
       fontFamily: {
+        serifLight: ['NotoSerifKR_300Light'],
         serif: ['NotoSerifKR_300Light'],
+        serifRegular: ['NotoSerifKR_400Regular'],
         serifMedium: ['NotoSerifKR_500Medium'],
         serifSemiBold: ['NotoSerifKR_600SemiBold'],
         sans: ['NotoSansKR_300Light', 'NotoSansKR_400Regular'],
@@ -117,7 +119,8 @@ module.exports = {
     'text-display', 'text-title1', 'text-title2', 'text-heading',
     'text-numeralLg', 'text-numeralMd', 'text-hanjaLg', 'text-hanjaSm', 'text-serifLabel',
     'text-bodyLg', 'text-body', 'text-bodySm', 'text-uiMd', 'text-uiSm', 'text-label', 'text-caption', 'text-overline',
-    'font-serif-medium', 'font-serif-semi-bold', 'font-sans-regular', 'font-sans-medium', 'uppercase',
+    'font-serif-light', 'font-serif-regular', 'font-serif-medium', 'font-serif-semi-bold',
+    'font-sans-regular', 'font-sans-medium', 'uppercase',
     // semantic text colors
     'text-textPrimary', 'text-textSecondary', 'text-textTertiary', 'text-textDisabled', 'text-textInverse',
     // backgrounds / borders

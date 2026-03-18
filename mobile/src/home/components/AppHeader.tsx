@@ -14,7 +14,7 @@ export default function AppHeader() {
           이름공방
         </Text>
         <Text
-          className="font-sansRegular text-textTertiary mt-px"
+          className="font-sans-regular text-textTertiary mt-px"
           style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' }}
         >
           名工房 · 이름 분석 및 작명

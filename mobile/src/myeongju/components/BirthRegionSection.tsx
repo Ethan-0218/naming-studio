@@ -15,9 +15,9 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
   const noticeText = () => {
     if (!hasRegion) {
       return (
-        <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11.5, lineHeight: 19 }}>
+        <Text className="font-sans-regular text-textTertiary" style={{ fontSize: 11.5, lineHeight: 19 }}>
           출생 지역에 따라{' '}
-          <Text className="font-sansMedium text-textSecondary">
+          <Text className="font-sans-medium text-textSecondary">
             표준시와 실제 태양시의 차이
           </Text>
           {'가 발생합니다. 정확한 사주 계산을 위해 지방시 보정이 필요합니다.'}
@@ -26,14 +26,14 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
     }
     const r = selectedRegion!;
     return (
-      <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11.5, lineHeight: 19 }}>
+      <Text className="font-sans-regular text-textTertiary" style={{ fontSize: 11.5, lineHeight: 19 }}>
         출생 지역에 따라{' '}
-        <Text className="font-sansMedium text-textSecondary">
+        <Text className="font-sans-medium text-textSecondary">
           표준시와 실제 태양시의 차이
         </Text>
         {'가 발생합니다. 정확한 사주 계산을 위해 지방시 보정이 필요합니다.'}
         {r.offset !== null && (
-          <Text className="font-sansMedium text-fillAccent">
+          <Text className="font-sans-medium text-fillAccent">
             {`  ${r.name} 기준 약 ${r.offset}분 차이`}
           </Text>
         )}
@@ -46,7 +46,7 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
       {/* 섹션 라벨 */}
       <View className="flex-row items-end gap-1.5 mb-3.5">
         <Text className="text-overline text-textTertiary">출생 지역</Text>
-        <Text className="font-sansRegular text-textDisabled" style={{ fontSize: 9, letterSpacing: 0.8 }}>
+        <Text className="font-sans-regular text-textDisabled" style={{ fontSize: 9, letterSpacing: 0.8 }}>
           지방시 보정
         </Text>
       </View>
@@ -63,11 +63,11 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
           color={hasRegion ? primitives.ink500 : primitives.ink300}
         />
         {hasRegion ? (
-          <Text className="flex-1 font-serif text-textPrimary" style={{ fontSize: 15 }}>
+          <Text className="flex-1 font-serif-regular text-textPrimary" style={{ fontSize: 15 }}>
             {selectedRegion!.name}
           </Text>
         ) : (
-          <Text className="flex-1 font-sansRegular text-textDisabled" style={{ fontSize: 14 }}>
+          <Text className="flex-1 font-sans-regular text-textDisabled" style={{ fontSize: 14 }}>
             지역 선택
           </Text>
         )}

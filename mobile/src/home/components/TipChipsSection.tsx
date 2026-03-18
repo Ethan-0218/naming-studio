@@ -14,7 +14,7 @@ export default function TipChipsSection() {
   return (
     <View className="px-4 pt-5 pb-5">
       <Text
-        className="font-sansRegular text-textTertiary mb-3 px-1"
+        className="font-sans-regular text-textTertiary mb-3 px-1"
         style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
       >
         분석 항목 살펴보기
@@ -32,7 +32,7 @@ export default function TipChipsSection() {
               className="w-1.5 h-1.5 rounded-full shrink-0"
               style={{ backgroundColor: chip.dotColor }}
             />
-            <Text className="font-sansRegular text-textSecondary" style={{ fontSize: 12 }}>
+            <Text className="font-sans-regular text-textSecondary" style={{ fontSize: 12 }}>
               {chip.label}
             </Text>
           </Pressable>

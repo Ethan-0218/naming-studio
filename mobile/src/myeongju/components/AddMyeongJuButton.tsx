@@ -25,7 +25,7 @@ export default function AddMyeongJuButton({ onPress }: Props) {
             새 명주 추가
           </Text>
           <Text
-            className="font-sansRegular mt-0.5"
+            className="font-sans-regular mt-0.5"
             style={{ fontSize: 11, color: 'rgba(251,247,238,0.4)', letterSpacing: 0.4 }}
           >
             사주·성별 정보로 등록

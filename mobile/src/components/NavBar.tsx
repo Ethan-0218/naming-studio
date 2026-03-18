@@ -23,7 +23,7 @@ export default function NavBar({ title, subtitle, onBack }: Props) {
           {title}
         </Text>
         <Text
-          className="font-sansRegular text-textTertiary mt-px"
+          className="font-sans-regular text-textTertiary mt-px"
           style={{ fontSize: 9.5, letterSpacing: 1.2 }}
         >
           {subtitle}
