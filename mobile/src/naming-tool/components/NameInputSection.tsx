@@ -69,7 +69,7 @@ export default function NameInputSection({
         <View style={{ gap: 4 }}>
           <Font
             tag="secondaryMedium"
-            className="text-serifLabel text-textTertiary uppercase"
+            className="text-serifLabel text-textSecondary uppercase"
           >
             한 글
           </Font>
@@ -125,7 +125,7 @@ export default function NameInputSection({
         <View style={{ gap: 4 }}>
           <Font
             tag="secondaryMedium"
-            className="text-serifLabel text-textTertiary uppercase"
+            className="text-serifLabel text-textSecondary uppercase"
           >
             한 자
           </Font>

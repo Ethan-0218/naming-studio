@@ -49,7 +49,7 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
         ) : (
           <Font
             tag="secondary"
-            className="text-bodySm text-textDisabled text-center py-4"
+            className="text-bodySm text-textTertiary text-center py-4"
           >
             이름을 입력하면 발음오행이 표시됩니다
           </Font>

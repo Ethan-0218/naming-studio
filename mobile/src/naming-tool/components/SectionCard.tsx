@@ -36,7 +36,7 @@ export default function SectionCard({
       <View className="flex-row items-center justify-between mb-3">
         <Font
           tag="secondaryMedium"
-          className="text-serifLabel text-textTertiary"
+          className="text-serifLabel text-textSecondary"
         >
           {title}
         </Font>

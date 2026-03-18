@@ -141,7 +141,7 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
         ) : (
           <Font
             tag="secondary"
-            className="text-bodySm text-textDisabled text-center py-4"
+            className="text-bodySm text-textTertiary text-center py-4"
           >
             한자를 모두 선택하면 수리격이 계산됩니다
           </Font>

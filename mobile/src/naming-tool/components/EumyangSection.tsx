@@ -178,7 +178,7 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
         ) : (
           <Font
             tag="secondary"
-            className="text-bodySm text-textDisabled text-center py-4"
+            className="text-bodySm text-textTertiary text-center py-4"
           >
             {emptyText}
           </Font>

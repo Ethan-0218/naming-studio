@@ -48,7 +48,7 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
         ) : (
           <Font
             tag="secondary"
-            className="text-bodySm text-textDisabled text-center py-4"
+            className="text-bodySm text-textTertiary text-center py-4"
           >
             한자를 선택하면 자원오행이 표시됩니다
           </Font>
