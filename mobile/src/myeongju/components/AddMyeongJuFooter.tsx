@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontFamily } from '@/design-system';
 
 interface Props {
   onSubmit: () => void;
@@ -9,33 +8,16 @@ interface Props {
 
 export default function AddMyeongJuFooter({ onSubmit }: Props) {
   return (
-    <View style={{
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 14,
-      backgroundColor: colors.bgSubtle,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    }}>
+    <View className="px-5 pt-3 pb-[14px] bg-bgSubtle border-t border-border">
       <Pressable
-        style={({ pressed }) => ({
-          backgroundColor: colors.fillBold,
-          borderRadius: 16,
-          height: 52,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          opacity: pressed ? 0.85 : 1,
-        })}
+        className="flex-row items-center justify-center gap-2 bg-fillBold rounded-[16px] h-[52px]"
+        style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
         onPress={onSubmit}
       >
-        <Text style={{
-          fontFamily: fontFamily.serifMedium,
-          fontSize: 16,
-          letterSpacing: 0.5,
-          color: colors.textInverse,
-        }}>
+        <Text
+          className="font-serif-medium text-textInverse"
+          style={{ fontSize: 16, letterSpacing: 0.5 }}
+        >
           명주 등록하기
         </Text>
         <Ionicons name="chevron-forward" size={18} color="rgba(251,247,238,0.5)" />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontFamily, textStyles, radius } from '@/design-system';
+import { primitives } from '@/design-system';
 import { Region } from '../data';
 
 interface Props {
@@ -15,9 +15,9 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
   const noticeText = () => {
     if (!hasRegion) {
       return (
-        <Text style={{ fontFamily: fontFamily.sansRegular, fontSize: 11.5, color: colors.textTertiary, lineHeight: 19 }}>
+        <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11.5, lineHeight: 19 }}>
           출생 지역에 따라{' '}
-          <Text style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary }}>
+          <Text className="font-sansMedium text-textSecondary">
             표준시와 실제 태양시의 차이
           </Text>
           {'가 발생합니다. 정확한 사주 계산을 위해 지방시 보정이 필요합니다.'}
@@ -26,14 +26,14 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
     }
     const r = selectedRegion!;
     return (
-      <Text style={{ fontFamily: fontFamily.sansRegular, fontSize: 11.5, color: colors.textTertiary, lineHeight: 19 }}>
+      <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11.5, lineHeight: 19 }}>
         출생 지역에 따라{' '}
-        <Text style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary }}>
+        <Text className="font-sansMedium text-textSecondary">
           표준시와 실제 태양시의 차이
         </Text>
         {'가 발생합니다. 정확한 사주 계산을 위해 지방시 보정이 필요합니다.'}
         {r.offset !== null && (
-          <Text style={{ fontFamily: fontFamily.sansMedium, color: colors.fillAccent }}>
+          <Text className="font-sansMedium text-fillAccent">
             {`  ${r.name} 기준 약 ${r.offset}분 차이`}
           </Text>
         )}
@@ -42,85 +42,44 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
   };
 
   return (
-    <View style={{
-      paddingHorizontal: 20,
-      paddingVertical: 22,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    }}>
+    <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
-        <Text style={[textStyles.overline, { color: colors.textTertiary }]}>출생 지역</Text>
-        <Text style={{
-          fontFamily: fontFamily.sansRegular,
-          fontSize: 9,
-          letterSpacing: 0.8,
-          color: colors.textDisabled,
-        }}>
+      <View className="flex-row items-end gap-1.5 mb-3.5">
+        <Text className="text-overline text-textTertiary">출생 지역</Text>
+        <Text className="font-sansRegular text-textDisabled" style={{ fontSize: 9, letterSpacing: 0.8 }}>
           지방시 보정
         </Text>
       </View>
 
       {/* 지역 선택 버튼 */}
       <Pressable
-        style={({ pressed }) => ({
-          backgroundColor: colors.surfaceRaised,
-          borderWidth: 1.5,
-          borderColor: hasRegion ? colors.borderStrong : colors.border,
-          borderRadius: radius.lg,
-          height: 52,
-          paddingHorizontal: 14,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 10,
-          opacity: pressed ? 0.85 : 1,
-        })}
+        className={`flex-row items-center gap-2.5 bg-surfaceRaised border-[1.5px] rounded-lg h-[52px] px-[14px] ${hasRegion ? 'border-borderStrong' : 'border-border'}`}
+        style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
         onPress={onOpen}
       >
         <Ionicons
           name="location-outline"
           size={16}
-          color={hasRegion ? colors.textTertiary : colors.textDisabled}
+          color={hasRegion ? primitives.ink500 : primitives.ink300}
         />
         {hasRegion ? (
-          <Text style={{
-            flex: 1,
-            fontFamily: fontFamily.serifRegular,
-            fontSize: 15,
-            color: colors.textPrimary,
-          }}>
+          <Text className="flex-1 font-serif text-textPrimary" style={{ fontSize: 15 }}>
             {selectedRegion!.name}
           </Text>
         ) : (
-          <Text style={{
-            flex: 1,
-            fontFamily: fontFamily.sansRegular,
-            fontSize: 14,
-            color: colors.textDisabled,
-          }}>
+          <Text className="flex-1 font-sansRegular text-textDisabled" style={{ fontSize: 14 }}>
             지역 선택
           </Text>
         )}
-        <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+        <Ionicons name="chevron-forward" size={16} color={primitives.ink500} />
       </Pressable>
 
       {/* 지방시 보정 안내 */}
-      <View style={{
-        marginTop: 10,
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 7,
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: radius.md,
-        padding: 10,
-        paddingHorizontal: 12,
-      }}>
+      <View className="flex-row items-start gap-[7px] mt-2.5 bg-surface border border-border rounded-md p-2.5 px-3">
         <Ionicons
           name="information-circle-outline"
           size={13}
-          color={colors.textTertiary}
+          color={primitives.ink500}
           style={{ marginTop: 2 }}
         />
         {noticeText()}

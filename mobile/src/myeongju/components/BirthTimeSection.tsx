@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontFamily, textStyles, radius, primitives } from '@/design-system';
+import { primitives } from '@/design-system';
 import { getSijan } from '../data';
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
   isAm: boolean;
   hour: number;   // 1–12
   minute: number; // 0–50 (10분 단위)
-  regionOffset: number | null; // 지방시 보정 분 (null = 해외, 보정 없음)
+  regionOffset: number | null;
   onToggleUnknown: () => void;
   onAmPmChange: (isAm: boolean) => void;
   onHourChange: (hour: number) => void;
@@ -20,91 +20,55 @@ export default function BirthTimeSection({
   timeUnknown, isAm, hour, minute, regionOffset,
   onToggleUnknown, onAmPmChange, onHourChange, onMinuteChange,
 }: Props) {
-  // 24시간제 변환
-  const hour24 = isAm
-    ? (hour === 12 ? 0 : hour)
-    : (hour === 12 ? 12 : hour + 12);
-
-  // 지방시 보정: 한국 사주는 지방태양시 기준 (KST에서 offset 분 빼기)
+  const hour24 = isAm ? (hour === 12 ? 0 : hour) : (hour === 12 ? 12 : hour + 12);
   const totalMinutes = hour24 * 60 + minute - (regionOffset ?? 0);
   const adjustedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
   const adjustedHour24 = Math.floor(adjustedMinutes / 60);
   const adjustedMin = adjustedMinutes % 60;
-
   const sijan = getSijan(adjustedHour24);
-
-  // 보정된 지방시 표시용 AM/PM 포맷
   const adjustedIsAm = adjustedHour24 < 12;
   const adjustedHourDisplay = adjustedHour24 % 12 === 0 ? 12 : adjustedHour24 % 12;
   const adjustedAmPm = adjustedIsAm ? '오전' : '오후';
 
   return (
-    <View style={{
-      paddingHorizontal: 20,
-      paddingVertical: 22,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    }}>
+    <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, marginBottom: 14 }}>
-        <Text style={[textStyles.overline, { color: colors.textTertiary }]}>생시</Text>
-        <Text style={{
-          fontFamily: fontFamily.sansRegular,
-          fontSize: 9,
-          letterSpacing: 0.8,
-          color: colors.textDisabled,
-        }}>
+      <View className="flex-row items-end gap-1.5 mb-3.5">
+        <Text className="text-overline text-textTertiary">생시</Text>
+        <Text className="text-[9px] text-textDisabled" style={{ letterSpacing: 0.8 }}>
           태어난 시각
         </Text>
       </View>
 
       {/* 생시 모름 토글 */}
       <Pressable
-        style={({ pressed }) => ({
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: colors.surface,
-          borderWidth: 1.5,
-          borderColor: timeUnknown ? colors.borderStrong : colors.border,
-          borderRadius: radius.lg,
-          paddingHorizontal: 14,
-          paddingVertical: 11,
-          marginBottom: 14,
-          opacity: pressed ? 0.85 : 1,
-        })}
+        className={`flex-row items-center justify-between bg-surface border-[1.5px] rounded-lg px-[14px] py-[11px] mb-3.5 ${timeUnknown ? 'border-borderStrong' : 'border-border'}`}
+        style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
         onPress={onToggleUnknown}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Ionicons name="information-circle-outline" size={15} color={colors.textTertiary} />
-          <Text style={{
-            fontFamily: fontFamily.sansRegular,
-            fontSize: 13,
-            color: colors.textSecondary,
-          }}>
+        <View className="flex-row items-center gap-2">
+          <Ionicons name="information-circle-outline" size={15} color={primitives.stone400} />
+          <Text className="text-[13px] font-sansRegular text-textSecondary">
             생시를 모릅니다
           </Text>
         </View>
 
         {/* custom toggle switch */}
-        <View style={{
-          width: 42, height: 24,
-          borderRadius: radius.full,
-          backgroundColor: timeUnknown ? colors.textSecondary : colors.borderStrong,
-          justifyContent: 'center',
-          paddingHorizontal: 3,
-        }}>
-          <View style={{
-            width: 18, height: 18,
-            borderRadius: 9,
-            backgroundColor: '#fff',
-            alignSelf: timeUnknown ? 'flex-end' : 'flex-start',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.2,
-            shadowRadius: 3,
-            elevation: 2,
-          }} />
+        <View
+          className={`rounded-full justify-center px-[3px] ${timeUnknown ? 'bg-textSecondary' : 'bg-borderStrong'}`}
+          style={{ width: 42, height: 24 }}
+        >
+          <View
+            className={`rounded-full bg-white ${timeUnknown ? 'self-end' : 'self-start'}`}
+            style={{
+              width: 18, height: 18,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.2,
+              shadowRadius: 3,
+              elevation: 2,
+            }}
+          />
         </View>
       </Pressable>
 
@@ -112,109 +76,61 @@ export default function BirthTimeSection({
       {!timeUnknown && (
         <>
           {/* 오전/오후 + 시:분 */}
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+          <View className="flex-row gap-2 mb-3">
             {/* 오전/오후 세로 토글 */}
-            <View style={{
-              width: 52,
-              borderWidth: 1.5,
-              borderColor: colors.border,
-              borderRadius: radius.lg,
-              overflow: 'hidden',
-              flexShrink: 0,
-            }}>
+            <View className="border-[1.5px] border-border rounded-lg overflow-hidden shrink-0" style={{ width: 52 }}>
               <Pressable
-                style={{
-                  flex: 1,
-                  paddingVertical: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: isAm ? colors.fillBold : 'transparent',
-                  minHeight: 34,
-                }}
+                className={`py-2.5 items-center justify-center ${isAm ? 'bg-fillBold' : 'bg-transparent'}`}
+                style={{ minHeight: 34 }}
                 onPress={() => onAmPmChange(true)}
               >
-                <Text style={{
-                  fontFamily: fontFamily.sansMedium,
-                  fontSize: 12,
-                  letterSpacing: 0.4,
-                  color: isAm ? colors.textInverse : colors.textDisabled,
-                }}>
+                <Text
+                  className={`font-sans-medium text-[12px] ${isAm ? 'text-textInverse' : 'text-textDisabled'}`}
+                  style={{ letterSpacing: 0.4 }}
+                >
                   오전
                 </Text>
               </Pressable>
 
-              <View style={{ height: 1, backgroundColor: colors.border }} />
+              <View className="h-px bg-border" />
 
               <Pressable
-                style={{
-                  flex: 1,
-                  paddingVertical: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: !isAm ? colors.fillBold : 'transparent',
-                  minHeight: 34,
-                }}
+                className={`py-2.5 items-center justify-center ${!isAm ? 'bg-fillBold' : 'bg-transparent'}`}
+                style={{ minHeight: 34 }}
                 onPress={() => onAmPmChange(false)}
               >
-                <Text style={{
-                  fontFamily: fontFamily.sansMedium,
-                  fontSize: 12,
-                  letterSpacing: 0.4,
-                  color: !isAm ? colors.textInverse : colors.textDisabled,
-                }}>
+                <Text
+                  className={`font-sans-medium text-[12px] ${!isAm ? 'text-textInverse' : 'text-textDisabled'}`}
+                  style={{ letterSpacing: 0.4 }}
+                >
                   오후
                 </Text>
               </Pressable>
             </View>
 
             {/* 시:분 표시 */}
-            <View style={{
-              flex: 1,
-              backgroundColor: colors.surfaceRaised,
-              borderWidth: 1.5,
-              borderColor: colors.borderStrong,
-              borderRadius: radius.lg,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              paddingHorizontal: 16,
-              height: 68,
-            }}>
+            <View className="flex-1 flex-row items-center justify-center gap-1 px-4 h-[68px] bg-surfaceRaised border-[1.5px] border-borderStrong rounded-lg">
               <Pressable onPress={() => onHourChange(hour % 12 + 1)}>
-                <Text style={{
-                  fontFamily: fontFamily.serifLight,
-                  fontSize: 34,
-                  lineHeight: 34,
-                  color: colors.textPrimary,
-                  letterSpacing: -1,
-                  minWidth: 48,
-                  textAlign: 'center',
-                }}>
+                <Text
+                  className="font-serif text-textPrimary text-center"
+                  style={{ fontSize: 34, lineHeight: 34, letterSpacing: -1, minWidth: 48 }}
+                >
                   {String(hour).padStart(2, '0')}
                 </Text>
               </Pressable>
 
-              <Text style={{
-                fontFamily: fontFamily.serifLight,
-                fontSize: 28,
-                lineHeight: 28,
-                color: colors.textTertiary,
-                paddingBottom: 4,
-              }}>
+              <Text
+                className="font-serif text-textTertiary"
+                style={{ fontSize: 28, lineHeight: 28, paddingBottom: 4 }}
+              >
                 :
               </Text>
 
               <Pressable onPress={() => onMinuteChange((minute + 10) % 60)}>
-                <Text style={{
-                  fontFamily: fontFamily.serifLight,
-                  fontSize: 34,
-                  lineHeight: 34,
-                  color: colors.textPrimary,
-                  letterSpacing: -1,
-                  minWidth: 48,
-                  textAlign: 'center',
-                }}>
+                <Text
+                  className="font-serif text-textPrimary text-center"
+                  style={{ fontSize: 34, lineHeight: 34, letterSpacing: -1, minWidth: 48 }}
+                >
                   {String(minute).padStart(2, '0')}
                 </Text>
               </Pressable>
@@ -222,74 +138,57 @@ export default function BirthTimeSection({
           </View>
 
           {/* 시진 결과 카드 */}
-          <View style={{
-            backgroundColor: colors.fillAccentSub,
-            borderWidth: 1.5,
-            borderColor: primitives.gold400,
-            borderRadius: radius.lg,
-            padding: 14,
-            paddingHorizontal: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 14,
-          }}>
+          <View
+            className="flex-row items-center gap-3.5 rounded-lg p-[14px] px-4 border-[1.5px] bg-fillAccentSub"
+            style={{ borderColor: primitives.gold400 }}
+          >
             {/* 대표 한자 */}
-            <Text style={{
-              fontFamily: fontFamily.serifLight,
-              fontSize: 36,
-              lineHeight: 36,
-              color: colors.fillAccent,
-              flexShrink: 0,
-            }}>
+            <Text
+              className="font-serif text-fillAccent shrink-0"
+              style={{ fontSize: 36, lineHeight: 36 }}
+            >
               {sijan.hanja}
             </Text>
 
             <View>
               {/* 시진 이름 + 한자 */}
-              <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, marginBottom: 3 }}>
-                <Text style={{
-                  fontFamily: fontFamily.serifMedium,
-                  fontSize: 18,
-                  letterSpacing: 0.5,
-                  color: colors.fillAccent,
-                }}>
+              <View className="flex-row items-end gap-1.5 mb-[3px]">
+                <Text
+                  className="font-serif-medium text-fillAccent"
+                  style={{ fontSize: 18, letterSpacing: 0.5 }}
+                >
                   {sijan.name}
                 </Text>
-                <Text style={{
-                  fontFamily: fontFamily.serifLight,
-                  fontSize: 14,
-                  letterSpacing: 1,
-                  color: primitives.gold400,
-                }}>
+                <Text
+                  className="font-serif"
+                  style={{ fontSize: 14, letterSpacing: 1, color: primitives.gold400 }}
+                >
                   {sijan.hanjaFull}
                 </Text>
               </View>
+
               {/* 시간 범위 */}
-              <Text style={{
-                fontFamily: fontFamily.sansRegular,
-                fontSize: 12,
-                letterSpacing: 0.4,
-                color: colors.textTertiary,
-              }}>
+              <Text
+                className="font-sansRegular text-textTertiary"
+                style={{ fontSize: 12, letterSpacing: 0.4 }}
+              >
                 {sijan.range}
               </Text>
+
               {/* 안내 */}
-              <Text style={{
-                fontFamily: fontFamily.sansRegular,
-                fontSize: 11,
-                color: primitives.gold400,
-                marginTop: 2,
-              }}>
+              <Text
+                className="font-sansRegular mt-[2px]"
+                style={{ fontSize: 11, color: primitives.gold400 }}
+              >
                 사주의 시주(時柱)로 사용됩니다
               </Text>
+
               {/* 지방시 보정 표시 */}
               {regionOffset != null && regionOffset !== 0 && (
-                <Text style={{
-                  fontFamily: fontFamily.sansRegular,
-                  fontSize: 10,
-                  color: colors.textTertiary,
-                  marginTop: 3,
-                }}>
+                <Text
+                  className="font-sansRegular text-textTertiary mt-[3px]"
+                  style={{ fontSize: 10 }}
+                >
                   {`지역 보정 후: ${adjustedAmPm} ${adjustedHourDisplay}:${String(adjustedMin).padStart(2, '0')}`}
                 </Text>
               )}

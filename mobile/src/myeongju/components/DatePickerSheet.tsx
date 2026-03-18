@@ -3,7 +3,7 @@ import {
   View, Text, Modal, ScrollView, Pressable,
   Animated, Platform,
 } from 'react-native';
-import { colors, fontFamily, radius } from '@/design-system';
+import { primitives } from '@/design-system';
 
 interface Props {
   visible: boolean;
@@ -44,20 +44,12 @@ function PickerColumn({
   }, []);
 
   return (
-    <View style={{ flex: 1, position: 'relative' }}>
+    <View className="flex-1 relative">
       {/* 선택 하이라이트 라인 */}
       <View
         pointerEvents="none"
-        style={{
-          position: 'absolute',
-          top: ITEM_HEIGHT * 2,
-          left: 4, right: 4,
-          height: ITEM_HEIGHT,
-          borderTopWidth: 1,
-          borderBottomWidth: 1,
-          borderColor: colors.borderStrong,
-          zIndex: 1,
-        }}
+        className="absolute left-1 right-1 border-t border-b border-borderStrong z-10"
+        style={{ top: ITEM_HEIGHT * 2, height: ITEM_HEIGHT }}
       />
 
       <ScrollView
@@ -76,14 +68,13 @@ function PickerColumn({
           return (
             <View
               key={v}
-              style={{ height: ITEM_HEIGHT, alignItems: 'center', justifyContent: 'center' }}
+              className="items-center justify-center"
+              style={{ height: ITEM_HEIGHT }}
             >
-              <Text style={{
-                fontFamily: fontFamily.serifRegular,
-                fontSize: 20,
-                color: colors.textPrimary,
-                letterSpacing: -0.5,
-              }}>
+              <Text
+                className="font-serif text-textPrimary"
+                style={{ fontSize: 20, letterSpacing: -0.5 }}
+              >
                 {label}
               </Text>
             </View>
@@ -94,21 +85,14 @@ function PickerColumn({
       {/* 단위 라벨 */}
       <View
         pointerEvents="none"
+        className="absolute right-1.5 justify-end z-20"
         style={{
-          position: 'absolute',
           bottom: ITEM_HEIGHT * 2 - 2,
-          right: 6,
           height: ITEM_HEIGHT,
-          justifyContent: 'flex-end',
           paddingBottom: 9,
-          zIndex: 2,
         }}
       >
-        <Text style={{
-          fontFamily: fontFamily.sansRegular,
-          fontSize: 11,
-          color: colors.textTertiary,
-        }}>
+        <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11 }}>
           {unit}
         </Text>
       </View>
@@ -177,41 +161,28 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable
-        style={{ flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' }}
+        className="flex-1 justify-end"
+        style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
         onPress={onClose}
       >
         <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
           <Pressable onPress={(e) => e.stopPropagation()}>
-            <View style={{
-              backgroundColor: colors.surfaceRaised,
-              borderTopLeftRadius: radius['2xl'],
-              borderTopRightRadius: radius['2xl'],
-            }}>
+            <View className="bg-surfaceRaised rounded-t-[28px]">
               {/* 핸들 */}
-              <View style={{
-                width: 40, height: 4, borderRadius: radius.full,
-                backgroundColor: colors.borderStrong,
-                alignSelf: 'center',
-                marginTop: 14,
-                marginBottom: 4,
-              }} />
+              <View className="w-10 h-1 rounded-full bg-borderStrong self-center mt-[14px] mb-1" />
 
               {/* 제목 */}
-              <Text style={{
-                fontFamily: fontFamily.serifMedium,
-                fontSize: 16,
-                letterSpacing: 0.5,
-                color: colors.textPrimary,
-                textAlign: 'center',
-                paddingVertical: 14,
-              }}>
+              <Text
+                className="font-serif-medium text-textPrimary text-center py-[14px]"
+                style={{ fontSize: 16, letterSpacing: 0.5 }}
+              >
                 생년월일 선택
               </Text>
 
-              <View style={{ height: 1, backgroundColor: colors.border }} />
+              <View className="h-px bg-border" />
 
               {/* 3열 드럼 피커 */}
-              <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingTop: 8 }}>
+              <View className="flex-row px-4 pt-2">
                 <PickerColumn
                   items={YEARS}
                   initialIndex={initialIndexes.year}
@@ -235,24 +206,16 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
               </View>
 
               {/* 확인 버튼 */}
-              <View style={{ padding: 16, paddingBottom: Platform.OS === 'ios' ? 32 : 20 }}>
+              <View className="p-4" style={{ paddingBottom: Platform.OS === 'ios' ? 32 : 20 }}>
                 <Pressable
-                  style={({ pressed }) => ({
-                    backgroundColor: colors.fillBold,
-                    borderRadius: 14,
-                    height: 52,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: pressed ? 0.85 : 1,
-                  })}
+                  className="bg-fillBold rounded-[14px] h-[52px] items-center justify-center"
+                  style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
                   onPress={handleConfirm}
                 >
-                  <Text style={{
-                    fontFamily: fontFamily.serifMedium,
-                    fontSize: 16,
-                    letterSpacing: 0.5,
-                    color: colors.textInverse,
-                  }}>
+                  <Text
+                    className="font-serif-medium text-textInverse"
+                    style={{ fontSize: 16, letterSpacing: 0.5 }}
+                  >
                     확인
                   </Text>
                 </Pressable>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/design-system';
+import { primitives } from '@/design-system';
 
 interface Props {
   onAINaming: () => void;
@@ -10,64 +10,50 @@ interface Props {
 
 export default function ActionCardsSection({ onAINaming, onSelfNaming }: Props) {
   return (
-    <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
-      <Text style={{
-        fontFamily: 'NotoSansKR_400Regular',
-        fontSize: 11,
-        letterSpacing: 2,
-        color: colors.textTertiary,
-        textTransform: 'uppercase',
-        marginBottom: 12,
-        paddingHorizontal: 4,
-      }}>
+    <View className="px-4 pt-5">
+      <Text
+        className="font-sansRegular text-textTertiary mb-3 px-1"
+        style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
+      >
         시작하기
       </Text>
 
-      <View style={{ gap: 10 }}>
+      <View className="gap-2.5">
         {/* AI Card */}
         <Pressable
           style={({ pressed }) => ({ opacity: pressed ? 0.88 : 1 })}
           onPress={onAINaming}
         >
-          <View style={{ backgroundColor: colors.fillBold, borderRadius: 18, overflow: 'hidden', padding: 22 }}>
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-              backgroundColor: colors.fillAccent,
-              borderRadius: 99,
-              paddingVertical: 3,
-              paddingHorizontal: 9,
-              alignSelf: 'flex-start',
-              marginBottom: 14,
-            }}>
+          <View className="bg-fillBold rounded-[18px] overflow-hidden p-[22px]">
+            <View className="flex-row items-center gap-1 bg-fillAccent rounded-full py-[3px] px-[9px] self-start mb-[14px]">
               <Ionicons name="sparkles" size={10} color="#fff" />
-              <Text style={{ fontFamily: 'NotoSansKR_500Medium', fontSize: 10, color: '#fff', letterSpacing: 0.8 }}>
+              <Text className="font-sansMedium" style={{ fontSize: 10, color: '#fff', letterSpacing: 0.8 }}>
                 AI 추천
               </Text>
             </View>
-            <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 20, letterSpacing: 1, color: colors.textInverse, lineHeight: 27, marginBottom: 8 }}>
+            <Text
+              className="font-serif-medium text-textInverse mb-2"
+              style={{ fontSize: 20, letterSpacing: 1, lineHeight: 27 }}
+            >
               {'AI와 함께\n작명하기'}
             </Text>
-            <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 12, color: 'rgba(251,247,238,0.6)', lineHeight: 20, marginBottom: 18 }}>
+            <Text
+              className="font-sansRegular mb-[18px]"
+              style={{ fontSize: 12, color: 'rgba(251,247,238,0.6)', lineHeight: 20 }}
+            >
               {'성씨와 조건을 입력하면 AI가 오행·수리를\n종합해 최적의 이름을 추천해 드립니다.'}
             </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                backgroundColor: colors.fillAccent,
-                borderRadius: 99,
-                paddingVertical: 9,
-                paddingHorizontal: 18,
-              }}>
-                <Text style={{ fontFamily: 'NotoSansKR_500Medium', fontSize: 13, color: '#fff', letterSpacing: 0.2 }}>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-1.5 bg-fillAccent rounded-full py-[9px] px-[18px]">
+                <Text className="font-sansMedium" style={{ fontSize: 13, color: '#fff', letterSpacing: 0.2 }}>
                   시작하기
                 </Text>
                 <Ionicons name="arrow-forward" size={13} color="#fff" />
               </View>
-              <Text style={{ fontFamily: 'NotoSerifKR_300Light', fontSize: 48, color: 'rgba(255,255,255,0.07)', lineHeight: 48, letterSpacing: -2 }}>
+              <Text
+                className="font-serif"
+                style={{ fontSize: 48, color: 'rgba(255,255,255,0.07)', lineHeight: 48, letterSpacing: -2 }}
+              >
                 作名
               </Text>
             </View>
@@ -79,29 +65,23 @@ export default function ActionCardsSection({ onAINaming, onSelfNaming }: Props) 
           style={({ pressed }) => ({ opacity: pressed ? 0.88 : 1 })}
           onPress={onSelfNaming}
         >
-          <View style={{
-            backgroundColor: colors.surfaceRaised,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 18,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 16,
-            padding: 20,
-          }}>
-            <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 20, color: colors.textSecondary }}>分</Text>
+          <View className="flex-row items-center gap-4 bg-surfaceRaised border border-border rounded-[18px] p-5">
+            <View className="w-12 h-12 rounded-[14px] bg-surface border border-border items-center justify-center shrink-0">
+              <Text className="font-serif-medium text-textSecondary" style={{ fontSize: 20 }}>分</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 16, letterSpacing: 0.5, color: colors.textPrimary, marginBottom: 3 }}>
+            <View className="flex-1">
+              <Text
+                className="font-serif-medium text-textPrimary mb-[3px]"
+                style={{ fontSize: 16, letterSpacing: 0.5 }}
+              >
                 스스로 작명하기
               </Text>
-              <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 12, color: colors.textTertiary, lineHeight: 19 }}>
+              <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 12, lineHeight: 19 }}>
                 이름을 직접 입력하고 상세 분석을 받아보세요.
               </Text>
             </View>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Ionicons name="chevron-forward" size={14} color={colors.textTertiary} />
+            <View className="w-7 h-7 rounded-full bg-surface border border-border items-center justify-center shrink-0">
+              <Ionicons name="chevron-forward" size={14} color={primitives.ink500} />
             </View>
           </View>
         </Pressable>

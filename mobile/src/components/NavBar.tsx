@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, fontFamily } from '@/design-system';
+import { primitives } from '@/design-system';
 
 interface Props {
   title: string;
@@ -11,35 +11,21 @@ interface Props {
 
 export default function NavBar({ title, subtitle, onBack }: Props) {
   return (
-    <View style={{
-      height: 52,
-      paddingHorizontal: 20,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      backgroundColor: colors.bgSubtle,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    }}>
-      <Pressable onPress={onBack} style={{ padding: 4 }}>
-        <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
+    <View className="h-[52px] flex-row items-center gap-2.5 px-5 bg-bgSubtle border-b border-border">
+      <Pressable onPress={onBack} className="p-1">
+        <Ionicons name="chevron-back" size={20} color={primitives.ink700} />
       </Pressable>
       <View>
-        <Text style={{
-          fontFamily: fontFamily.serifMedium,
-          fontSize: 18,
-          letterSpacing: 1.5,
-          color: colors.textPrimary,
-        }}>
+        <Text
+          className="font-serif-medium text-textPrimary"
+          style={{ fontSize: 18, letterSpacing: 1.5 }}
+        >
           {title}
         </Text>
-        <Text style={{
-          fontFamily: fontFamily.sansRegular,
-          fontSize: 9.5,
-          letterSpacing: 1.2,
-          color: colors.textTertiary,
-          marginTop: 1,
-        }}>
+        <Text
+          className="font-sansRegular text-textTertiary mt-px"
+          style={{ fontSize: 9.5, letterSpacing: 1.2 }}
+        >
           {subtitle}
         </Text>
       </View>

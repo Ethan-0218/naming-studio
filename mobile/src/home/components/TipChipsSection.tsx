@@ -1,47 +1,38 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { colors } from '@/design-system';
+import { primitives } from '@/design-system';
 
 const CHIPS = [
-  { label: '발음오행', dotColor: colors.positive },
-  { label: '수리책', dotColor: colors.fillAccent },
-  { label: '획수음양', dotColor: colors.info },
-  { label: '자원오행', dotColor: colors.negative },
-  { label: '받침오행', dotColor: colors.positive },
+  { label: '발음오행', dotColor: primitives.teal600 },
+  { label: '수리책',   dotColor: primitives.gold600 },
+  { label: '획수음양', dotColor: primitives.purple600 },
+  { label: '자원오행', dotColor: primitives.vermillion600 },
+  { label: '받침오행', dotColor: primitives.teal600 },
 ];
 
 export default function TipChipsSection() {
   return (
-    <View style={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 20 }}>
-      <Text style={{
-        fontFamily: 'NotoSansKR_400Regular',
-        fontSize: 11,
-        letterSpacing: 2,
-        color: colors.textTertiary,
-        textTransform: 'uppercase',
-        marginBottom: 12,
-        paddingHorizontal: 4,
-      }}>
+    <View className="px-4 pt-5 pb-5">
+      <Text
+        className="font-sansRegular text-textTertiary mb-3 px-1"
+        style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
+      >
         분석 항목 살펴보기
       </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View className="flex-row flex-wrap gap-2">
         {CHIPS.map((chip) => (
           <Pressable
             key={chip.label}
+            className="flex-row items-center gap-1 border border-border rounded-full py-1.5 px-3"
             style={({ pressed }) => ({
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-              backgroundColor: pressed ? colors.surface : colors.surfaceRaised,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 99,
-              paddingVertical: 6,
-              paddingHorizontal: 12,
+              backgroundColor: pressed ? primitives.hanji200 : primitives.hanji50,
             })}
           >
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: chip.dotColor, flexShrink: 0 }} />
-            <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 12, color: colors.textSecondary }}>
+            <View
+              className="w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ backgroundColor: chip.dotColor }}
+            />
+            <Text className="font-sansRegular text-textSecondary" style={{ fontSize: 12 }}>
               {chip.label}
             </Text>
           </Pressable>

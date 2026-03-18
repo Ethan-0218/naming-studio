@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/design-system';
+import { primitives } from '@/design-system';
 
 export type BottomNavTab = '홈' | '검색' | '명주' | '저장';
 
@@ -18,29 +18,20 @@ interface Props {
 
 export default function BottomNav({ activeTab = '홈' }: Props) {
   return (
-    <View style={{
-      height: 80,
-      backgroundColor: colors.surfaceRaised,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      paddingTop: 10,
-    }}>
+    <View className="h-20 flex-row items-start pt-2.5 bg-surfaceRaised border-t border-border">
       {TABS.map((tab) => {
         const isActive = tab.label === activeTab;
         return (
-          <View key={tab.label} style={{ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 4 }}>
+          <View key={tab.label} className="flex-1 items-center gap-1 py-1">
             <Ionicons
               name={(isActive ? tab.icon : `${tab.icon}-outline`) as any}
               size={22}
-              color={isActive ? colors.fillAccent : colors.textDisabled}
+              color={isActive ? primitives.gold600 : primitives.ink300}
             />
-            <Text style={{
-              fontFamily: isActive ? 'NotoSansKR_500Medium' : 'NotoSansKR_400Regular',
-              fontSize: 10,
-              color: isActive ? colors.fillAccent : colors.textDisabled,
-            }}>
+            <Text
+              className={isActive ? 'font-sansMedium text-fillAccent' : 'font-sansRegular text-textDisabled'}
+              style={{ fontSize: 10 }}
+            >
               {tab.label}
             </Text>
           </View>

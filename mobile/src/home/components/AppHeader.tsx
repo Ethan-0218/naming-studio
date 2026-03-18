@@ -1,29 +1,27 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/design-system';
+import { primitives } from '@/design-system';
 
 export default function AppHeader() {
   return (
-    <View style={{
-      backgroundColor: colors.bgSubtle,
-      paddingHorizontal: 24,
-      paddingTop: 12,
-      paddingBottom: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}>
+    <View className="flex-row items-center justify-between bg-bgSubtle px-6 pt-3 pb-4">
       <View>
-        <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 22, letterSpacing: 2, color: colors.textPrimary, lineHeight: 28 }}>
+        <Text
+          className="font-serif-medium text-textPrimary"
+          style={{ fontSize: 22, letterSpacing: 2, lineHeight: 28 }}
+        >
           이름공방
         </Text>
-        <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 10, letterSpacing: 3, color: colors.textTertiary, textTransform: 'uppercase', marginTop: 1 }}>
+        <Text
+          className="font-sansRegular text-textTertiary mt-px"
+          style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' }}
+        >
           名工房 · 이름 분석 및 작명
         </Text>
       </View>
-      <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }}>
-        <Ionicons name="notifications-outline" size={18} color={colors.textSecondary} />
+      <View className="w-9 h-9 rounded-full bg-surface border border-border items-center justify-center">
+        <Ionicons name="notifications-outline" size={18} color={primitives.ink500} />
       </View>
     </View>
   );

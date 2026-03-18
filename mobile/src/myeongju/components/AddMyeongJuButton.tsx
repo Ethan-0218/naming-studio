@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '@/design-system';
 
 interface Props {
   onPress?: () => void;
@@ -9,32 +8,26 @@ interface Props {
 
 export default function AddMyeongJuButton({ onPress }: Props) {
   return (
-    <View style={{ padding: 16, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+    <View className="p-4 pb-[14px] border-b border-border">
       <Pressable
-        style={({ pressed }) => ({
-          backgroundColor: colors.fillBold,
-          borderRadius: 14,
-          padding: 14,
-          paddingHorizontal: 18,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 10,
-          opacity: pressed ? 0.82 : 1,
-        })}
+        className="flex-row items-center gap-2.5 bg-fillBold rounded-[14px] p-[14px] px-[18px]"
+        style={({ pressed }) => ({ opacity: pressed ? 0.82 : 1 })}
         onPress={onPress}
       >
-        <View style={{
-          width: 26, height: 26, borderRadius: 13,
-          backgroundColor: 'rgba(255,255,255,0.10)',
-          alignItems: 'center', justifyContent: 'center',
-        }}>
+        <View className="w-[26px] h-[26px] rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}>
           <Ionicons name="add" size={16} color="rgba(255,255,255,0.85)" />
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 15, letterSpacing: 0.5, color: colors.textInverse }}>
+        <View className="flex-1">
+          <Text
+            className="font-serif-medium text-textInverse"
+            style={{ fontSize: 15, letterSpacing: 0.5 }}
+          >
             새 명주 추가
           </Text>
-          <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, color: 'rgba(251,247,238,0.4)', marginTop: 2, letterSpacing: 0.4 }}>
+          <Text
+            className="font-sansRegular mt-0.5"
+            style={{ fontSize: 11, color: 'rgba(251,247,238,0.4)', letterSpacing: 0.4 }}
+          >
             사주·성별 정보로 등록
           </Text>
         </View>

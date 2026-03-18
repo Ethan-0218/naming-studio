@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { colors } from '@/design-system';
+import { primitives } from '@/design-system';
 
 const RECENT_NAMES = [
   { hanja: '金敏俊', name: '김 민 준', date: '오늘 · 발음오행 · 수리책', score: 87, label: '매우 좋음' },
@@ -9,52 +9,60 @@ const RECENT_NAMES = [
 ];
 
 function scoreColor(score: number): string {
-  if (score >= 80) return colors.positive;
-  if (score >= 70) return colors.warning;
-  return colors.textTertiary;
+  if (score >= 80) return primitives.teal600;
+  if (score >= 70) return primitives.gold600;
+  return primitives.ink500;
 }
 
 export default function RecentNamesSection() {
   return (
-    <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 }}>
-        <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, letterSpacing: 2, color: colors.textTertiary, textTransform: 'uppercase' }}>
+    <View className="px-4 pt-5">
+      <View className="flex-row items-center justify-between mb-3 px-1">
+        <Text
+          className="font-sansRegular text-textTertiary"
+          style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
+        >
           최근 분석 이름
         </Text>
-        <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, color: colors.textTertiary, letterSpacing: 0.5 }}>
+        <Text className="font-sansRegular text-textTertiary" style={{ fontSize: 11, letterSpacing: 0.5 }}>
           전체 보기 →
         </Text>
       </View>
 
-      <View style={{ borderRadius: 14, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', gap: 1, backgroundColor: colors.border }}>
+      <View className="rounded-[14px] border border-border overflow-hidden gap-px bg-border">
         {RECENT_NAMES.map((item) => (
           <Pressable
             key={item.name}
+            className="flex-row items-center gap-3.5 px-4 py-[14px]"
             style={({ pressed }) => ({
-              backgroundColor: pressed ? colors.surface : colors.surfaceRaised,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 14,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
+              backgroundColor: pressed ? primitives.hanji200 : primitives.hanji50,
             })}
           >
-            <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 15, color: colors.textSecondary, width: 42, flexShrink: 0, letterSpacing: 2 }}>
+            <Text
+              className="font-serif-medium text-textSecondary shrink-0"
+              style={{ fontSize: 15, width: 42, letterSpacing: 2 }}
+            >
               {item.hanja}
             </Text>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 16, color: colors.textPrimary, letterSpacing: 1.5 }}>
+            <View className="flex-1">
+              <Text
+                className="font-serif-medium text-textPrimary"
+                style={{ fontSize: 16, letterSpacing: 1.5 }}
+              >
                 {item.name}
               </Text>
-              <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, color: colors.textDisabled, marginTop: 2 }}>
+              <Text className="font-sansRegular text-textDisabled mt-0.5" style={{ fontSize: 11 }}>
                 {item.date}
               </Text>
             </View>
-            <View style={{ alignItems: 'flex-end', gap: 2 }}>
-              <Text style={{ fontFamily: 'NotoSerifKR_500Medium', fontSize: 20, color: scoreColor(item.score), lineHeight: 20 }}>
+            <View className="items-end gap-0.5">
+              <Text
+                className="font-serif-medium"
+                style={{ fontSize: 20, color: scoreColor(item.score), lineHeight: 20 }}
+              >
                 {item.score}
               </Text>
-              <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 10, color: colors.textDisabled }}>
+              <Text className="font-sansRegular text-textDisabled" style={{ fontSize: 10 }}>
                 {item.label}
               </Text>
             </View>
