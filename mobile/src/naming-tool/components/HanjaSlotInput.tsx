@@ -5,9 +5,10 @@
  * - 탭 시 HanjaPickerSheet 바텀시트 오픈
  */
 import React, { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import clsx from 'clsx';
-import { ohaengColors, colors, fontFamily } from '@/design-system';
+import { ohaengColors, colors } from '@/design-system';
+import { Font, FONT_MAP } from '@/components/Font';
 import { CharSlotData, HanjaSelection } from '../types';
 import HanjaPickerSheet from './HanjaPickerSheet';
 
@@ -27,12 +28,12 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdateHanja, ro
 
   return (
     <View className="flex-1 items-center min-w-0" style={{ gap: 4 }}>
-      <Text
+      <Font
+        tag="secondaryMedium"
         className="text-overline text-textTertiary uppercase"
-        style={{ fontFamily: fontFamily.sansMedium }}
       >
         {label}
-      </Text>
+      </Font>
 
       <Pressable
         onPress={() => { if (hangul) setSheetOpen(true); }}
@@ -50,19 +51,17 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdateHanja, ro
       >
         {hasHanja ? (
           <>
-            <Text
+            <Font
+              tag="primaryMedium"
               className="text-hanjaLg text-center"
-              style={{
-                fontFamily: fontFamily.serifMedium,
-                color: oc?.base ?? colors.textSecondary,
-              }}
+              style={{ color: oc?.base ?? colors.textSecondary }}
             >
               {value.hanja}
-            </Text>
-            <Text
+            </Font>
+            <Font
+              tag="secondaryMedium"
               className="text-center text-caption"
               style={{
-                fontFamily: fontFamily.sansMedium,
                 color: oc?.base ?? colors.textSecondary,
                 fontSize: 10,
                 lineHeight: 14,
@@ -70,22 +69,23 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdateHanja, ro
               numberOfLines={1}
             >
               {value.mean} {value.hangul}
-            </Text>
+            </Font>
           </>
         ) : (
           <>
-            <Text
+            <Font
+              tag="primaryLight"
               className="text-textDisabled"
-              style={{ fontFamily: fontFamily.serifLight, fontSize: 22, lineHeight: 26 }}
+              style={{ fontSize: 22, lineHeight: 26 }}
             >
               +
-            </Text>
-            <Text
+            </Font>
+            <Font
+              tag="secondaryMedium"
               className="text-overline text-textTertiary uppercase"
-              style={{ fontFamily: fontFamily.sansMedium }}
             >
               한자 선택
-            </Text>
+            </Font>
           </>
         )}
       </Pressable>

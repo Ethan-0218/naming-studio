@@ -1,9 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, View, Text } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors } from '@/design-system';
+import { Font } from '@/components/Font';
 import { RootStackParamList } from '../../navigation/types';
 import BottomNav from '../../home/components/BottomNav';
 import NavBar from '@/components/NavBar';
@@ -42,13 +43,13 @@ export default function MyeongJuListScreen() {
 
         {/* 명주 수 */}
         <View style={{ paddingHorizontal: 20, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-          <Text style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, color: colors.textTertiary, letterSpacing: 0.6 }}>
+          <Font tag="secondary" style={{ fontSize: 11, color: colors.textTertiary, letterSpacing: 0.6 }}>
             {'명주 '}
-            <Text style={{ fontFamily: 'NotoSansKR_500Medium', color: colors.textSecondary }}>
+            <Font tag="secondaryMedium" style={{ color: colors.textSecondary }}>
               {profiles.length}
-            </Text>
+            </Font>
             {'명'}
-          </Text>
+          </Font>
         </View>
 
         {loading ? (

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { colors, fontFamily } from '@/design-system';
+import { View } from 'react-native';
+import { Font } from '@/components/Font';
 import { NameInput, OhaengHarmonyResult } from '../types';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
 import { getOhaengCombinationDescription } from '../domain/ohaengCombinationDescriptions';
@@ -31,12 +31,12 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
         {hasInput ? (
           <OhaengRelationDiagram nodes={nodes} />
         ) : (
-          <Text
+          <Font
+            tag="secondary"
             className="text-bodySm text-textDisabled text-center py-4"
-            style={{ fontFamily: fontFamily.sansRegular }}
           >
             이름을 입력하면 발음오행이 표시됩니다
-          </Text>
+          </Font>
         )}
         {result && (() => {
           const desc = getOhaengCombinationDescription(result.combinationKey);
@@ -44,12 +44,13 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
           return (
             <>
               <View className="border-b border-border" />
-              <Text
+              <Font
+                tag="secondary"
                 className="text-bodySm text-textSecondary"
-                style={{ fontFamily: fontFamily.sansRegular, lineHeight: 18 }}
+                style={{ lineHeight: 18 }}
               >
                 {desc.description}
-              </Text>
+              </Font>
             </>
           );
         })()}

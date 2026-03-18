@@ -2,8 +2,9 @@
  * Shared section card wrapper used by all analysis sections.
  */
 import React from 'react';
-import { Text, View } from 'react-native';
-import { colors, fontFamily } from '@/design-system';
+import { View } from 'react-native';
+import { colors } from '@/design-system';
+import { Font } from '@/components/Font';
 import { HarmonyLevel } from '../types';
 
 interface Props {
@@ -27,26 +28,24 @@ export default function SectionCard({ title, badge, badgeColor, children }: Prop
   return (
     <View>
       <View className="flex-row items-center justify-between mb-2">
-        <Text
+        <Font
+          tag="primaryMedium"
           className="text-heading text-textPrimary"
-          style={{ fontFamily: fontFamily.serifMedium }}
         >
           {title}
-        </Text>
+        </Font>
         {badge && (
           <View
             className="px-2 py-0.5 rounded-full border border-solid"
             style={{ borderColor: badgeColor ?? colors.border }}
           >
-            <Text
+            <Font
+              tag="secondaryMedium"
               className="text-label"
-              style={{
-                fontFamily: fontFamily.sansMedium,
-                color: badgeColor ?? colors.textSecondary,
-              }}
+              style={{ color: badgeColor ?? colors.textSecondary }}
             >
               {badge}
-            </Text>
+            </Font>
           </View>
         )}
       </View>

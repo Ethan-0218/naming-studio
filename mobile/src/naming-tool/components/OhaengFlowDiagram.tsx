@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { colors, fontFamily, ohaengColors } from '@/design-system';
+import { View } from 'react-native';
+import { colors, ohaengColors } from '@/design-system';
+import { Font } from '@/components/Font';
 import { Ohaeng, OhaengRelation } from '../types';
 
 interface Props {
@@ -35,12 +36,13 @@ function OhaengNode({ element }: { element: Ohaeng | null }) {
             }
       }
     >
-      <Text
+      <Font
+        tag="secondaryMedium"
         className="text-uiSm"
-        style={{ fontFamily: fontFamily.sansMedium, color: oc?.base ?? colors.textDisabled }}
+        style={{ color: oc?.base ?? colors.textDisabled }}
       >
         {element ?? '?'}
-      </Text>
+      </Font>
     </View>
   );
 }
@@ -50,14 +52,15 @@ function Arrow({ relation }: { relation: OhaengRelation | null }) {
   const label = relation ? RELATION_LABEL[relation] : '';
   return (
     <View className="items-center justify-center mx-1 min-w-[48px]">
-      <Text
+      <Font
+        tag="secondaryMedium"
         className="text-overline"
-        style={{ fontFamily: fontFamily.sansMedium, color, fontSize: 8, marginBottom: 2 }}
+        style={{ color, fontSize: 8, marginBottom: 2 }}
       >
         {label}
-      </Text>
+      </Font>
       <View className="h-[1.5px] w-8 bg-current" style={{ width: 32, height: 1.5, backgroundColor: color }} />
-      <Text style={{ fontSize: 8, marginTop: -2, color }}>{'▶'}</Text>
+      <Font tag="secondary" style={{ fontSize: 8, marginTop: -2, color }}>{'▶'}</Font>
     </View>
   );
 }

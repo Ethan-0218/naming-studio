@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { colors, fontFamily } from '@/design-system';
+import { View } from 'react-native';
+import { colors } from '@/design-system';
+import { Font } from '@/components/Font';
 import { NameInput, SuriEntry, SurigyeokResult, SuriLevel, Gender } from '../types';
 import { computeSurigyeok } from '../domain/surigyeok';
 import SectionCard from './SectionCard';
@@ -24,42 +25,44 @@ function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
   const color = LEVEL_COLOR[entry.level];
   return (
     <View className="w-[47%] bg-surface rounded-md p-3 border border-border">
-      <Text
+      <Font
+        tag="secondaryMedium"
         className="text-overline text-textTertiary uppercase"
-        style={{ fontFamily: fontFamily.sansMedium }}
       >
         {label}
-      </Text>
-      <Text
+      </Font>
+      <Font
+        tag="primaryMedium"
         className="text-numeralMd"
-        style={{ fontFamily: fontFamily.serifMedium, color, marginTop: 4 }}
+        style={{ color, marginTop: 4 }}
       >
         {entry.number}
-      </Text>
-      <Text
+      </Font>
+      <Font
+        tag="secondaryMedium"
         className="text-uiSm text-textPrimary mt-1"
-        style={{ fontFamily: fontFamily.sansMedium }}
       >
         {entry.name1}
-      </Text>
+      </Font>
       <View
         className="self-start px-2 py-0.5 rounded-full border mt-1"
         style={{ borderColor: color }}
       >
-        <Text
+        <Font
+          tag="secondaryMedium"
           className="text-overline uppercase"
-          style={{ fontFamily: fontFamily.sansMedium, color }}
+          style={{ color }}
         >
           {entry.level}
-        </Text>
+        </Font>
       </View>
-      <Text
+      <Font
+        tag="secondary"
         className="text-bodySm text-textTertiary mt-1"
-        style={{ fontFamily: fontFamily.sansRegular }}
         numberOfLines={2}
       >
         {entry.easyInterpretation}
-      </Text>
+      </Font>
     </View>
   );
 }
@@ -94,12 +97,12 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
           <SuriCard label="정격" entry={computed.jeongyeok} />
         </View>
       ) : (
-        <Text
+        <Font
+          tag="secondary"
           className="text-bodySm text-textDisabled text-center py-4"
-          style={{ fontFamily: fontFamily.sansRegular }}
         >
           한자의 획수를 모두 입력하면 수리격이 계산됩니다
-        </Text>
+        </Font>
       )}
     </SectionCard>
   );

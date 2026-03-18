@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { colors, fontFamily } from '@/design-system';
+import { View } from 'react-native';
+import { colors } from '@/design-system';
+import { Font } from '@/components/Font';
 
 interface Props {
   score: number | null;
@@ -33,28 +34,26 @@ export default function ScoreSummarySection({ score }: Props) {
   return (
     <View className="bg-fillBold rounded-lg p-4 flex-row items-center justify-between">
       <View className="flex-1 justify-center">
-        <Text
+        <Font
+          tag="secondaryMedium"
           className="text-overline text-textTertiary uppercase"
-          style={{ fontFamily: fontFamily.sansMedium }}
         >
           종합 점수
-        </Text>
-        <Text
+        </Font>
+        <Font
+          tag="primaryBold"
           className="text-numeralLg"
-          style={{
-            fontFamily: fontFamily.serifSemiBold,
-            color: score != null ? scoreColor(score) : colors.textDisabled,
-          }}
+          style={{ color: score != null ? scoreColor(score) : colors.textDisabled }}
         >
           {score != null ? score : '–'}
-        </Text>
+        </Font>
         {score != null && (
-          <Text
+          <Font
+            tag="secondary"
             className="text-bodySm text-textTertiary"
-            style={{ fontFamily: fontFamily.sansRegular }}
           >
             {ScoreLabel(score)}
-          </Text>
+          </Font>
         )}
       </View>
 
@@ -145,12 +144,12 @@ export default function ScoreSummarySection({ score }: Props) {
             zIndex: 1,
           }}
         >
-          <Text
+          <Font
+            tag="primaryMedium"
             className="text-numeralMd text-textDisabled"
-            style={{ fontFamily: fontFamily.serifMedium }}
           >
             {score != null ? score : '–'}
-          </Text>
+          </Font>
         </View>
       </View>
     </View>

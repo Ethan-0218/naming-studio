@@ -1,8 +1,9 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import React, { useContext } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fontFamily } from '@/design-system';
+import { colors } from '@/design-system';
+import { Font } from '@/components/Font';
 import { AuthContext } from '../AuthContext';
 import { signInWithApple } from '../api';
 import { useAppleAuth } from '../hooks/useAppleAuth';
@@ -25,12 +26,12 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center', gap: 48 }}>
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontFamily: fontFamily.serifMedium, fontSize: 28, letterSpacing: 4, color: colors.textPrimary }}>
+        <Font tag="primaryMedium" style={{ fontSize: 28, letterSpacing: 4, color: colors.textPrimary }}>
           명주 스튜디오
-        </Text>
-        <Text style={{ fontFamily: fontFamily.sansRegular, fontSize: 11, letterSpacing: 1.5, color: colors.textTertiary }}>
+        </Font>
+        <Font tag="secondary" style={{ fontSize: 11, letterSpacing: 1.5, color: colors.textTertiary }}>
           命主 · 이름의 시작
-        </Text>
+        </Font>
       </View>
 
       {isAvailable && (

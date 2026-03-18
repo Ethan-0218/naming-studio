@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import clsx from 'clsx';
-import { colors, fontFamily } from '@/design-system';
+import { colors } from '@/design-system';
+import { Font, FONT_MAP } from '@/components/Font';
 import { HanjaSelection, Gender, NameInput, NamingAnalysis } from '../types';
 import HanjaSlotInput from './HanjaSlotInput';
 import ScoreSummarySection from './ScoreSummarySection';
@@ -35,9 +36,6 @@ export default function NameInputSection({
 
   useEffect(() => {
     if (!autoSelectPending.current) return;
-    // 현재 기다리는 쿼리에 대한 결과가 fetch 완료된 경우에만 처리.
-    // 이전 쿼리의 stale 결과가 도착하거나 fetch 중인 빈 결과가
-    // autoSelectPending을 잘못 리셋하는 타이밍 이슈를 방지한다.
     if (!surnameHasResults || surnameActiveQuery !== surnameSearchedFor.current) return;
 
     if (surnameResults.length === 1) {
@@ -58,12 +56,12 @@ export default function NameInputSection({
   return (
     <View>
       <View className="flex-row items-center justify-between mb-2">
-        <Text
+        <Font
+          tag="primaryMedium"
           className="text-heading text-textPrimary"
-          style={{ fontFamily: fontFamily.serifMedium }}
         >
           이름 입력
-        </Text>
+        </Font>
         <View className="flex-row gap-1">
           {(['male', 'female'] as Gender[]).map((g) => (
             <Pressable
@@ -74,15 +72,13 @@ export default function NameInputSection({
               )}
               onPress={() => onGenderChange(g)}
             >
-              <Text
+              <Font
+                tag="secondaryMedium"
                 className="text-label"
-                style={{
-                  fontFamily: fontFamily.sansMedium,
-                  color: gender === g ? colors.textInverse : colors.textSecondary,
-                }}
+                style={{ color: gender === g ? colors.textInverse : colors.textSecondary }}
               >
                 {g === 'male' ? '남' : '여'}
-              </Text>
+              </Font>
             </Pressable>
           ))}
         </View>
@@ -90,27 +86,27 @@ export default function NameInputSection({
 
       <View className="bg-surfaceRaised rounded-lg p-4 border border-border" style={{ gap: 12 }}>
         <View style={{ gap: 4 }}>
-          <Text
+          <Font
+            tag="secondaryMedium"
             className="text-overline text-textTertiary uppercase"
-            style={{ fontFamily: fontFamily.sansMedium }}
           >
             한 글
-          </Text>
+          </Font>
           <View className="flex-row items-stretch" style={{ gap: 8 }}>
             {SLOTS.map((slot) => (
               <View key={slot} className="flex-1 min-w-0 items-center" style={{ gap: 4 }}>
-                <Text
+                <Font
+                  tag="secondaryMedium"
                   className="text-overline text-textTertiary uppercase"
-                  style={{ fontFamily: fontFamily.sansMedium }}
                 >
                   {SLOT_LABELS[slot]}
-                </Text>
+                </Font>
                 <TextInput
                   className="w-full rounded-md border border-border bg-bg text-center"
                   style={{
                     height: 54,
                     borderWidth: 1.5,
-                    fontFamily: fontFamily.serifMedium,
+                    fontFamily: FONT_MAP.primaryMedium,
                     fontSize: 24,
                     lineHeight: 24,
                     color: colors.textPrimary,
@@ -142,12 +138,12 @@ export default function NameInputSection({
         <View className="h-px bg-border" />
 
         <View style={{ gap: 4 }}>
-          <Text
+          <Font
+            tag="secondaryMedium"
             className="text-overline text-textTertiary uppercase"
-            style={{ fontFamily: fontFamily.sansMedium }}
           >
             한 자
-          </Text>
+          </Font>
           <View className="flex-row items-stretch" style={{ gap: 8 }}>
             {SLOTS.map((slot) => (
               <View key={slot} className="flex-1 min-w-0">

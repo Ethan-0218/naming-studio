@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { colors, fontFamily } from '@/design-system';
+import { View } from 'react-native';
+import { colors } from '@/design-system';
+import { Font } from '@/components/Font';
 import { Eumyang, EumyangHarmonyResult, NameInput } from '../types';
 import { getEumyangCombinationDescription } from '../domain/eumyangCombinationDescriptions';
 import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
@@ -54,29 +55,29 @@ function EumyangBalanceBar({
   yinCount: number;
   yangCount: number;
 }) {
-  const yin = yinCount;
-  const yang = yangCount;
   return (
     <View className="flex-row items-center gap-2">
-      <Text
+      <Font
+        tag="secondaryMedium"
         className="text-overline"
-        style={{ fontFamily: fontFamily.sansMedium, color: colors.yin }}
+        style={{ color: colors.yin }}
       >
         음(陰)
-      </Text>
+      </Font>
       <View
         className="flex-1 flex-row rounded-full overflow-hidden"
         style={{ height: 6, backgroundColor: colors.border }}
       >
-        <View style={{ flex: yin, backgroundColor: colors.yin }} />
-        <View style={{ flex: yang, backgroundColor: colors.yang }} />
+        <View style={{ flex: yinCount, backgroundColor: colors.yin }} />
+        <View style={{ flex: yangCount, backgroundColor: colors.yang }} />
       </View>
-      <Text
+      <Font
+        tag="secondaryMedium"
         className="text-overline"
-        style={{ fontFamily: fontFamily.sansMedium, color: colors.yang }}
+        style={{ color: colors.yang }}
       >
         양(陽)
-      </Text>
+      </Font>
     </View>
   );
 }
@@ -117,57 +118,61 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
                     : { borderColor: colors.border }
                 }
               >
-                <Text
+                <Font
+                  tag="secondaryMedium"
                   className="text-uiMd"
-                  style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                  style={{ color: oc?.text ?? colors.textDisabled }}
                 >
                   {label}
-                </Text>
+                </Font>
                 <View className="flex-row items-center mt-0.5">
                   {subLabel && (
                     <>
-                      <Text
+                      <Font
+                        tag="secondaryMedium"
                         className="text-overline"
-                        style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                        style={{ color: oc?.text ?? colors.textDisabled }}
                       >
                         {subLabel}
-                      </Text>
-                      <Text
+                      </Font>
+                      <Font
+                        tag="secondaryMedium"
                         className="text-overline mx-0.5"
-                        style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                        style={{ color: oc?.text ?? colors.textDisabled }}
                       >
                         ·
-                      </Text>
+                      </Font>
                     </>
                   )}
-                  <Text
+                  <Font
+                    tag="secondaryMedium"
                     className="text-overline"
-                    style={{ fontFamily: fontFamily.sansMedium, color: oc?.text ?? colors.textDisabled }}
+                    style={{ color: oc?.text ?? colors.textDisabled }}
                   >
                     {eumyang === '음' ? '음(陰)' : eumyang === '양' ? '양(陽)' : '미선택'}
-                  </Text>
+                  </Font>
                 </View>
               </View>
             );
           })}
         </View>
       ) : (
-        <Text
+        <Font
+          tag="secondary"
           className="text-bodySm text-textDisabled text-center py-4"
-          style={{ fontFamily: fontFamily.sansRegular }}
         >
           {emptyText}
-        </Text>
+        </Font>
       )}
       {result && combinationDescription && (
         <>
           <View className="border-b border-border" />
-          <Text
+          <Font
+            tag="secondary"
             className="text-bodySm text-textSecondary"
-            style={{ fontFamily: fontFamily.sansRegular }}
           >
             {combinationDescription}
-          </Text>
+          </Font>
         </>
       )}
       </View>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { colors, fontFamily, ohaengColors, radius } from '@/design-system';
+import { View } from 'react-native';
+import { colors, ohaengColors, radius } from '@/design-system';
+import { Font } from '@/components/Font';
 import { Ohaeng, OhaengRelation } from '../types';
 import { generates, destroys, ohaengLabel } from '../domain/ohaeng';
 
@@ -156,12 +157,13 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
             alignItems: 'center',
           }}
         >
-          <Text
+          <Font
+            tag="secondaryMedium"
             className="text-caption"
-            style={{ fontFamily: fontFamily.sansMedium, color, letterSpacing: 0 }}
+            style={{ color, letterSpacing: 0 }}
           >
             {labelText}
-          </Text>
+          </Font>
         </View>
       )}
     </>
@@ -189,33 +191,33 @@ function OhaengNode({ data }: { data: OhaengNodeData }) {
             },
       ]}
     >
-      <Text
+      <Font
+        tag="primaryMedium"
         className="text-hanjaSm"
         style={{
-          fontFamily: fontFamily.serifMedium,
           color: colors.textPrimary,
           lineHeight: 19,
           fontSize: 18,
         }}
       >
         {character ?? '?'}
-      </Text>
-      <Text
-          className="text-caption mt-[2px]"
-          style={{
-            fontFamily: fontFamily.sansMedium,
-            fontSize: 10,
-            color: oc?.base ?? colors.textDisabled,
-            lineHeight: 13,
-            letterSpacing: 0,
-          }}
-        >
-          {ohaeng ? `${ohaeng}(${ohaengLabel(ohaeng)})` : '미선택'}
-        </Text>
-      <Text
+      </Font>
+      <Font
+        tag="secondaryMedium"
+        className="text-caption mt-[2px]"
+        style={{
+          fontSize: 10,
+          color: oc?.base ?? colors.textDisabled,
+          lineHeight: 13,
+          letterSpacing: 0,
+        }}
+      >
+        {ohaeng ? `${ohaeng}(${ohaengLabel(ohaeng)})` : '미선택'}
+      </Font>
+      <Font
+        tag="secondaryMedium"
         className="text-overline mt-[2px]"
         style={{
-          fontFamily: fontFamily.sansMedium,
           color: oc?.base ?? colors.textDisabled,
           fontSize: 9,
           lineHeight: 10,
@@ -223,7 +225,7 @@ function OhaengNode({ data }: { data: OhaengNodeData }) {
         }}
       >
         {positionLabel}
-      </Text>
+      </Font>
     </View>
   );
 }
@@ -237,12 +239,13 @@ function Legend() {
           className="border-l-[5px] border-t-4 border-b-4 border-t-transparent border-b-transparent"
           style={{ borderLeftColor: colors.positive, width: 0, height: 0 }}
         />
-        <Text
+        <Font
+          tag="secondaryMedium"
           className="text-caption"
-          style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+          style={{ color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
         >
           생(生) 좋음
-        </Text>
+        </Font>
       </View>
       <View className="flex-row items-center gap-0.5">
         <View className="h-[1.5px] w-3.5 bg-negative" style={{ width: 14, height: 1.5 }} />
@@ -258,24 +261,26 @@ function Legend() {
             borderLeftColor: colors.negative,
           }}
         />
-        <Text
+        <Font
+          tag="secondaryMedium"
           className="text-caption"
-          style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+          style={{ color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
         >
           극(剋) 나쁨
-        </Text>
+        </Font>
       </View>
       <View className="flex-row items-center">
         <View
           className="w-3.5 h-0 border-t-[1.5px] border-dashed border-borderStrong mr-1"
           style={{ width: 14, borderTopColor: colors.borderStrong }}
         />
-        <Text
+        <Font
+          tag="secondaryMedium"
           className="text-caption"
-          style={{ fontFamily: fontFamily.sansMedium, color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+          style={{ color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
         >
           중립
-        </Text>
+        </Font>
       </View>
     </View>
   );

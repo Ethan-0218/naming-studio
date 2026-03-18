@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { colors, ohaengColors, fontFamily } from '@/design-system';
+import { Pressable, View } from 'react-native';
+import { colors, ohaengColors } from '@/design-system';
+import { Font } from '@/components/Font';
 import { NameInput, Ohaeng, SajuInput } from '../types';
 import { getRelation } from '../domain/ohaeng';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
@@ -26,12 +27,12 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
 
   return (
     <SectionCard title="용신 보완">
-      <Text
+      <Font
+        tag="secondary"
         className="text-bodySm text-textSecondary mb-3"
-        style={{ fontFamily: fontFamily.sansRegular }}
       >
         아이의 용신 오행을 선택하면 이름 글자들과의 궁합을 분석합니다.
-      </Text>
+      </Font>
 
       <View className="flex-row gap-2 mb-3">
         {OHAENG_LIST.map((o) => {
@@ -47,15 +48,13 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
               }}
               onPress={() => onUpdate({ yongsin: selected ? null : o })}
             >
-              <Text
+              <Font
+                tag="secondaryMedium"
                 className="text-uiSm"
-                style={{
-                  fontFamily: fontFamily.sansMedium,
-                  color: selected ? oc.base : colors.textSecondary,
-                }}
+                style={{ color: selected ? oc.base : colors.textSecondary }}
               >
                 {o}
-              </Text>
+              </Font>
             </Pressable>
           );
         })}
@@ -69,12 +68,12 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
             const badge = relation ? RELATION_BADGE[relation] : null;
             return (
               <View key={i} className="flex-row items-center">
-                <Text
+                <Font
+                  tag="secondaryMedium"
                   className="text-uiSm text-textPrimary w-10"
-                  style={{ fontFamily: fontFamily.sansMedium }}
                 >
                   {slot.hanja || slot.hangul || '?'}
-                </Text>
+                </Font>
                 {charOhaeng ? (
                   <View
                     className="px-2 py-0.5 rounded-full border"
@@ -83,22 +82,23 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
                       borderColor: ohaengColors[charOhaeng].border,
                     }}
                   >
-                    <Text
+                    <Font
+                      tag="secondaryMedium"
                       className="text-overline uppercase"
-                      style={{ fontFamily: fontFamily.sansMedium, color: ohaengColors[charOhaeng].base }}
+                      style={{ color: ohaengColors[charOhaeng].base }}
                     >
                       {charOhaeng}
-                    </Text>
+                    </Font>
                   </View>
                 ) : (
                   <View className="w-9" />
                 )}
-                <Text
+                <Font
+                  tag="secondary"
                   className="text-bodySm text-textTertiary mx-2"
-                  style={{ fontFamily: fontFamily.sansRegular }}
                 >
                   →
-                </Text>
+                </Font>
                 <View
                   className="px-2 py-0.5 rounded-full border"
                   style={{
@@ -106,24 +106,26 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
                     borderColor: ohaengColors[yongsin].border,
                   }}
                 >
-                  <Text
+                  <Font
+                    tag="secondaryMedium"
                     className="text-overline uppercase"
-                    style={{ fontFamily: fontFamily.sansMedium, color: ohaengColors[yongsin].base }}
+                    style={{ color: ohaengColors[yongsin].base }}
                   >
                     {yongsin} (용신)
-                  </Text>
+                  </Font>
                 </View>
                 {badge && (
                   <View
                     className="ml-2 px-2 py-0.5 rounded-full border"
                     style={{ borderColor: badge.color }}
                   >
-                    <Text
+                    <Font
+                      tag="secondaryMedium"
                       className="text-overline uppercase"
-                      style={{ fontFamily: fontFamily.sansMedium, color: badge.color }}
+                      style={{ color: badge.color }}
                     >
                       {badge.label}
-                    </Text>
+                    </Font>
                   </View>
                 )}
               </View>
@@ -133,12 +135,12 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
       )}
 
       {!yongsin && (
-        <Text
+        <Font
+          tag="secondary"
           className="text-bodySm text-textDisabled text-center py-2"
-          style={{ fontFamily: fontFamily.sansRegular }}
         >
           용신 오행을 선택해주세요
-        </Text>
+        </Font>
       )}
     </SectionCard>
   );
