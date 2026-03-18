@@ -1,5 +1,5 @@
-import React from 'react';
-import { View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, View } from 'react-native';
 import { colors } from '@/design-system';
 import { Font } from '@/components/Font';
 import {
@@ -11,6 +11,7 @@ import {
 } from '../types';
 import { computeSurigyeok } from '../domain/surigyeok';
 import SectionCard from './SectionCard';
+import SuriDetailSheet from './SuriDetailSheet';
 
 interface Props {
   nameInput: NameInput;
@@ -27,10 +28,20 @@ const LEVEL_COLOR: Record<SuriLevel, string> = {
   大凶: colors.negative,
 };
 
-function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
+interface SuriCardProps {
+  label: string;
+  entry: SuriEntry;
+  onPress: () => void;
+}
+
+function SuriCard({ label, entry, onPress }: SuriCardProps) {
   const color = LEVEL_COLOR[entry.level];
   return (
-    <View className="w-[47%] bg-surface rounded-md p-3 border border-border">
+    <Pressable
+      className="w-[47%] bg-surface rounded-md p-3 border border-border"
+      style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
+      onPress={onPress}
+    >
       <Font
         tag="secondaryMedium"
         className="text-overline text-textTertiary uppercase"
@@ -66,11 +77,26 @@ function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
       >
         {entry.easyInterpretation}
       </Font>
-    </View>
+    </Pressable>
   );
 }
 
+const GYEOK_LABELS: {
+  key: keyof Omit<SurigyeokResult, 'totalScore'>;
+  label: string;
+}[] = [
+  { key: 'wongyeok', label: '원격 (元格)' },
+  { key: 'hyeongyeok', label: '형격 (亨格)' },
+  { key: 'igyeok', label: '이격 (利格)' },
+  { key: 'jeongyeok', label: '정격 (貞格)' },
+];
+
 export default function SurigyeokSection({ nameInput, gender, result }: Props) {
+  const [selected, setSelected] = useState<{
+    label: string;
+    entry: SuriEntry;
+  } | null>(null);
+
   const computed =
     result ??
     (nameInput.surname.strokeCount != null &&
@@ -99,22 +125,35 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
   const badgeColor = computed ? suriTotalColor(computed.totalScore) : undefined;
 
   return (
-    <SectionCard title="수리격" badge={badge} badgeColor={badgeColor}>
-      {computed ? (
-        <View className="flex-row flex-wrap gap-2">
-          <SuriCard label="원격" entry={computed.wongyeok} />
-          <SuriCard label="형격" entry={computed.hyeongyeok} />
-          <SuriCard label="이격" entry={computed.igyeok} />
-          <SuriCard label="정격" entry={computed.jeongyeok} />
-        </View>
-      ) : (
-        <Font
-          tag="secondary"
-          className="text-bodySm text-textDisabled text-center py-4"
-        >
-          한자의 획수를 모두 입력하면 수리격이 계산됩니다
-        </Font>
-      )}
-    </SectionCard>
+    <>
+      <SectionCard title="수리격" badge={badge} badgeColor={badgeColor}>
+        {computed ? (
+          <View className="flex-row flex-wrap gap-2">
+            {GYEOK_LABELS.map(({ key, label }) => (
+              <SuriCard
+                key={key}
+                label={label.split(' ')[0]}
+                entry={computed[key]}
+                onPress={() => setSelected({ label, entry: computed[key] })}
+              />
+            ))}
+          </View>
+        ) : (
+          <Font
+            tag="secondary"
+            className="text-bodySm text-textDisabled text-center py-4"
+          >
+            한자의 획수를 모두 입력하면 수리격이 계산됩니다
+          </Font>
+        )}
+      </SectionCard>
+
+      <SuriDetailSheet
+        visible={selected !== null}
+        onClose={() => setSelected(null)}
+        label={selected?.label ?? ''}
+        entry={selected?.entry ?? null}
+      />
+    </>
   );
 }
