@@ -5,8 +5,6 @@ import React from 'react';
 import { View } from 'react-native';
 import { colors } from '@/design-system';
 import { Font } from '@/components/Font';
-import { HarmonyLevel } from '../types';
-
 interface Props {
   title: string;
   badge?: string;
@@ -14,14 +12,17 @@ interface Props {
   children: React.ReactNode;
 }
 
-const HARMONY_COLOR: Record<HarmonyLevel, string> = {
-  大吉: colors.positive,
-  平: colors.fillAccent,
-  大凶: colors.negative,
-};
+export function ratingLabel(rating: string): string {
+  if (rating === '大吉') return '매우좋음';
+  if (rating === '吉') return '좋음';
+  if (rating === '平') return '보통';
+  return '아쉬움'; // 凶, 大凶
+}
 
-export function harmonyBadgeColor(level: HarmonyLevel): string {
-  return HARMONY_COLOR[level];
+export function ratingColor(rating: string): string {
+  if (rating === '大吉' || rating === '吉') return colors.positive;
+  if (rating === '平') return colors.fillAccent;
+  return colors.negative;
 }
 
 export default function SectionCard({

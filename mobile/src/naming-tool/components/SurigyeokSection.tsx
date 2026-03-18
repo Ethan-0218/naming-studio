@@ -83,12 +83,20 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
         )
       : null);
 
-  const badge = computed ? `총 ${computed.totalScore}점` : undefined;
-  const badgeColor = computed
-    ? computed.totalScore >= 24
-      ? colors.positive
-      : colors.warning
-    : undefined;
+  function suriTotalLabel(score: number): string {
+    if (score >= 0.8) return '매우좋음';
+    if (score >= 0.6) return '좋음';
+    if (score >= 0.4) return '보통';
+    return '아쉬움';
+  }
+  function suriTotalColor(score: number): string {
+    if (score >= 0.6) return colors.positive;
+    if (score >= 0.4) return colors.fillAccent;
+    return colors.negative;
+  }
+
+  const badge = computed ? suriTotalLabel(computed.totalScore) : undefined;
+  const badgeColor = computed ? suriTotalColor(computed.totalScore) : undefined;
 
   return (
     <SectionCard title="수리격" badge={badge} badgeColor={badgeColor}>

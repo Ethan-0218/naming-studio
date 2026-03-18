@@ -156,7 +156,7 @@ function computeAnalysis(
   };
 }
 
-export function useNamingToolState() {
+export function useNamingToolState(gender: Gender) {
   const [hangulInput, setHangulInput] = useState<HangulInput>({
     surname: '',
     first1: '',
@@ -168,7 +168,6 @@ export function useNamingToolState() {
     first2: null,
   });
   const [sajuInput, setSajuInput] = useState<SajuInput>({ yongsin: null });
-  const [gender, setGender] = useState<Gender>('male');
 
   const resolvedHanjaInput = useMemo<HanjaInput>(
     () => ({
@@ -209,8 +208,6 @@ export function useNamingToolState() {
   return {
     nameInput,
     sajuInput,
-    gender,
-    setGender,
     analysis,
     updateHangul,
     updateHanja,

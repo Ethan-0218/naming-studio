@@ -5,7 +5,7 @@ import { NameInput, OhaengHarmonyResult } from '../types';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
 import { getOhaengCombinationDescription } from '../domain/ohaengCombinationDescriptions';
 import OhaengRelationDiagram from './OhaengRelationDiagram';
-import SectionCard, { harmonyBadgeColor } from './SectionCard';
+import SectionCard, { ratingLabel, ratingColor } from './SectionCard';
 
 interface Props {
   nameInput: NameInput;
@@ -34,8 +34,12 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
   ];
 
   const hasInput = nodes.some((n) => n.character);
-  const badge = result ? result.level : undefined;
-  const badgeColor = result ? harmonyBadgeColor(result.level) : undefined;
+  const desc = result
+    ? getOhaengCombinationDescription(result.combinationKey)
+    : null;
+  const raw = desc?.rating ?? result?.level;
+  const badge = raw ? ratingLabel(raw) : undefined;
+  const badgeColor = raw ? ratingColor(raw) : undefined;
 
   return (
     <SectionCard title="발음오행" badge={badge} badgeColor={badgeColor}>
@@ -50,23 +54,18 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
             이름을 입력하면 발음오행이 표시됩니다
           </Font>
         )}
-        {result &&
-          (() => {
-            const desc = getOhaengCombinationDescription(result.combinationKey);
-            if (!desc) return null;
-            return (
-              <>
-                <View className="border-b border-border" />
-                <Font
-                  tag="secondary"
-                  className="text-bodySm text-textSecondary"
-                  style={{ lineHeight: 18 }}
-                >
-                  {desc.description}
-                </Font>
-              </>
-            );
-          })()}
+        {desc && (
+          <>
+            <View className="border-b border-border" />
+            <Font
+              tag="secondary"
+              className="text-bodySm text-textSecondary"
+              style={{ lineHeight: 18 }}
+            >
+              {desc.description}
+            </Font>
+          </>
+        )}
       </View>
     </SectionCard>
   );

@@ -1,12 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
-import clsx from 'clsx';
-import { colors } from '@/design-system';
 import { Font, FONT_MAP } from '@/components/Font';
-import { HanjaSelection, Gender, NameInput, NamingAnalysis } from '../types';
+import { colors } from '@/design-system';
+import React, { useEffect, useRef } from 'react';
+import { TextInput, View } from 'react-native';
+import { useHanjaSearch } from '../hooks/useHanjaSearch';
+import { HanjaSelection, NameInput, NamingAnalysis } from '../types';
 import HanjaSlotInput from './HanjaSlotInput';
 import ScoreSummarySection from './ScoreSummarySection';
-import { useHanjaSearch } from '../hooks/useHanjaSearch';
 
 type SlotKey = 'surname' | 'first1' | 'first2';
 
@@ -15,8 +14,6 @@ interface Props {
   nameInput: NameInput;
   onUpdateHangul: (slot: SlotKey, hangul: string) => void;
   onUpdateHanja: (slot: SlotKey, selection: HanjaSelection) => void;
-  gender: Gender;
-  onGenderChange: (g: Gender) => void;
 }
 
 const SLOT_LABELS = { surname: '성', first1: '첫째', first2: '둘째' } as const;
@@ -27,8 +24,6 @@ export default function NameInputSection({
   nameInput,
   onUpdateHangul,
   onUpdateHanja,
-  gender,
-  onGenderChange,
 }: Props) {
   const {
     results: surnameResults,
@@ -65,31 +60,6 @@ export default function NameInputSection({
         <Font tag="primaryMedium" className="text-heading text-textPrimary">
           이름 입력
         </Font>
-        <View className="flex-row gap-1">
-          {(['male', 'female'] as Gender[]).map((g) => (
-            <Pressable
-              key={g}
-              className={clsx(
-                'px-3 py-1 rounded-full border',
-                gender === g
-                  ? 'bg-textSecondary border-textSecondary'
-                  : 'border-border',
-              )}
-              onPress={() => onGenderChange(g)}
-            >
-              <Font
-                tag="secondaryMedium"
-                className="text-label"
-                style={{
-                  color:
-                    gender === g ? colors.textInverse : colors.textSecondary,
-                }}
-              >
-                {g === 'male' ? '남' : '여'}
-              </Font>
-            </Pressable>
-          ))}
-        </View>
       </View>
 
       <View

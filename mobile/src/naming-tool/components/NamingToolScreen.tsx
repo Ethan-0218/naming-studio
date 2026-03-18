@@ -1,22 +1,21 @@
+import NavBar from '@/components/NavBar';
+import { colors } from '@/design-system';
+import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
 import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { colors } from '@/design-system';
-import NavBar from '@/components/NavBar';
 import { useNamingToolState } from '../hooks/useNamingToolState';
-import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
-import NameInputSection from './NameInputSection';
-import BaleumOhaengSection from './BaleumOhaengSection';
 import BaleumEumyangSection from './BaleumEumyangSection';
-import YongsinSection from './YongsinSection';
-import SurigyeokSection from './SurigyeokSection';
-import JawonOhaengSection from './JawonOhaengSection';
+import BaleumOhaengSection from './BaleumOhaengSection';
 import HoeksuEumyangSection from './HoeksuEumyangSection';
-import ScoreSummarySection from './ScoreSummarySection';
+import JawonOhaengSection from './JawonOhaengSection';
 import MyeongJuStrip from './MyeongJuStrip';
+import NameInputSection from './NameInputSection';
+import SurigyeokSection from './SurigyeokSection';
+import YongsinSection from './YongsinSection';
 
 interface Props {
   onBack: () => void;
@@ -36,16 +35,15 @@ export default function NamingToolScreen({
   const { bottom } = useSafeAreaInsets();
   const { data: profiles = [] } = useMyeongJuList();
   const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
+  const gender = selectedProfile?.gender ?? 'male';
   const {
     nameInput,
     sajuInput,
-    gender,
-    setGender,
     analysis,
     updateHangul,
     updateHanja,
     updateSaju,
-  } = useNamingToolState();
+  } = useNamingToolState(gender);
 
   return (
     <KeyboardAvoidingView
@@ -90,8 +88,6 @@ export default function NamingToolScreen({
           nameInput={nameInput}
           onUpdateHangul={updateHangul}
           onUpdateHanja={updateHanja}
-          gender={gender}
-          onGenderChange={setGender}
         />
 
         <Divider />

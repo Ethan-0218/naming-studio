@@ -97,7 +97,7 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
   const combinationDescription = result
     ? getEumyangCombinationDescription(result.combinationKey)
     : null;
-  const badge = result ? (result.harmonious ? '균형' : '불균형') : undefined;
+  const badge = result ? (result.harmonious ? '좋음' : '아쉬움') : undefined;
   const badgeColor = result
     ? result.harmonious
       ? colors.positive
