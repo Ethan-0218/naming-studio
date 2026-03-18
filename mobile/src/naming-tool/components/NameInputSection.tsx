@@ -140,7 +140,7 @@ export default function NameInputSection({
                       }
                     }
                   }}
-                  placeholder="ㅡ"
+                  placeholder="-"
                   placeholderTextColor={colors.textDisabled}
                   maxLength={2}
                   textAlign="center"
