@@ -40,9 +40,11 @@ export default function HanjaPickerSheet({
   const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const { results, loading, search, clearResults } = useHanjaSearch(role);
   const [meanFilter, setMeanFilter] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     if (visible) {
+      setModalVisible(true);
       setMeanFilter('');
       if (hangul) search(hangul);
       Animated.spring(slideAnim, {
@@ -56,7 +58,10 @@ export default function HanjaPickerSheet({
         toValue: SHEET_HEIGHT,
         duration: 220,
         useNativeDriver: true,
-      }).start(() => clearResults());
+      }).start(() => {
+        clearResults();
+        setModalVisible(false);
+      });
     }
   }, [visible]);
 
@@ -82,7 +87,7 @@ export default function HanjaPickerSheet({
 
   return (
     <Modal
-      visible={visible}
+      visible={modalVisible}
       transparent
       animationType="none"
       onRequestClose={onClose}
