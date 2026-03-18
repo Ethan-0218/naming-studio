@@ -7,6 +7,7 @@ import {
 import { colors } from '@/design-system';
 import NavBar from '@/components/NavBar';
 import { useNamingToolState } from '../hooks/useNamingToolState';
+import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
 import NameInputSection from './NameInputSection';
 import BaleumOhaengSection from './BaleumOhaengSection';
 import BaleumEumyangSection from './BaleumEumyangSection';
@@ -15,17 +16,26 @@ import SurigyeokSection from './SurigyeokSection';
 import JawonOhaengSection from './JawonOhaengSection';
 import HoeksuEumyangSection from './HoeksuEumyangSection';
 import ScoreSummarySection from './ScoreSummarySection';
+import MyeongJuStrip from './MyeongJuStrip';
 
 interface Props {
   onBack: () => void;
+  profileId: string;
+  onChangeMyeongJu: () => void;
 }
 
 function Divider() {
   return <View className="h-[1px] bg-border my-4" />;
 }
 
-export default function NamingToolScreen({ onBack }: Props) {
+export default function NamingToolScreen({
+  onBack,
+  profileId,
+  onChangeMyeongJu,
+}: Props) {
   const { bottom } = useSafeAreaInsets();
+  const { data: profiles = [] } = useMyeongJuList();
+  const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
   const {
     nameInput,
     sajuInput,
@@ -60,6 +70,10 @@ export default function NamingToolScreen({ onBack }: Props) {
           onBack={onBack}
         />
       </SafeAreaView>
+
+      {selectedProfile && (
+        <MyeongJuStrip profile={selectedProfile} onPress={onChangeMyeongJu} />
+      )}
 
       <ScrollView
         style={{ flex: 1 }}

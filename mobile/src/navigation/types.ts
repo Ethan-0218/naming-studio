@@ -3,7 +3,7 @@ export type RootStackParamList = {
   MyeongJuList: { mode?: 'ai' | 'self' };
   AddMyeongJu: { mode?: 'ai' | 'self' };
   AINaming: undefined;
-  SelfNaming: undefined;
+  SelfNaming: { profileId: string };
 };
 
 export type TabParamList = {

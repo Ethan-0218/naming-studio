@@ -23,11 +23,11 @@ export default function MyeongJuListScreen() {
 
   const { data: profiles = [], isLoading: loading } = useMyeongJuList();
 
-  function handleSelectProfile(_profile: MyeongJuProfile) {
+  function handleSelectProfile(profile: MyeongJuProfile) {
     if (mode === 'ai') {
       navigation.navigate('AINaming');
     } else if (mode === 'self') {
-      navigation.navigate('SelfNaming');
+      navigation.navigate('SelfNaming', { profileId: profile.id });
     }
     // In manage mode, tapping a profile does nothing yet (detail screen planned)
   }

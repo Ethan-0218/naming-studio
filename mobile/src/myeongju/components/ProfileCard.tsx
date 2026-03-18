@@ -94,16 +94,11 @@ export default function ProfileCard({ profile, onPress }: Props) {
               {profile.iljooHanja}
             </Font>
           </Font>
-          <View
-            className="rounded-full py-0.5 px-[7px] border"
-            style={{
-              backgroundColor: genderColor.bg,
-              borderColor: genderColor.border,
-            }}
-          >
+          <View className="rounded-full py-0.5 px-[7px] border border-border bg-surface">
             <Font
               tag="secondaryMedium"
-              style={{ fontSize: 10, color: genderColor.text }}
+              className="text-textSecondary"
+              style={{ fontSize: 10 }}
             >
               {genderLabel}
             </Font>
