@@ -18,7 +18,7 @@ interface Props {
   entry: SuriEntry | null;
 }
 
-const SHEET_HEIGHT = 520;
+const SHEET_HEIGHT = 400;
 
 const LEVEL_COLOR: Record<SuriLevel, string> = {
   大吉: colors.positive,
