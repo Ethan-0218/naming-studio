@@ -22,7 +22,11 @@ export default function AddMyeongJuFooter({ onSubmit }: Props) {
         >
           명주 등록하기
         </Font>
-        <Ionicons name="chevron-forward" size={18} color="rgba(251,247,238,0.5)" />
+        <Ionicons
+          name="chevron-forward"
+          size={18}
+          color="rgba(251,247,238,0.5)"
+        />
       </Pressable>
     </View>
   );

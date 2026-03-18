@@ -38,7 +38,19 @@ export default function AddMyeongJuScreen() {
   function handleSubmit() {
     if (createMyeongJu.isPending) return;
     createMyeongJu.mutate(
-      { gender, calendarType, year, month, day, timeUnknown, isAm, hour, minute, regionName: selectedRegion.name, regionOffset: selectedRegion.offset },
+      {
+        gender,
+        calendarType,
+        year,
+        month,
+        day,
+        timeUnknown,
+        isAm,
+        hour,
+        minute,
+        regionName: selectedRegion.name,
+        regionOffset: selectedRegion.offset,
+      },
       {
         onSuccess: () => {
           if (mode === 'ai') {
@@ -61,7 +73,11 @@ export default function AddMyeongJuScreen() {
       style={{ flex: 1, backgroundColor: colors.bgSubtle }}
       edges={['top', 'bottom']}
     >
-      <NavBar title="새 명주 추가" subtitle="命主 · 이름 주인 등록" onBack={() => navigation.goBack()} />
+      <NavBar
+        title="새 명주 추가"
+        subtitle="命主 · 이름 주인 등록"
+        onBack={() => navigation.goBack()}
+      />
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}
@@ -76,7 +92,11 @@ export default function AddMyeongJuScreen() {
           month={month}
           day={day}
           onCalendarTypeChange={setCalendarType}
-          onDateChange={(y, m, d) => { setYear(y); setMonth(m); setDay(d); }}
+          onDateChange={(y, m, d) => {
+            setYear(y);
+            setMonth(m);
+            setDay(d);
+          }}
         />
 
         <BirthTimeSection

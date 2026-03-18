@@ -21,16 +21,17 @@ const RELATION_BADGE: Record<string, { label: string; color: string }> = {
   상극: { label: '상극 ✗', color: colors.negative },
 };
 
-export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props) {
+export default function YongsinSection({
+  sajuInput,
+  nameInput,
+  onUpdate,
+}: Props) {
   const { yongsin } = sajuInput;
   const slots = [nameInput.surname, nameInput.first1, nameInput.first2];
 
   return (
     <SectionCard title="용신 보완">
-      <Font
-        tag="secondary"
-        className="text-bodySm text-textSecondary mb-3"
-      >
+      <Font tag="secondary" className="text-bodySm text-textSecondary mb-3">
         아이의 용신 오행을 선택하면 이름 글자들과의 궁합을 분석합니다.
       </Font>
 
@@ -63,8 +64,12 @@ export default function YongsinSection({ sajuInput, nameInput, onUpdate }: Props
       {yongsin && (
         <View className="gap-2 pt-2 border-t border-border">
           {slots.map((slot, i) => {
-            const charOhaeng = slot.charOhaeng ?? (slot.hangul ? baleumOhaengFromChar(slot.hangul) : null);
-            const relation = charOhaeng ? getRelation(charOhaeng, yongsin) : null;
+            const charOhaeng =
+              slot.charOhaeng ??
+              (slot.hangul ? baleumOhaengFromChar(slot.hangul) : null);
+            const relation = charOhaeng
+              ? getRelation(charOhaeng, yongsin)
+              : null;
             const badge = relation ? RELATION_BADGE[relation] : null;
             return (
               <View key={i} className="flex-row items-center">

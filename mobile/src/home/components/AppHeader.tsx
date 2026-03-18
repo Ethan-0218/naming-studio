@@ -24,7 +24,11 @@ export default function AppHeader() {
         </Font>
       </View>
       <View className="w-9 h-9 rounded-full bg-surface border border-border items-center justify-center">
-        <Ionicons name="notifications-outline" size={18} color={primitives.ink500} />
+        <Ionicons
+          name="notifications-outline"
+          size={18}
+          color={primitives.ink500}
+        />
       </View>
     </View>
   );

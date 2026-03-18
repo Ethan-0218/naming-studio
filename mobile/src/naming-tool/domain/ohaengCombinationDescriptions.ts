@@ -5,8 +5,10 @@ export interface OhaengCombinationDescription {
   description: string;
 }
 
-export const OHAENG_COMBINATION_DESCRIPTIONS =
-  rawData as Record<string, OhaengCombinationDescription>;
+export const OHAENG_COMBINATION_DESCRIPTIONS = rawData as Record<
+  string,
+  OhaengCombinationDescription
+>;
 
 export function getOhaengCombinationDescription(
   key: string,

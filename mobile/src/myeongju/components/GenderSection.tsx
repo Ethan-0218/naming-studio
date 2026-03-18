@@ -92,7 +92,12 @@ function GenderCard({
 export default function GenderSection({ gender, onChange }: Props) {
   return (
     <View className="px-5 py-[22px] border-b border-border">
-      <Font tag="secondaryMedium" className="text-overline text-textTertiary mb-3.5">성별</Font>
+      <Font
+        tag="secondaryMedium"
+        className="text-overline text-textTertiary mb-3.5"
+      >
+        성별
+      </Font>
       <View className="flex-row gap-[9px]">
         <GenderCard
           type="male"

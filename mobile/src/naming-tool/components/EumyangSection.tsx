@@ -22,8 +22,14 @@ const EUMYANG_COLOR = {
 };
 
 const VARIANT_META = {
-  baleum: { title: '발음음양', emptyText: '이름을 입력하면 발음음양이 표시됩니다' },
-  hoeksu: { title: '획수음양', emptyText: '한자를 선택하면 획수음양이 표시됩니다' },
+  baleum: {
+    title: '발음음양',
+    emptyText: '이름을 입력하면 발음음양이 표시됩니다',
+  },
+  hoeksu: {
+    title: '획수음양',
+    emptyText: '한자를 선택하면 획수음양이 표시됩니다',
+  },
 } as const;
 
 function deriveSlotData(
@@ -33,7 +39,8 @@ function deriveSlotData(
   i: number,
 ) {
   if (variant === 'baleum') {
-    const ey = chars[i] ?? slot.soundEumyang ?? soundEumyangFromHangul(slot.hangul);
+    const ey =
+      chars[i] ?? slot.soundEumyang ?? soundEumyangFromHangul(slot.hangul);
     return { label: slot.hangul || '?', eumyang: ey, subLabel: null };
   } else {
     const ey = slot.strokeEumyang;
@@ -91,90 +98,99 @@ export default function EumyangSection({ variant, nameInput, result }: Props) {
     ? getEumyangCombinationDescription(result.combinationKey)
     : null;
   const badge = result ? (result.harmonious ? '균형' : '불균형') : undefined;
-  const badgeColor = result ? (result.harmonious ? colors.positive : colors.negative) : undefined;
+  const badgeColor = result
+    ? result.harmonious
+      ? colors.positive
+      : colors.negative
+    : undefined;
 
   const dataAvailable = slots.some((s) => hasData(s, variant));
   const allNamesEntered = slots.every((s) => !!s.hangul);
 
-  const slotDataList = slots.map((slot, i) => deriveSlotData(slot, variant, chars, i));
+  const slotDataList = slots.map((slot, i) =>
+    deriveSlotData(slot, variant, chars, i),
+  );
   const yinCount = slotDataList.filter((d) => d.eumyang === '음').length;
   const yangCount = slotDataList.filter((d) => d.eumyang === '양').length;
 
   return (
     <SectionCard title={title} badge={badge} badgeColor={badgeColor}>
       <View className="gap-3">
-      {allNamesEntered && <EumyangBalanceBar yinCount={yinCount} yangCount={yangCount} />}
-      {dataAvailable ? (
-        <View className="flex-row gap-2">
-          {slotDataList.map(({ label, eumyang, subLabel }, i) => {
-            const oc = eumyang ? EUMYANG_COLOR[eumyang] : null;
-            return (
-              <View
-                key={i}
-                className="flex-1 border rounded-md py-3 items-center"
-                style={
-                  oc
-                    ? { backgroundColor: oc.bg, borderColor: oc.border }
-                    : { borderColor: colors.border }
-                }
-              >
-                <Font
-                  tag="secondaryMedium"
-                  className="text-uiMd"
-                  style={{ color: oc?.text ?? colors.textDisabled }}
+        {allNamesEntered && (
+          <EumyangBalanceBar yinCount={yinCount} yangCount={yangCount} />
+        )}
+        {dataAvailable ? (
+          <View className="flex-row gap-2">
+            {slotDataList.map(({ label, eumyang, subLabel }, i) => {
+              const oc = eumyang ? EUMYANG_COLOR[eumyang] : null;
+              return (
+                <View
+                  key={i}
+                  className="flex-1 border rounded-md py-3 items-center"
+                  style={
+                    oc
+                      ? { backgroundColor: oc.bg, borderColor: oc.border }
+                      : { borderColor: colors.border }
+                  }
                 >
-                  {label}
-                </Font>
-                <View className="flex-row items-center mt-0.5">
-                  {subLabel && (
-                    <>
-                      <Font
-                        tag="secondaryMedium"
-                        className="text-overline"
-                        style={{ color: oc?.text ?? colors.textDisabled }}
-                      >
-                        {subLabel}
-                      </Font>
-                      <Font
-                        tag="secondaryMedium"
-                        className="text-overline mx-0.5"
-                        style={{ color: oc?.text ?? colors.textDisabled }}
-                      >
-                        ·
-                      </Font>
-                    </>
-                  )}
                   <Font
                     tag="secondaryMedium"
-                    className="text-overline"
+                    className="text-uiMd"
                     style={{ color: oc?.text ?? colors.textDisabled }}
                   >
-                    {eumyang === '음' ? '음(陰)' : eumyang === '양' ? '양(陽)' : '미선택'}
+                    {label}
                   </Font>
+                  <View className="flex-row items-center mt-0.5">
+                    {subLabel && (
+                      <>
+                        <Font
+                          tag="secondaryMedium"
+                          className="text-overline"
+                          style={{ color: oc?.text ?? colors.textDisabled }}
+                        >
+                          {subLabel}
+                        </Font>
+                        <Font
+                          tag="secondaryMedium"
+                          className="text-overline mx-0.5"
+                          style={{ color: oc?.text ?? colors.textDisabled }}
+                        >
+                          ·
+                        </Font>
+                      </>
+                    )}
+                    <Font
+                      tag="secondaryMedium"
+                      className="text-overline"
+                      style={{ color: oc?.text ?? colors.textDisabled }}
+                    >
+                      {eumyang === '음'
+                        ? '음(陰)'
+                        : eumyang === '양'
+                          ? '양(陽)'
+                          : '미선택'}
+                    </Font>
+                  </View>
                 </View>
-              </View>
-            );
-          })}
-        </View>
-      ) : (
-        <Font
-          tag="secondary"
-          className="text-bodySm text-textDisabled text-center py-4"
-        >
-          {emptyText}
-        </Font>
-      )}
-      {result && combinationDescription && (
-        <>
-          <View className="border-b border-border" />
+              );
+            })}
+          </View>
+        ) : (
           <Font
             tag="secondary"
-            className="text-bodySm text-textSecondary"
+            className="text-bodySm text-textDisabled text-center py-4"
           >
-            {combinationDescription}
+            {emptyText}
           </Font>
-        </>
-      )}
+        )}
+        {result && combinationDescription && (
+          <>
+            <View className="border-b border-border" />
+            <Font tag="secondary" className="text-bodySm text-textSecondary">
+              {combinationDescription}
+            </Font>
+          </>
+        )}
       </View>
     </SectionCard>
   );

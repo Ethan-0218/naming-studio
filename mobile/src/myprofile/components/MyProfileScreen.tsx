@@ -26,16 +26,21 @@ export default function MyProfileScreen() {
     <SafeAreaView className="flex-1 bg-bgSubtle" edges={['top']}>
       {/* Navbar */}
       <View className="h-14 px-5 justify-center bg-bgSubtle border-b border-border">
-        <Font tag="primaryMedium" style={{ fontSize: 20, color: colors.textPrimary, letterSpacing: 2 }}>
+        <Font
+          tag="primaryMedium"
+          style={{ fontSize: 20, color: colors.textPrimary, letterSpacing: 2 }}
+        >
           내 정보
         </Font>
-        <Font tag="secondary" style={{ fontSize: 9, color: colors.textDisabled, letterSpacing: 2 }}>
+        <Font
+          tag="secondary"
+          style={{ fontSize: 9, color: colors.textDisabled, letterSpacing: 2 }}
+        >
           MY PAGE
         </Font>
       </View>
 
       <ScrollView className="flex-1 bg-bg" showsVerticalScrollIndicator={false}>
-
         {/* 로그인/비로그인 상단 카드 */}
         {isLoggedIn && auth.profile ? (
           <ProfileCard profile={auth.profile} />
@@ -52,7 +57,9 @@ export default function MyProfileScreen() {
             label="명주 목록"
             badgeText={isLoggedIn ? `${myeongJuCount}개` : '로그인 필요'}
             badgeVariant={isLoggedIn ? 'count' : 'locked'}
-            onPress={() => isLoggedIn ? navigation.navigate('MyeongJuManage') : undefined}
+            onPress={() =>
+              isLoggedIn ? navigation.navigate('MyeongJuManage') : undefined
+            }
           />
           <SettingsRow
             iconName="card-outline"
@@ -104,10 +111,20 @@ export default function MyProfileScreen() {
 
         {/* 앱 버전 */}
         <View className="px-[36px] py-[14px] flex-row items-center justify-between">
-          <Font tag="secondary" style={{ fontSize: 13, color: colors.textTertiary, letterSpacing: 0.4 }}>
+          <Font
+            tag="secondary"
+            style={{
+              fontSize: 13,
+              color: colors.textTertiary,
+              letterSpacing: 0.4,
+            }}
+          >
             앱 버전
           </Font>
-          <Font tag="primary" style={{ fontSize: 13, color: colors.textDisabled }}>
+          <Font
+            tag="primary"
+            style={{ fontSize: 13, color: colors.textDisabled }}
+          >
             v {APP_VERSION}
           </Font>
         </View>

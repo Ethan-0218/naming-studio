@@ -16,7 +16,16 @@ import TipChipsSection from './TipChipsSection';
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 function Divider() {
-  return <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 16, marginTop: 20 }} />;
+  return (
+    <View
+      style={{
+        height: 1,
+        backgroundColor: colors.border,
+        marginHorizontal: 16,
+        marginTop: 20,
+      }}
+    />
+  );
 }
 
 export default function HomeScreen() {

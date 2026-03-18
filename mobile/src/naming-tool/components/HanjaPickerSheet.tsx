@@ -30,7 +30,13 @@ interface Props {
 
 const SHEET_HEIGHT = 480;
 
-export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSelect }: Props) {
+export default function HanjaPickerSheet({
+  visible,
+  onClose,
+  hangul,
+  role,
+  onSelect,
+}: Props) {
   const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const { results, loading, search, clearResults } = useHanjaSearch(role);
   const [meanFilter, setMeanFilter] = useState('');
@@ -102,7 +108,10 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
             { transform: [{ translateY: slideAnim }] },
           ]}
         >
-          <View className="w-9 h-1 rounded-full bg-borderStrong self-center mb-3" style={{ width: 36, height: 4, borderRadius: 2 }} />
+          <View
+            className="w-9 h-1 rounded-full bg-borderStrong self-center mb-3"
+            style={{ width: 36, height: 4, borderRadius: 2 }}
+          />
 
           <View className="flex-row items-center justify-between mb-3">
             <Text
@@ -123,7 +132,11 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
 
           <TextInput
             className="border-[1.5px] border-border rounded-md px-3 py-2 mb-2 bg-surfaceRaised text-textPrimary"
-            style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, lineHeight: 19 }}
+            style={{
+              fontFamily: 'NotoSansKR_400Regular',
+              fontSize: 11,
+              lineHeight: 19,
+            }}
             value={meanFilter}
             onChangeText={setMeanFilter}
             placeholder="뜻으로 필터 (예: 빛날, 강한)"
@@ -133,17 +146,23 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
           />
 
           {loading && (
-            <ActivityIndicator size="small" color={colors.textTertiary} className="mt-4" />
+            <ActivityIndicator
+              size="small"
+              color={colors.textTertiary}
+              className="mt-4"
+            />
           )}
 
-          {!loading && filteredResults.length === 0 && (results.length > 0 || meanFilter.length > 0) && (
-            <Text
-              className="text-bodySm text-textDisabled text-center mt-5"
-              style={{ fontFamily: fontFamily.sansRegular }}
-            >
-              검색 결과가 없습니다
-            </Text>
-          )}
+          {!loading &&
+            filteredResults.length === 0 &&
+            (results.length > 0 || meanFilter.length > 0) && (
+              <Text
+                className="text-bodySm text-textDisabled text-center mt-5"
+                style={{ fontFamily: fontFamily.sansRegular }}
+              >
+                검색 결과가 없습니다
+              </Text>
+            )}
 
           {filteredResults.length > 0 && (
             <ScrollView
@@ -192,7 +211,9 @@ export default function HanjaPickerSheet({ visible, onClose, hangul, role, onSel
                         className="text-bodySm text-textTertiary"
                         style={{ fontFamily: fontFamily.sansRegular }}
                       >
-                        {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
+                        {r.strokeCount != null
+                          ? `${r.strokeCount}획`
+                          : '획수 미상'}
                         {r.charOhaeng ? ` · 자원오행 ${r.charOhaeng}` : ''}
                       </Text>
                     </View>

@@ -30,13 +30,19 @@ export default function NameInputSection({
   gender,
   onGenderChange,
 }: Props) {
-  const { results: surnameResults, search: searchSurname, activeQuery: surnameActiveQuery, hasResults: surnameHasResults } = useHanjaSearch('surname');
+  const {
+    results: surnameResults,
+    search: searchSurname,
+    activeQuery: surnameActiveQuery,
+    hasResults: surnameHasResults,
+  } = useHanjaSearch('surname');
   const autoSelectPending = useRef(false);
   const surnameSearchedFor = useRef('');
 
   useEffect(() => {
     if (!autoSelectPending.current) return;
-    if (!surnameHasResults || surnameActiveQuery !== surnameSearchedFor.current) return;
+    if (!surnameHasResults || surnameActiveQuery !== surnameSearchedFor.current)
+      return;
 
     if (surnameResults.length === 1) {
       const r = surnameResults[0];
@@ -56,10 +62,7 @@ export default function NameInputSection({
   return (
     <View>
       <View className="flex-row items-center justify-between mb-2">
-        <Font
-          tag="primaryMedium"
-          className="text-heading text-textPrimary"
-        >
+        <Font tag="primaryMedium" className="text-heading text-textPrimary">
           이름 입력
         </Font>
         <View className="flex-row gap-1">
@@ -68,14 +71,19 @@ export default function NameInputSection({
               key={g}
               className={clsx(
                 'px-3 py-1 rounded-full border',
-                gender === g ? 'bg-textSecondary border-textSecondary' : 'border-border',
+                gender === g
+                  ? 'bg-textSecondary border-textSecondary'
+                  : 'border-border',
               )}
               onPress={() => onGenderChange(g)}
             >
               <Font
                 tag="secondaryMedium"
                 className="text-label"
-                style={{ color: gender === g ? colors.textInverse : colors.textSecondary }}
+                style={{
+                  color:
+                    gender === g ? colors.textInverse : colors.textSecondary,
+                }}
               >
                 {g === 'male' ? '남' : '여'}
               </Font>
@@ -84,7 +92,10 @@ export default function NameInputSection({
         </View>
       </View>
 
-      <View className="bg-surfaceRaised rounded-lg p-4 border border-border" style={{ gap: 12 }}>
+      <View
+        className="bg-surfaceRaised rounded-lg p-4 border border-border"
+        style={{ gap: 12 }}
+      >
         <View style={{ gap: 4 }}>
           <Font
             tag="secondaryMedium"
@@ -94,7 +105,11 @@ export default function NameInputSection({
           </Font>
           <View className="flex-row items-stretch" style={{ gap: 8 }}>
             {SLOTS.map((slot) => (
-              <View key={slot} className="flex-1 min-w-0 items-center" style={{ gap: 4 }}>
+              <View
+                key={slot}
+                className="flex-1 min-w-0 items-center"
+                style={{ gap: 4 }}
+              >
                 <Font
                   tag="secondaryMedium"
                   className="text-overline text-textTertiary uppercase"

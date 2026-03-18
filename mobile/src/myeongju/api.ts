@@ -16,7 +16,7 @@ interface CreateMyeongJuParams {
   day: number;
   timeUnknown: boolean;
   isAm: boolean;
-  hour: number;   // 1–12
+  hour: number; // 1–12
   minute: number;
   regionName: string | null;
   regionOffset: number | null;
@@ -54,8 +54,12 @@ function to24h(isAm: boolean, hour: number): number {
   return hour === 12 ? 12 : hour + 12;
 }
 
-export async function createMyeongJu(params: CreateMyeongJuParams): Promise<MyeongJuProfile> {
-  const birth_hour = params.timeUnknown ? null : to24h(params.isAm, params.hour);
+export async function createMyeongJu(
+  params: CreateMyeongJuParams,
+): Promise<MyeongJuProfile> {
+  const birth_hour = params.timeUnknown
+    ? null
+    : to24h(params.isAm, params.hour);
   const birth_minute = params.timeUnknown ? null : params.minute;
 
   const res = await fetch(`${BACKEND_URL}/api/myeongju`, {

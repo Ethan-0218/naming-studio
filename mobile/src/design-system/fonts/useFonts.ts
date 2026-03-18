@@ -1,14 +1,14 @@
 import { useFonts as useExpoFonts } from 'expo-font';
 
 // v0.4.x subpath import — 사용하는 weight만 번들에 포함됨
-import { NotoSerifKR_300Light }   from '@expo-google-fonts/noto-serif-kr/300Light';
+import { NotoSerifKR_300Light } from '@expo-google-fonts/noto-serif-kr/300Light';
 import { NotoSerifKR_400Regular } from '@expo-google-fonts/noto-serif-kr/400Regular';
-import { NotoSerifKR_500Medium }  from '@expo-google-fonts/noto-serif-kr/500Medium';
+import { NotoSerifKR_500Medium } from '@expo-google-fonts/noto-serif-kr/500Medium';
 import { NotoSerifKR_600SemiBold } from '@expo-google-fonts/noto-serif-kr/600SemiBold';
 
-import { NotoSansKR_300Light }   from '@expo-google-fonts/noto-sans-kr/300Light';
+import { NotoSansKR_300Light } from '@expo-google-fonts/noto-sans-kr/300Light';
 import { NotoSansKR_400Regular } from '@expo-google-fonts/noto-sans-kr/400Regular';
-import { NotoSansKR_500Medium }  from '@expo-google-fonts/noto-sans-kr/500Medium';
+import { NotoSansKR_500Medium } from '@expo-google-fonts/noto-sans-kr/500Medium';
 
 /**
  * 앱에서 사용하는 모든 폰트를 로드하는 훅.

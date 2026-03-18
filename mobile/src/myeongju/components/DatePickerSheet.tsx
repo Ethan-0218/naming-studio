@@ -1,7 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
-  View, Modal, ScrollView, Pressable,
-  Animated, Platform,
+  View,
+  Modal,
+  ScrollView,
+  Pressable,
+  Animated,
+  Platform,
 } from 'react-native';
 import { Font } from '@/components/Font';
 
@@ -39,7 +43,10 @@ function PickerColumn({
 
   useEffect(() => {
     setTimeout(() => {
-      scrollRef.current?.scrollTo({ y: initialIndex * ITEM_HEIGHT, animated: false });
+      scrollRef.current?.scrollTo({
+        y: initialIndex * ITEM_HEIGHT,
+        animated: false,
+      });
     }, 50);
   }, []);
 
@@ -60,7 +67,9 @@ function PickerColumn({
         snapToAlignment="start"
         decelerationRate="fast"
         scrollEventThrottle={16}
-        onScroll={(e) => { offsetRef.current = e.nativeEvent.contentOffset.y; }}
+        onScroll={(e) => {
+          offsetRef.current = e.nativeEvent.contentOffset.y;
+        }}
         contentContainerStyle={{ paddingVertical: ITEM_HEIGHT * 2 }}
       >
         {items.map((v) => {
@@ -93,7 +102,11 @@ function PickerColumn({
           paddingBottom: 9,
         }}
       >
-        <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 11 }}>
+        <Font
+          tag="secondary"
+          className="text-textTertiary"
+          style={{ fontSize: 11 }}
+        >
           {unit}
         </Font>
       </View>
@@ -101,7 +114,14 @@ function PickerColumn({
   );
 }
 
-export default function DatePickerSheet({ visible, year, month, day, onConfirm, onClose }: Props) {
+export default function DatePickerSheet({
+  visible,
+  year,
+  month,
+  day,
+  onConfirm,
+  onClose,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(400)).current;
 
@@ -152,80 +172,113 @@ export default function DatePickerSheet({ visible, year, month, day, onConfirm, 
   }, [isOpen]);
 
   function handleConfirm() {
-    const yIdx = Math.max(0, Math.min(Math.round(yearOffsetRef.current / ITEM_HEIGHT), YEARS.length - 1));
-    const mIdx = Math.max(0, Math.min(Math.round(monthOffsetRef.current / ITEM_HEIGHT), MONTHS.length - 1));
-    const dIdx = Math.max(0, Math.min(Math.round(dayOffsetRef.current / ITEM_HEIGHT), DAYS.length - 1));
+    const yIdx = Math.max(
+      0,
+      Math.min(
+        Math.round(yearOffsetRef.current / ITEM_HEIGHT),
+        YEARS.length - 1,
+      ),
+    );
+    const mIdx = Math.max(
+      0,
+      Math.min(
+        Math.round(monthOffsetRef.current / ITEM_HEIGHT),
+        MONTHS.length - 1,
+      ),
+    );
+    const dIdx = Math.max(
+      0,
+      Math.min(Math.round(dayOffsetRef.current / ITEM_HEIGHT), DAYS.length - 1),
+    );
     onConfirm(YEARS[yIdx], MONTHS[mIdx], DAYS[dIdx]);
     onClose();
   }
 
   return (
-    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={isOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       {/* 딤 오버레이 — sheet와 분리해서 ScrollView 터치 간섭 방지 */}
       <Pressable
-        style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.4)' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+        }}
         onPress={onClose}
       />
 
       {/* 시트 컨테이너 */}
-      <View style={{ flex: 1, justifyContent: 'flex-end' }} pointerEvents="box-none">
+      <View
+        style={{ flex: 1, justifyContent: 'flex-end' }}
+        pointerEvents="box-none"
+      >
         <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
-            <View className="bg-surfaceRaised rounded-t-[28px]">
-              {/* 핸들 */}
-              <View className="w-10 h-1 rounded-full bg-borderStrong self-center mt-[14px] mb-1" />
+          <View className="bg-surfaceRaised rounded-t-[28px]">
+            {/* 핸들 */}
+            <View className="w-10 h-1 rounded-full bg-borderStrong self-center mt-[14px] mb-1" />
 
-              {/* 제목 */}
-              <Font
-                tag="primaryMedium"
-                className="text-textPrimary text-center py-[14px]"
-                style={{ fontSize: 16, letterSpacing: 0.5 }}
-              >
-                생년월일 선택
-              </Font>
+            {/* 제목 */}
+            <Font
+              tag="primaryMedium"
+              className="text-textPrimary text-center py-[14px]"
+              style={{ fontSize: 16, letterSpacing: 0.5 }}
+            >
+              생년월일 선택
+            </Font>
 
-              <View className="h-px bg-border" />
+            <View className="h-px bg-border" />
 
-              {/* 3열 드럼 피커 */}
-              <View className="flex-row px-4 pt-2">
-                <PickerColumn
-                  items={YEARS}
-                  initialIndex={initialIndexes.year}
-                  offsetRef={yearOffsetRef}
-                  unit="년"
-                />
-                <PickerColumn
-                  items={MONTHS}
-                  initialIndex={initialIndexes.month}
-                  offsetRef={monthOffsetRef}
-                  formatLabel={(v) => String(v).padStart(2, '0')}
-                  unit="월"
-                />
-                <PickerColumn
-                  items={DAYS}
-                  initialIndex={initialIndexes.day}
-                  offsetRef={dayOffsetRef}
-                  formatLabel={(v) => String(v).padStart(2, '0')}
-                  unit="일"
-                />
-              </View>
-
-              {/* 확인 버튼 */}
-              <View className="p-4" style={{ paddingBottom: Platform.OS === 'ios' ? 32 : 20 }}>
-                <Pressable
-                  className="bg-fillBold rounded-[14px] h-[52px] items-center justify-center"
-                  style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
-                  onPress={handleConfirm}
-                >
-                  <Font
-                    tag="primaryMedium"
-                    className="text-textInverse"
-                    style={{ fontSize: 16, letterSpacing: 0.5 }}
-                  >
-                    확인
-                  </Font>
-                </Pressable>
-              </View>
+            {/* 3열 드럼 피커 */}
+            <View className="flex-row px-4 pt-2">
+              <PickerColumn
+                items={YEARS}
+                initialIndex={initialIndexes.year}
+                offsetRef={yearOffsetRef}
+                unit="년"
+              />
+              <PickerColumn
+                items={MONTHS}
+                initialIndex={initialIndexes.month}
+                offsetRef={monthOffsetRef}
+                formatLabel={(v) => String(v).padStart(2, '0')}
+                unit="월"
+              />
+              <PickerColumn
+                items={DAYS}
+                initialIndex={initialIndexes.day}
+                offsetRef={dayOffsetRef}
+                formatLabel={(v) => String(v).padStart(2, '0')}
+                unit="일"
+              />
             </View>
+
+            {/* 확인 버튼 */}
+            <View
+              className="p-4"
+              style={{ paddingBottom: Platform.OS === 'ios' ? 32 : 20 }}
+            >
+              <Pressable
+                className="bg-fillBold rounded-[14px] h-[52px] items-center justify-center"
+                style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+                onPress={handleConfirm}
+              >
+                <Font
+                  tag="primaryMedium"
+                  className="text-textInverse"
+                  style={{ fontSize: 16, letterSpacing: 0.5 }}
+                >
+                  확인
+                </Font>
+              </Pressable>
+            </View>
+          </View>
         </Animated.View>
       </View>
     </Modal>

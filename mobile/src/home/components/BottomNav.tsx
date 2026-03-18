@@ -7,7 +7,7 @@ import { Font } from '@/components/Font';
 export type BottomNavTab = '홈' | '검색' | '명주' | '저장';
 
 const TABS: { label: BottomNavTab; icon: string }[] = [
-  { label: '홈',  icon: 'home' },
+  { label: '홈', icon: 'home' },
   { label: '검색', icon: 'search' },
   { label: '명주', icon: 'person' },
   { label: '저장', icon: 'bookmark' },

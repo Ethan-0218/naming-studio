@@ -9,7 +9,9 @@ const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
 export function ProfileStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+    <Stack.Navigator
+      screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+    >
       <Stack.Screen name="MyProfile" component={MyProfileScreen} />
       <Stack.Screen name="MyeongJuManage" component={MyeongJuListScreen} />
       <Stack.Screen name="AddMyeongJu" component={AddMyeongJuScreen} />

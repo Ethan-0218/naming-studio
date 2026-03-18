@@ -19,6 +19,9 @@ source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env  # Set OPENAI_API_KEY
 
+# 최초 세팅: generated SQLite DB 생성 (name_hanja_combinations, scored_combinations)
+bash scripts/bootstrap.sh
+
 uvicorn main:app --reload  # Dev server on :8000
 ```
 
@@ -42,6 +45,12 @@ pnpm start          # Dev server (Expo)
 pnpm run android    # Android
 pnpm run ios        # iOS
 pnpm run web        # Web
+pnpm exec prettier --write .  # 코드 작성 후 반드시 실행
+```
+
+**규칙: 모바일 코드 수정 후에는 반드시 prettier를 실행한다.**
+```bash
+cd mobile && pnpm exec prettier --write .
 ```
 
 ## Architecture

@@ -32,9 +32,9 @@ const PAIR_LABEL_OFFSETS = [
 ];
 
 const RELATION_COLOR: Record<OhaengRelation, string> = {
-  '상생': colors.positive,
-  '상극': colors.negative,
-  '동일': colors.borderStrong,
+  상생: colors.positive,
+  상극: colors.negative,
+  동일: colors.borderStrong,
 };
 
 interface DirectedPair {
@@ -52,10 +52,14 @@ function getDirectedPair(
   if (!ohaengA || !ohaengB || ohaengA === ohaengB) {
     return { fromIdx: aIdx, toIdx: bIdx, relation: '동일' };
   }
-  if (generates(ohaengA, ohaengB)) return { fromIdx: aIdx, toIdx: bIdx, relation: '상생' };
-  if (generates(ohaengB, ohaengA)) return { fromIdx: bIdx, toIdx: aIdx, relation: '상생' };
-  if (destroys(ohaengA, ohaengB)) return { fromIdx: aIdx, toIdx: bIdx, relation: '상극' };
-  if (destroys(ohaengB, ohaengA)) return { fromIdx: bIdx, toIdx: aIdx, relation: '상극' };
+  if (generates(ohaengA, ohaengB))
+    return { fromIdx: aIdx, toIdx: bIdx, relation: '상생' };
+  if (generates(ohaengB, ohaengA))
+    return { fromIdx: bIdx, toIdx: aIdx, relation: '상생' };
+  if (destroys(ohaengA, ohaengB))
+    return { fromIdx: aIdx, toIdx: bIdx, relation: '상극' };
+  if (destroys(ohaengB, ohaengA))
+    return { fromIdx: bIdx, toIdx: aIdx, relation: '상극' };
   return { fromIdx: aIdx, toIdx: bIdx, relation: '동일' };
 }
 
@@ -234,7 +238,10 @@ function Legend() {
   return (
     <View className="flex-row mb-2 items-center gap-3">
       <View className="flex-row items-center gap-0.5">
-        <View className="h-[1.5px] w-3.5 bg-positive" style={{ width: 14, height: 1.5 }} />
+        <View
+          className="h-[1.5px] w-3.5 bg-positive"
+          style={{ width: 14, height: 1.5 }}
+        />
         <View
           className="border-l-[5px] border-t-4 border-b-4 border-t-transparent border-b-transparent"
           style={{ borderLeftColor: colors.positive, width: 0, height: 0 }}
@@ -242,13 +249,20 @@ function Legend() {
         <Font
           tag="secondaryMedium"
           className="text-caption"
-          style={{ color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+          style={{
+            color: colors.textSecondary,
+            letterSpacing: 0,
+            marginLeft: 3,
+          }}
         >
           생(生) 좋음
         </Font>
       </View>
       <View className="flex-row items-center gap-0.5">
-        <View className="h-[1.5px] w-3.5 bg-negative" style={{ width: 14, height: 1.5 }} />
+        <View
+          className="h-[1.5px] w-3.5 bg-negative"
+          style={{ width: 14, height: 1.5 }}
+        />
         <View
           style={{
             width: 0,
@@ -264,7 +278,11 @@ function Legend() {
         <Font
           tag="secondaryMedium"
           className="text-caption"
-          style={{ color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+          style={{
+            color: colors.textSecondary,
+            letterSpacing: 0,
+            marginLeft: 3,
+          }}
         >
           극(剋) 나쁨
         </Font>
@@ -277,7 +295,11 @@ function Legend() {
         <Font
           tag="secondaryMedium"
           className="text-caption"
-          style={{ color: colors.textSecondary, letterSpacing: 0, marginLeft: 3 }}
+          style={{
+            color: colors.textSecondary,
+            letterSpacing: 0,
+            marginLeft: 3,
+          }}
         >
           중립
         </Font>

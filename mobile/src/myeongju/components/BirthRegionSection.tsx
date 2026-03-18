@@ -16,7 +16,11 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
   const noticeText = () => {
     if (!hasRegion) {
       return (
-        <Font tag="secondary" className="text-textTertiary flex-1" style={{ fontSize: 11.5, lineHeight: 19 }}>
+        <Font
+          tag="secondary"
+          className="text-textTertiary flex-1"
+          style={{ fontSize: 11.5, lineHeight: 19 }}
+        >
           {'출생 지역에 따라 '}
           <Font tag="secondaryMedium" className="text-textSecondary">
             표준시와 실제 태양시의 차이
@@ -27,7 +31,11 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
     }
     const r = selectedRegion!;
     return (
-      <Font tag="secondary" className="text-textTertiary flex-1" style={{ fontSize: 11.5, lineHeight: 19 }}>
+      <Font
+        tag="secondary"
+        className="text-textTertiary flex-1"
+        style={{ fontSize: 11.5, lineHeight: 19 }}
+      >
         {'출생 지역에 따라 '}
         <Font tag="secondaryMedium" className="text-textSecondary">
           표준시와 실제 태양시의 차이
@@ -46,8 +54,14 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
     <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
       <View className="flex-row items-end gap-1.5 mb-3.5">
-        <Font tag="secondaryMedium" className="text-overline text-textTertiary">출생 지역</Font>
-        <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 9, letterSpacing: 0.8 }}>
+        <Font tag="secondaryMedium" className="text-overline text-textTertiary">
+          출생 지역
+        </Font>
+        <Font
+          tag="secondary"
+          className="text-textDisabled"
+          style={{ fontSize: 9, letterSpacing: 0.8 }}
+        >
           지방시 보정
         </Font>
       </View>
@@ -64,11 +78,19 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
           color={hasRegion ? primitives.ink500 : primitives.ink300}
         />
         {hasRegion ? (
-          <Font tag="primary" className="flex-1 text-textPrimary" style={{ fontSize: 15 }}>
+          <Font
+            tag="primary"
+            className="flex-1 text-textPrimary"
+            style={{ fontSize: 15 }}
+          >
             {selectedRegion!.name}
           </Font>
         ) : (
-          <Font tag="secondary" className="flex-1 text-textDisabled" style={{ fontSize: 14 }}>
+          <Font
+            tag="secondary"
+            className="flex-1 text-textDisabled"
+            style={{ fontSize: 14 }}
+          >
             지역 선택
           </Font>
         )}

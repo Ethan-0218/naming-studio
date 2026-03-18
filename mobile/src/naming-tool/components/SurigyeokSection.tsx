@@ -2,7 +2,13 @@ import React from 'react';
 import { View } from 'react-native';
 import { colors } from '@/design-system';
 import { Font } from '@/components/Font';
-import { NameInput, SuriEntry, SurigyeokResult, SuriLevel, Gender } from '../types';
+import {
+  NameInput,
+  SuriEntry,
+  SurigyeokResult,
+  SuriLevel,
+  Gender,
+} from '../types';
 import { computeSurigyeok } from '../domain/surigyeok';
 import SectionCard from './SectionCard';
 
@@ -13,12 +19,12 @@ interface Props {
 }
 
 const LEVEL_COLOR: Record<SuriLevel, string> = {
-  '大吉': colors.positive,
-  '吉': colors.positive,
-  '中吉': colors.fillAccent,
-  '中凶': colors.warning,
-  '凶': colors.negative,
-  '大凶': colors.negative,
+  大吉: colors.positive,
+  吉: colors.positive,
+  中吉: colors.fillAccent,
+  中凶: colors.warning,
+  凶: colors.negative,
+  大凶: colors.negative,
 };
 
 function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
@@ -38,10 +44,7 @@ function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
       >
         {entry.number}
       </Font>
-      <Font
-        tag="secondaryMedium"
-        className="text-uiSm text-textPrimary mt-1"
-      >
+      <Font tag="secondaryMedium" className="text-uiSm text-textPrimary mt-1">
         {entry.name1}
       </Font>
       <View
@@ -70,7 +73,8 @@ function SuriCard({ label, entry }: { label: string; entry: SuriEntry }) {
 export default function SurigyeokSection({ nameInput, gender, result }: Props) {
   const computed =
     result ??
-    (nameInput.surname.strokeCount != null && nameInput.first1.strokeCount != null
+    (nameInput.surname.strokeCount != null &&
+    nameInput.first1.strokeCount != null
       ? computeSurigyeok(
           nameInput.surname.strokeCount,
           nameInput.first1.strokeCount,
@@ -80,12 +84,11 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
       : null);
 
   const badge = computed ? `총 ${computed.totalScore}점` : undefined;
-  const badgeColor =
-    computed
-      ? computed.totalScore >= 24
-        ? colors.positive
-        : colors.warning
-      : undefined;
+  const badgeColor = computed
+    ? computed.totalScore >= 24
+      ? colors.positive
+      : colors.warning
+    : undefined;
 
   return (
     <SectionCard title="수리격" badge={badge} badgeColor={badgeColor}>

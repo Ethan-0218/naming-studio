@@ -6,8 +6,16 @@ import { Font } from '@/components/Font';
 import { MyeongJuProfile, OHAENG_LABEL } from '../types';
 
 const GENDER_COLORS = {
-  male:   { bg: primitives.water200, text: primitives.water600, border: primitives.water400 },
-  female: { bg: primitives.fire200,  text: primitives.fire600,  border: primitives.fire400  },
+  male: {
+    bg: primitives.water200,
+    text: primitives.water600,
+    border: primitives.water400,
+  },
+  female: {
+    bg: primitives.fire200,
+    text: primitives.fire600,
+    border: primitives.fire400,
+  },
 } as const;
 
 interface Props {
@@ -42,13 +50,23 @@ export default function ProfileCard({ profile, onPress }: Props) {
         <Font
           tag="primaryMedium"
           className="shrink-0"
-          style={{ fontSize: 22, color: ohaeng.base, marginBottom: 5, lineHeight: 24 }}
+          style={{
+            fontSize: 22,
+            color: ohaeng.base,
+            marginBottom: 5,
+            lineHeight: 24,
+          }}
         >
           {profile.ilgan}
         </Font>
         <Font
           tag="secondary"
-          style={{ fontSize: 9.5, letterSpacing: 0.6, color: ohaeng.base, opacity: 0.8 }}
+          style={{
+            fontSize: 9.5,
+            letterSpacing: 0.6,
+            color: ohaeng.base,
+            opacity: 0.8,
+          }}
         >
           {OHAENG_LABEL[profile.ohaeng]}
         </Font>
@@ -56,7 +74,6 @@ export default function ProfileCard({ profile, onPress }: Props) {
 
       {/* 본문 */}
       <View className="flex-1 min-w-0 p-[15px] gap-1.5">
-
         {/* 일주 + 성별 뱃지 */}
         <View className="flex-row items-end gap-2">
           <Font
@@ -67,9 +84,14 @@ export default function ProfileCard({ profile, onPress }: Props) {
             {profile.iljoo}
             <Font
               tag="primaryLight"
-              style={{ fontSize: 13, letterSpacing: 1, color: primitives.ink500 }}
+              style={{
+                fontSize: 13,
+                letterSpacing: 1,
+                color: primitives.ink500,
+              }}
             >
-              {' '}{profile.iljooHanja}
+              {' '}
+              {profile.iljooHanja}
             </Font>
           </Font>
           <View
@@ -120,18 +142,30 @@ export default function ProfileCard({ profile, onPress }: Props) {
         {/* 메타 칩 */}
         <View className="flex-row items-center gap-1.5 flex-wrap">
           {!hasAnalysis ? (
-            <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 10.5 }}>
+            <Font
+              tag="secondary"
+              className="text-textDisabled"
+              style={{ fontSize: 10.5 }}
+            >
               미분석
             </Font>
           ) : (
             <>
-              <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 10.5 }}>
+              <Font
+                tag="secondary"
+                className="text-textTertiary"
+                style={{ fontSize: 10.5 }}
+              >
                 분석 {profile.analysisCount}회
               </Font>
               {profile.savedCount !== undefined && (
                 <>
                   <View className="w-1 h-1 rounded-full bg-borderStrong" />
-                  <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 10.5 }}>
+                  <Font
+                    tag="secondary"
+                    className="text-textTertiary"
+                    style={{ fontSize: 10.5 }}
+                  >
                     저장 {profile.savedCount}개
                   </Font>
                 </>

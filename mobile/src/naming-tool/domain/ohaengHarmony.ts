@@ -1,4 +1,9 @@
-import { Ohaeng, OhaengHarmonyResult, OhaengPair, HarmonyLevel } from '../types';
+import {
+  Ohaeng,
+  OhaengHarmonyResult,
+  OhaengPair,
+  HarmonyLevel,
+} from '../types';
 import { getRelation } from './ohaeng';
 
 /**
@@ -8,7 +13,9 @@ import { getRelation } from './ohaeng';
  * - 반길: 상극 있지만 전부는 아님, 또는 모두 동일
  * - 대흉: 모든 쌍이 상극
  */
-export function computeOhaengHarmony(elements: (Ohaeng | null)[]): OhaengHarmonyResult | null {
+export function computeOhaengHarmony(
+  elements: (Ohaeng | null)[],
+): OhaengHarmonyResult | null {
   const valid = elements.filter((e): e is Ohaeng => e !== null);
   if (valid.length < 2) return null;
 
@@ -24,9 +31,9 @@ export function computeOhaengHarmony(elements: (Ohaeng | null)[]): OhaengHarmony
     return sum;
   }, 0);
 
-  const hasSanggeuk = pairs.some(p => p.relation === '상극');
-  const hasSangsaeng = pairs.some(p => p.relation === '상생');
-  const allSanggeuk = pairs.every(p => p.relation === '상극');
+  const hasSanggeuk = pairs.some((p) => p.relation === '상극');
+  const hasSangsaeng = pairs.some((p) => p.relation === '상생');
+  const allSanggeuk = pairs.every((p) => p.relation === '상극');
 
   let level: HarmonyLevel;
   if (allSanggeuk) {
@@ -44,7 +51,5 @@ export function computeOhaengHarmony(elements: (Ohaeng | null)[]): OhaengHarmony
 }
 
 function buildReason(pairs: OhaengPair[]): string {
-  return pairs
-    .map(p => `${p.a}→${p.b} ${p.relation}`)
-    .join(', ');
+  return pairs.map((p) => `${p.a}→${p.b} ${p.relation}`).join(', ');
 }

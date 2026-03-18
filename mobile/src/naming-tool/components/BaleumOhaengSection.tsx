@@ -16,9 +16,21 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
   const { surname, first1, first2 } = nameInput;
 
   const nodes: React.ComponentProps<typeof OhaengRelationDiagram>['nodes'] = [
-    { character: surname.hangul || null, ohaeng: surname.hangul ? baleumOhaengFromChar(surname.hangul) : null, positionLabel: '성' },
-    { character: first1.hangul || null, ohaeng: first1.hangul ? baleumOhaengFromChar(first1.hangul) : null, positionLabel: '첫째' },
-    { character: first2.hangul || null, ohaeng: first2.hangul ? baleumOhaengFromChar(first2.hangul) : null, positionLabel: '둘째' },
+    {
+      character: surname.hangul || null,
+      ohaeng: surname.hangul ? baleumOhaengFromChar(surname.hangul) : null,
+      positionLabel: '성',
+    },
+    {
+      character: first1.hangul || null,
+      ohaeng: first1.hangul ? baleumOhaengFromChar(first1.hangul) : null,
+      positionLabel: '첫째',
+    },
+    {
+      character: first2.hangul || null,
+      ohaeng: first2.hangul ? baleumOhaengFromChar(first2.hangul) : null,
+      positionLabel: '둘째',
+    },
   ];
 
   const hasInput = nodes.some((n) => n.character);
@@ -38,22 +50,23 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
             이름을 입력하면 발음오행이 표시됩니다
           </Font>
         )}
-        {result && (() => {
-          const desc = getOhaengCombinationDescription(result.combinationKey);
-          if (!desc) return null;
-          return (
-            <>
-              <View className="border-b border-border" />
-              <Font
-                tag="secondary"
-                className="text-bodySm text-textSecondary"
-                style={{ lineHeight: 18 }}
-              >
-                {desc.description}
-              </Font>
-            </>
-          );
-        })()}
+        {result &&
+          (() => {
+            const desc = getOhaengCombinationDescription(result.combinationKey);
+            if (!desc) return null;
+            return (
+              <>
+                <View className="border-b border-border" />
+                <Font
+                  tag="secondary"
+                  className="text-bodySm text-textSecondary"
+                  style={{ lineHeight: 18 }}
+                >
+                  {desc.description}
+                </Font>
+              </>
+            );
+          })()}
       </View>
     </SectionCard>
   );

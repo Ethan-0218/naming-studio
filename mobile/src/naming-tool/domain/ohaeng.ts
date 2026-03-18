@@ -49,7 +49,11 @@ export function strokeToOhaeng(stroke: number): Ohaeng {
 
 export function ohaengLabel(o: Ohaeng): string {
   const map: Record<Ohaeng, string> = {
-    '목': '木', '화': '火', '토': '土', '금': '金', '수': '水',
+    목: '木',
+    화: '火',
+    토: '土',
+    금: '金',
+    수: '水',
   };
   return map[o];
 }

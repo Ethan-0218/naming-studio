@@ -2,7 +2,7 @@
 // 원시 색상 스케일. Semantic Token 정의 시에만 사용하고 컴포넌트에서 직접 참조 금지.
 export const primitives = {
   // Hanji (한지)
-  hanji50:  '#FDFAF3',
+  hanji50: '#FDFAF3',
   hanji100: '#FBF7EE',
   hanji200: '#F7F2E6',
   hanji300: '#EEE8D8',
@@ -67,60 +67,60 @@ export type PrimitiveKey = keyof typeof primitives;
 // 컴포넌트에서 반드시 이 토큰만 참조할 것.
 export const colors = {
   // Surface
-  bg:            primitives.hanji100,
-  bgSubtle:      primitives.hanji300,
-  surface:       primitives.hanji200,
+  bg: primitives.hanji100,
+  bgSubtle: primitives.hanji300,
+  surface: primitives.hanji200,
   surfaceRaised: primitives.hanji50,
-  overlay:       'rgba(58, 47, 30, 0.35)',
+  overlay: 'rgba(58, 47, 30, 0.35)',
 
   // Border
-  border:        primitives.hanji400,
-  borderStrong:  primitives.hanji500,
+  border: primitives.hanji400,
+  borderStrong: primitives.hanji500,
 
   // Text
-  textPrimary:   primitives.ink900,
+  textPrimary: primitives.ink900,
   textSecondary: primitives.ink700,
-  textTertiary:  primitives.ink500,
-  textDisabled:  primitives.ink300,
-  textInverse:   primitives.hanji100,
+  textTertiary: primitives.ink500,
+  textDisabled: primitives.ink300,
+  textInverse: primitives.hanji100,
 
   // Interactive
-  fillBold:      primitives.ink900,
-  fillAccent:    primitives.gold600,
+  fillBold: primitives.ink900,
+  fillAccent: primitives.gold600,
   fillAccentSub: primitives.gold200,
 
   // Status — Positive (긍정, 생(生) 관계, 대길)
-  positive:       primitives.teal600,
-  positiveSub:    primitives.teal200,
+  positive: primitives.teal600,
+  positiveSub: primitives.teal200,
   positiveBorder: primitives.teal400,
 
   // Status — Negative (부정, 극(剋) 관계, 대흉)
-  negative:       primitives.vermillion600,
-  negativeSub:    primitives.vermillion200,
+  negative: primitives.vermillion600,
+  negativeSub: primitives.vermillion200,
   negativeBorder: primitives.vermillion400,
 
   // Status — Warning (주의, 반길)
-  warning:        primitives.gold600,
-  warningSub:     primitives.gold200,
-  warningBorder:  primitives.gold400,
+  warning: primitives.gold600,
+  warningSub: primitives.gold200,
+  warningBorder: primitives.gold400,
 
   // Status — Info (정보, 음(陰))
-  info:           primitives.purple600,
-  infoSub:        primitives.purple200,
-  infoBorder:     primitives.purple400,
+  info: primitives.purple600,
+  infoSub: primitives.purple200,
+  infoBorder: primitives.purple400,
 
   // Highlight
-  highlight:       primitives.gold600,
-  highlightSub:    primitives.gold200,
+  highlight: primitives.gold600,
+  highlightSub: primitives.gold200,
   highlightBorder: primitives.gold400,
 
   // Yin Yang (음양)
-  yin:       primitives.purple600,
-  yinSub:    primitives.purple200,
+  yin: primitives.purple600,
+  yinSub: primitives.purple200,
   yinBorder: primitives.purple400,
 
-  yang:      primitives.gold600,
-  yangSub:   primitives.gold200,
+  yang: primitives.gold600,
+  yangSub: primitives.gold200,
   yangBorder: primitives.gold400,
 } as const;
 
@@ -128,10 +128,33 @@ export type ColorKey = keyof typeof colors;
 
 // ─── Ohaeng Domain Colors ─────────────────────────────────────────────────────
 // 오행 도메인 전용. 일반 UI에서는 사용 안 함.
-export const ohaengColors: Record<string, { base: string; light: string; border: string }> = {
-  '목': { base: primitives.wood600,  light: primitives.wood200,  border: primitives.wood400  },
-  '화': { base: primitives.fire600,  light: primitives.fire200,  border: primitives.fire400  },
-  '토': { base: primitives.earth600, light: primitives.earth200, border: primitives.earth400 },
-  '금': { base: primitives.metal600, light: primitives.metal200, border: primitives.metal400 },
-  '수': { base: primitives.water600, light: primitives.water200, border: primitives.water400 },
+export const ohaengColors: Record<
+  string,
+  { base: string; light: string; border: string }
+> = {
+  목: {
+    base: primitives.wood600,
+    light: primitives.wood200,
+    border: primitives.wood400,
+  },
+  화: {
+    base: primitives.fire600,
+    light: primitives.fire200,
+    border: primitives.fire400,
+  },
+  토: {
+    base: primitives.earth600,
+    light: primitives.earth200,
+    border: primitives.earth400,
+  },
+  금: {
+    base: primitives.metal600,
+    light: primitives.metal200,
+    border: primitives.metal400,
+  },
+  수: {
+    base: primitives.water600,
+    light: primitives.water200,
+    border: primitives.water400,
+  },
 };

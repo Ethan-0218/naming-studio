@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Modal, Pressable, FlatList,
-  TextInput, Animated, KeyboardAvoidingView, Platform,
+  View,
+  Modal,
+  Pressable,
+  FlatList,
+  TextInput,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { primitives } from '@/design-system';
@@ -15,7 +21,12 @@ interface Props {
   onClose: () => void;
 }
 
-export default function RegionBottomSheet({ visible, selectedRegion, onSelect, onClose }: Props) {
+export default function RegionBottomSheet({
+  visible,
+  selectedRegion,
+  onSelect,
+  onClose,
+}: Props) {
   const [query, setQuery] = useState('');
   // isOpen은 Modal visible을 제어 — 닫기 애니메이션이 완료된 후에 false가 됨
   const [isOpen, setIsOpen] = useState(false);
@@ -52,8 +63,8 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
   }, [isOpen]);
 
   const filtered = query.trim()
-    ? REGIONS.filter((r) =>
-        r.name.includes(query.trim()) || r.full.includes(query.trim())
+    ? REGIONS.filter(
+        (r) => r.name.includes(query.trim()) || r.full.includes(query.trim()),
       )
     : REGIONS;
 
@@ -63,7 +74,12 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
   }
 
   return (
-    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={isOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -111,7 +127,11 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
             {/* 목록 */}
             {filtered.length === 0 ? (
               <View className="p-10 items-center">
-                <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 14 }}>
+                <Font
+                  tag="secondary"
+                  className="text-textDisabled"
+                  style={{ fontSize: 14 }}
+                >
                   검색 결과가 없습니다
                 </Font>
               </View>
@@ -120,7 +140,10 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
                 data={filtered}
                 keyExtractor={(item) => item.name}
                 className="max-h-[340px]"
-                contentContainerStyle={{ paddingVertical: 6, paddingHorizontal: 12 }}
+                contentContainerStyle={{
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => {
@@ -131,7 +154,9 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
                       style={({ pressed }) => ({
                         backgroundColor: isSelected
                           ? undefined
-                          : pressed ? '#f5f5f4' : 'transparent',
+                          : pressed
+                            ? '#f5f5f4'
+                            : 'transparent',
                       })}
                       onPress={() => handleSelect(item)}
                     >
@@ -139,7 +164,9 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
                       <View className="flex-row items-end gap-2 flex-1">
                         <Font
                           tag={isSelected ? 'primaryMedium' : 'primary'}
-                          className={isSelected ? 'text-fillAccent' : 'text-textPrimary'}
+                          className={
+                            isSelected ? 'text-fillAccent' : 'text-textPrimary'
+                          }
                           style={{ fontSize: 16 }}
                         >
                           {item.name}
@@ -158,14 +185,22 @@ export default function RegionBottomSheet({ visible, selectedRegion, onSelect, o
                         {item.offset !== null && (
                           <Font
                             tag="secondary"
-                            className={isSelected ? 'text-warningBorder' : 'text-textDisabled'}
+                            className={
+                              isSelected
+                                ? 'text-warningBorder'
+                                : 'text-textDisabled'
+                            }
                             style={{ fontSize: 11, letterSpacing: 0.4 }}
                           >
                             약 {item.offset}분
                           </Font>
                         )}
                         {isSelected && (
-                          <Ionicons name="checkmark" size={16} color={primitives.gold600} />
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color={primitives.gold600}
+                          />
                         )}
                       </View>
                     </Pressable>

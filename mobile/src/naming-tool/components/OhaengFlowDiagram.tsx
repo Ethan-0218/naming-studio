@@ -10,15 +10,15 @@ interface Props {
 }
 
 const RELATION_LABEL: Record<OhaengRelation, string> = {
-  '상생': '상생',
-  '상극': '상극',
-  '동일': '동일',
+  상생: '상생',
+  상극: '상극',
+  동일: '동일',
 };
 
 const RELATION_COLOR: Record<OhaengRelation, string> = {
-  '상생': ohaengColors['목'].border,
-  '상극': ohaengColors['화'].border,
-  '동일': colors.borderStrong,
+  상생: ohaengColors['목'].border,
+  상극: ohaengColors['화'].border,
+  동일: colors.borderStrong,
 };
 
 function OhaengNode({ element }: { element: Ohaeng | null }) {
@@ -59,8 +59,13 @@ function Arrow({ relation }: { relation: OhaengRelation | null }) {
       >
         {label}
       </Font>
-      <View className="h-[1.5px] w-8 bg-current" style={{ width: 32, height: 1.5, backgroundColor: color }} />
-      <Font tag="secondary" style={{ fontSize: 8, marginTop: -2, color }}>{'▶'}</Font>
+      <View
+        className="h-[1.5px] w-8 bg-current"
+        style={{ width: 32, height: 1.5, backgroundColor: color }}
+      />
+      <Font tag="secondary" style={{ fontSize: 8, marginTop: -2, color }}>
+        {'▶'}
+      </Font>
     </View>
   );
 }

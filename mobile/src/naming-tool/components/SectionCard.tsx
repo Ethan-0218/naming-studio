@@ -15,23 +15,25 @@ interface Props {
 }
 
 const HARMONY_COLOR: Record<HarmonyLevel, string> = {
-  '大吉': colors.positive,
-  '平': colors.fillAccent,
-  '大凶': colors.negative,
+  大吉: colors.positive,
+  平: colors.fillAccent,
+  大凶: colors.negative,
 };
 
 export function harmonyBadgeColor(level: HarmonyLevel): string {
   return HARMONY_COLOR[level];
 }
 
-export default function SectionCard({ title, badge, badgeColor, children }: Props) {
+export default function SectionCard({
+  title,
+  badge,
+  badgeColor,
+  children,
+}: Props) {
   return (
     <View>
       <View className="flex-row items-center justify-between mb-2">
-        <Font
-          tag="primaryMedium"
-          className="text-heading text-textPrimary"
-        >
+        <Font tag="primaryMedium" className="text-heading text-textPrimary">
           {title}
         </Font>
         {badge && (

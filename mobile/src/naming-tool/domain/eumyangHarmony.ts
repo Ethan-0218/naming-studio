@@ -6,12 +6,14 @@ import { EUMYANG_COMBINATION_DESCRIPTIONS } from './eumyangCombinationDescriptio
  * - 2글자: 교차(음양 or 양음)이면 조화
  * - 3글자: 2:1 비율이면 조화 (모두 같으면 불조화)
  */
-export function computeEumyangHarmony(chars: (Eumyang | null)[]): EumyangHarmonyResult | null {
+export function computeEumyangHarmony(
+  chars: (Eumyang | null)[],
+): EumyangHarmonyResult | null {
   const valid = chars.filter((e): e is Eumyang => e !== null);
   if (valid.length < 2) return null;
 
-  const eumCount = valid.filter(e => e === '음').length;
-  const yangCount = valid.filter(e => e === '양').length;
+  const eumCount = valid.filter((e) => e === '음').length;
+  const yangCount = valid.filter((e) => e === '양').length;
 
   let harmonious: boolean;
   let reason: string;
@@ -30,6 +32,8 @@ export function computeEumyangHarmony(chars: (Eumyang | null)[]): EumyangHarmony
   }
 
   const combinationKey = valid.join('');
-  const rating = EUMYANG_COMBINATION_DESCRIPTIONS[combinationKey]?.rating ?? (harmonious ? '吉' : '凶');
+  const rating =
+    EUMYANG_COMBINATION_DESCRIPTIONS[combinationKey]?.rating ??
+    (harmonious ? '吉' : '凶');
   return { harmonious, chars, reason, combinationKey, rating };
 }

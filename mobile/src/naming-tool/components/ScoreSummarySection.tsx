@@ -43,21 +43,27 @@ export default function ScoreSummarySection({ score }: Props) {
         <Font
           tag="primaryBold"
           className="text-numeralLg"
-          style={{ color: score != null ? scoreColor(score) : colors.textDisabled }}
+          style={{
+            color: score != null ? scoreColor(score) : colors.textDisabled,
+          }}
         >
           {score != null ? score : '–'}
         </Font>
         {score != null && (
-          <Font
-            tag="secondary"
-            className="text-bodySm text-textTertiary"
-          >
+          <Font tag="secondary" className="text-bodySm text-textTertiary">
             {ScoreLabel(score)}
           </Font>
         )}
       </View>
 
-      <View style={{ width: GAUGE_SIZE, height: GAUGE_SIZE, alignItems: 'center', justifyContent: 'center' }}>
+      <View
+        style={{
+          width: GAUGE_SIZE,
+          height: GAUGE_SIZE,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <View
           style={{
             position: 'absolute',

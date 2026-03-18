@@ -1,14 +1,18 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
-  View, Modal, ScrollView, Pressable,
-  Animated, Platform,
+  View,
+  Modal,
+  ScrollView,
+  Pressable,
+  Animated,
+  Platform,
 } from 'react-native';
 import { Font } from '@/components/Font';
 
 interface Props {
   visible: boolean;
   isAm: boolean;
-  hour: number;   // 1–12
+  hour: number; // 1–12
   minute: number; // 0–59
   onConfirm: (isAm: boolean, hour: number, minute: number) => void;
   onClose: () => void;
@@ -18,8 +22,8 @@ const ITEM_HEIGHT = 44;
 const VISIBLE_ITEMS = 5;
 const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
-const HOURS = Array.from({ length: 12 }, (_, i) => i + 1);   // 1–12
-const MINUTES = Array.from({ length: 60 }, (_, i) => i);      // 0–59
+const HOURS = Array.from({ length: 12 }, (_, i) => i + 1); // 1–12
+const MINUTES = Array.from({ length: 60 }, (_, i) => i); // 0–59
 
 function PickerColumn({
   items,
@@ -38,7 +42,10 @@ function PickerColumn({
 
   useEffect(() => {
     setTimeout(() => {
-      scrollRef.current?.scrollTo({ y: initialIndex * ITEM_HEIGHT, animated: false });
+      scrollRef.current?.scrollTo({
+        y: initialIndex * ITEM_HEIGHT,
+        animated: false,
+      });
     }, 50);
   }, []);
 
@@ -59,7 +66,9 @@ function PickerColumn({
         snapToAlignment="start"
         decelerationRate="fast"
         scrollEventThrottle={16}
-        onScroll={(e) => { offsetRef.current = e.nativeEvent.contentOffset.y; }}
+        onScroll={(e) => {
+          offsetRef.current = e.nativeEvent.contentOffset.y;
+        }}
         contentContainerStyle={{ paddingVertical: ITEM_HEIGHT * 2 }}
       >
         {items.map((v) => {
@@ -86,9 +95,17 @@ function PickerColumn({
       <View
         pointerEvents="none"
         className="absolute right-1.5 justify-end z-20"
-        style={{ bottom: ITEM_HEIGHT * 2 - 2, height: ITEM_HEIGHT, paddingBottom: 9 }}
+        style={{
+          bottom: ITEM_HEIGHT * 2 - 2,
+          height: ITEM_HEIGHT,
+          paddingBottom: 9,
+        }}
       >
-        <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 11 }}>
+        <Font
+          tag="secondary"
+          className="text-textTertiary"
+          style={{ fontSize: 11 }}
+        >
           {unit}
         </Font>
       </View>
@@ -96,9 +113,18 @@ function PickerColumn({
   );
 }
 
-export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm, onClose }: Props) {
+export default function TimePickerSheet({
+  visible,
+  isAm,
+  hour,
+  minute,
+  onConfirm,
+  onClose,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedAmPm, setSelectedAmPm] = useState<'오전' | '오후'>(isAm ? '오전' : '오후');
+  const [selectedAmPm, setSelectedAmPm] = useState<'오전' | '오후'>(
+    isAm ? '오전' : '오후',
+  );
   const slideAnim = useRef(new Animated.Value(400)).current;
 
   // 오전/오후 슬라이딩 애니메이션
@@ -156,22 +182,49 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
   }, [isOpen]);
 
   function handleConfirm() {
-    const hIdx = Math.max(0, Math.min(Math.round(hourOffsetRef.current / ITEM_HEIGHT), HOURS.length - 1));
-    const mIdx = Math.max(0, Math.min(Math.round(minuteOffsetRef.current / ITEM_HEIGHT), MINUTES.length - 1));
+    const hIdx = Math.max(
+      0,
+      Math.min(
+        Math.round(hourOffsetRef.current / ITEM_HEIGHT),
+        HOURS.length - 1,
+      ),
+    );
+    const mIdx = Math.max(
+      0,
+      Math.min(
+        Math.round(minuteOffsetRef.current / ITEM_HEIGHT),
+        MINUTES.length - 1,
+      ),
+    );
     onConfirm(selectedAmPm === '오전', HOURS[hIdx], MINUTES[mIdx]);
     onClose();
   }
 
   return (
-    <Modal visible={isOpen} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={isOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       {/* 딤 오버레이 */}
       <Pressable
-        style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.4)' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+        }}
         onPress={onClose}
       />
 
       {/* 시트 컨테이너 */}
-      <View style={{ flex: 1, justifyContent: 'flex-end' }} pointerEvents="box-none">
+      <View
+        style={{ flex: 1, justifyContent: 'flex-end' }}
+        pointerEvents="box-none"
+      >
         <Animated.View style={{ transform: [{ translateY: slideAnim }] }}>
           <View className="bg-surfaceRaised rounded-t-[28px]">
             {/* 핸들 */}
@@ -191,7 +244,9 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
             {/* 오전 / 오후 세그먼트 */}
             <View
               className="flex-row mx-4 mt-4 mb-2 bg-surface border border-border rounded-full p-[3px]"
-              onLayout={(e) => setAmPmPillWidth(e.nativeEvent.layout.width / 2 - 3)}
+              onLayout={(e) =>
+                setAmPmPillWidth(e.nativeEvent.layout.width / 2 - 3)
+              }
             >
               {/* 슬라이딩 선택 인디케이터 */}
               {amPmPillWidth > 0 && (
@@ -200,12 +255,14 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
                   style={{
                     width: amPmPillWidth,
                     left: 3,
-                    transform: [{
-                      translateX: amPmAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, amPmPillWidth],
-                      }),
-                    }],
+                    transform: [
+                      {
+                        translateX: amPmAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, amPmPillWidth],
+                        }),
+                      },
+                    ],
                   }}
                   pointerEvents="none"
                 />
@@ -221,7 +278,9 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
                   >
                     <Font
                       tag={active ? 'secondaryMedium' : 'secondary'}
-                      className={active ? 'text-textInverse' : 'text-textTertiary'}
+                      className={
+                        active ? 'text-textInverse' : 'text-textTertiary'
+                      }
                       style={{ fontSize: 13, letterSpacing: 0.4 }}
                     >
                       {label}
@@ -250,7 +309,10 @@ export default function TimePickerSheet({ visible, isAm, hour, minute, onConfirm
             </View>
 
             {/* 확인 버튼 */}
-            <View className="p-4" style={{ paddingBottom: Platform.OS === 'ios' ? 32 : 20 }}>
+            <View
+              className="p-4"
+              style={{ paddingBottom: Platform.OS === 'ios' ? 32 : 20 }}
+            >
               <Pressable
                 className="bg-fillBold rounded-[14px] h-[52px] items-center justify-center"
                 style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}

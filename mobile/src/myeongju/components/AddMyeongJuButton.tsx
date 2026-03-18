@@ -15,7 +15,10 @@ export default function AddMyeongJuButton({ onPress }: Props) {
         style={({ pressed }) => ({ opacity: pressed ? 0.82 : 1 })}
         onPress={onPress}
       >
-        <View className="w-[26px] h-[26px] rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}>
+        <View
+          className="w-[26px] h-[26px] rounded-full items-center justify-center"
+          style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}
+        >
           <Ionicons name="add" size={16} color="rgba(255,255,255,0.85)" />
         </View>
         <View className="flex-1">
@@ -29,12 +32,20 @@ export default function AddMyeongJuButton({ onPress }: Props) {
           <Font
             tag="secondary"
             className="mt-0.5"
-            style={{ fontSize: 11, color: 'rgba(251,247,238,0.4)', letterSpacing: 0.4 }}
+            style={{
+              fontSize: 11,
+              color: 'rgba(251,247,238,0.4)',
+              letterSpacing: 0.4,
+            }}
           >
             사주·성별 정보로 등록
           </Font>
         </View>
-        <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.30)" />
+        <Ionicons
+          name="chevron-forward"
+          size={18}
+          color="rgba(255,255,255,0.30)"
+        />
       </Pressable>
     </View>
   );

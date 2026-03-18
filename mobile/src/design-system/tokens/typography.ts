@@ -12,14 +12,14 @@ import type { TextStyle } from 'react-native';
  * useFonts()에 전달하는 키와 일치해야 하는 폰트 패밀리 이름
  */
 export const fontFamily = {
-  serifLight:    'NotoSerifKR_300Light',
-  serifRegular:  'NotoSerifKR_400Regular',
-  serifMedium:   'NotoSerifKR_500Medium',
+  serifLight: 'NotoSerifKR_300Light',
+  serifRegular: 'NotoSerifKR_400Regular',
+  serifMedium: 'NotoSerifKR_500Medium',
   serifSemiBold: 'NotoSerifKR_600SemiBold',
 
-  sansLight:   'NotoSansKR_300Light',
+  sansLight: 'NotoSansKR_300Light',
   sansRegular: 'NotoSansKR_400Regular',
-  sansMedium:  'NotoSansKR_500Medium',
+  sansMedium: 'NotoSansKR_500Medium',
 } as const;
 
 export type FontFamilyKey = keyof typeof fontFamily;
@@ -111,14 +111,14 @@ export const textStyles = {
   display: buildTextStyle('serif', '500', {
     fontSize: 32,
     letterSpacing: -0.5,
-    lineHeight: Math.round(32 * 1.2),  // 38
+    lineHeight: Math.round(32 * 1.2), // 38
   }),
 
   /** 앱 타이틀 / 큰 스크린 제목 (이름공방 로고 등) */
   title1: buildTextStyle('serif', '500', {
     fontSize: 24,
     letterSpacing: 2,
-    lineHeight: Math.round(24 * 1.3),  // 31
+    lineHeight: Math.round(24 * 1.3), // 31
   }),
 
   /** 서브 타이틀 / 바텀시트 제목 */
@@ -132,21 +132,21 @@ export const textStyles = {
   heading: buildTextStyle('serif', '500', {
     fontSize: 16,
     letterSpacing: 0.5,
-    lineHeight: Math.round(16 * 1.4),  // 22
+    lineHeight: Math.round(16 * 1.4), // 22
   }),
 
   /** 종합 점수 등 큰 숫자 단독 표시 — 가장 강한 강조 */
   numeralLg: buildTextStyle('serif', '600', {
     fontSize: 32,
     letterSpacing: -1,
-    lineHeight: Math.round(32 * 1),    // 32
+    lineHeight: Math.round(32 * 1), // 32
   }),
 
   /** 수리격 숫자 등 중형 숫자 — 카드 내 핵심 정보 */
   numeralMd: buildTextStyle('serif', '500', {
     fontSize: 20,
     letterSpacing: 0,
-    lineHeight: Math.round(20 * 1),    // 20
+    lineHeight: Math.round(20 * 1), // 20
   }),
 
   /**
@@ -157,7 +157,7 @@ export const textStyles = {
   hanjaLg: buildTextStyle('serif', '500', {
     fontSize: 24,
     letterSpacing: 0,
-    lineHeight: Math.round(24 * 1),    // 24
+    lineHeight: Math.round(24 * 1), // 24
   }),
 
   /**
@@ -168,14 +168,14 @@ export const textStyles = {
   hanjaSm: buildTextStyle('serif', '500', {
     fontSize: 16,
     letterSpacing: 0,
-    lineHeight: Math.round(16 * 1),    // 16
+    lineHeight: Math.round(16 * 1), // 16
   }),
 
   /** Serif 계열 레이블·배지 — 발음오행 등 강조 배지 */
   serifLabel: buildTextStyle('serif', '500', {
     fontSize: 13,
     letterSpacing: 1,
-    lineHeight: Math.round(13 * 1.4),  // 18
+    lineHeight: Math.round(13 * 1.4), // 18
   }),
 
   // ── Noto Sans KR ───────────────────────────────────────────────────
@@ -184,49 +184,49 @@ export const textStyles = {
   bodyLg: buildTextStyle('sans', '500', {
     fontSize: 15,
     letterSpacing: 0,
-    lineHeight: Math.round(15 * 1.7),  // 26
+    lineHeight: Math.round(15 * 1.7), // 26
   }),
 
   /** 일반 본문 설명 */
   body: buildTextStyle('sans', '400', {
     fontSize: 13,
     letterSpacing: 0,
-    lineHeight: Math.round(13 * 1.7),  // 22
+    lineHeight: Math.round(13 * 1.7), // 22
   }),
 
   /** 보조 설명 / 힌트 / 빈 상태 메시지 */
   bodySm: buildTextStyle('sans', '400', {
     fontSize: 11,
     letterSpacing: 0,
-    lineHeight: Math.round(11 * 1.7),  // 19
+    lineHeight: Math.round(11 * 1.7), // 19
   }),
 
   /** 버튼·탭 레이블, 중형 UI 액션 텍스트 */
   uiMd: buildTextStyle('sans', '500', {
     fontSize: 14,
     letterSpacing: 0.3,
-    lineHeight: Math.round(14 * 1.4),  // 20
+    lineHeight: Math.round(14 * 1.4), // 20
   }),
 
   /** 평가 카드 제목 / 소형 UI 액션 텍스트 */
   uiSm: buildTextStyle('sans', '500', {
     fontSize: 13,
     letterSpacing: 0.3,
-    lineHeight: Math.round(13 * 1.4),  // 18
+    lineHeight: Math.round(13 * 1.4), // 18
   }),
 
   /** 뱃지·칩·태그 (성별 선택, 오행 배지 등) */
   label: buildTextStyle('sans', '500', {
     fontSize: 11,
     letterSpacing: 0.5,
-    lineHeight: Math.round(11 * 1.4),  // 15
+    lineHeight: Math.round(11 * 1.4), // 15
   }),
 
   /** 부가 정보 / 한자 뜻·음·획수 — weight 올려 가독성 확보 */
   caption: buildTextStyle('sans', '500', {
     fontSize: 10,
     letterSpacing: 0.5,
-    lineHeight: Math.round(10 * 1.5),  // 15
+    lineHeight: Math.round(10 * 1.5), // 15
   }),
 
   /** 섹션 구분 라벨 — 항상 uppercase로 렌더링됨 */
@@ -234,7 +234,7 @@ export const textStyles = {
     fontSize: 9,
     letterSpacing: 2,
     textTransform: 'uppercase' as const,
-    lineHeight: Math.round(9 * 1.5),   // 14
+    lineHeight: Math.round(9 * 1.5), // 14
   }),
 } as const satisfies Record<string, TextStyle>;
 

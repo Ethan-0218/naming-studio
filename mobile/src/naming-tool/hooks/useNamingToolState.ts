@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
-  HanjaSelection, CharSlotData, Gender, NameInput, NamingAnalysis, SajuInput,
-  OhaengHarmonyResult, EumyangHarmonyResult,
+  HanjaSelection,
+  CharSlotData,
+  Gender,
+  NameInput,
+  NamingAnalysis,
+  SajuInput,
+  OhaengHarmonyResult,
+  EumyangHarmonyResult,
 } from '../types';
 import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
 import { computeOhaengHarmony } from '../domain/ohaengHarmony';
@@ -25,13 +31,19 @@ interface HanjaInput {
 }
 
 /** 현재 한글과 선택이 일치할 때만 반환 — 한글이 바뀐 경우 null */
-function getValidHanja(hangul: string, selection: HanjaSelection | null): HanjaSelection | null {
+function getValidHanja(
+  hangul: string,
+  selection: HanjaSelection | null,
+): HanjaSelection | null {
   if (!selection || selection.forHangul !== hangul) return null;
   return selection;
 }
 
 /** 한글 + 유효한 한자 선택 → 컴포넌트 표시용 CharSlotData */
-function resolveSlot(hangul: string, hanja: HanjaSelection | null): CharSlotData {
+function resolveSlot(
+  hangul: string,
+  hanja: HanjaSelection | null,
+): CharSlotData {
   return {
     hangul,
     hanja: hanja?.hanja ?? '',
@@ -42,7 +54,6 @@ function resolveSlot(hangul: string, hanja: HanjaSelection | null): CharSlotData
     strokeEumyang: hanja?.strokeEumyang ?? null,
   };
 }
-
 
 function computeAnalysis(
   hangulInput: HangulInput,
@@ -60,7 +71,8 @@ function computeAnalysis(
     hangulInput.first1 ? baleumOhaengFromChar(hangulInput.first1) : null,
     hangulInput.first2 ? baleumOhaengFromChar(hangulInput.first2) : null,
   ];
-  const baleumOhaengResult: OhaengHarmonyResult | null = computeOhaengHarmony(baleumElements);
+  const baleumOhaengResult: OhaengHarmonyResult | null =
+    computeOhaengHarmony(baleumElements);
 
   // 발음음양: 한자 데이터 우선, 없으면 hangul 폴백
   const soundEumyangs = [
@@ -68,17 +80,32 @@ function computeAnalysis(
     f1H?.soundEumyang ?? soundEumyangFromHangul(hangulInput.first1),
     f2H?.soundEumyang ?? soundEumyangFromHangul(hangulInput.first2),
   ];
-  const baleumEumyangResult: EumyangHarmonyResult | null =
-    soundEumyangs.some(e => e !== null) ? computeEumyangHarmony(soundEumyangs) : null;
+  const baleumEumyangResult: EumyangHarmonyResult | null = soundEumyangs.some(
+    (e) => e !== null,
+  )
+    ? computeEumyangHarmony(soundEumyangs)
+    : null;
 
   // 자원오행: 유효한 한자 선택의 charOhaeng
-  const jawonElements = [sH?.charOhaeng ?? null, f1H?.charOhaeng ?? null, f2H?.charOhaeng ?? null];
-  const jawonOhaengResult: OhaengHarmonyResult | null = computeOhaengHarmony(jawonElements);
+  const jawonElements = [
+    sH?.charOhaeng ?? null,
+    f1H?.charOhaeng ?? null,
+    f2H?.charOhaeng ?? null,
+  ];
+  const jawonOhaengResult: OhaengHarmonyResult | null =
+    computeOhaengHarmony(jawonElements);
 
   // 획수음양: 유효한 한자 선택의 strokeEumyang
-  const strokeEumyangs = [sH?.strokeEumyang ?? null, f1H?.strokeEumyang ?? null, f2H?.strokeEumyang ?? null];
-  const hoeksuEumyangResult: EumyangHarmonyResult | null =
-    strokeEumyangs.some(e => e !== null) ? computeEumyangHarmony(strokeEumyangs) : null;
+  const strokeEumyangs = [
+    sH?.strokeEumyang ?? null,
+    f1H?.strokeEumyang ?? null,
+    f2H?.strokeEumyang ?? null,
+  ];
+  const hoeksuEumyangResult: EumyangHarmonyResult | null = strokeEumyangs.some(
+    (e) => e !== null,
+  )
+    ? computeEumyangHarmony(strokeEumyangs)
+    : null;
 
   // 수리격: 유효한 한자 선택의 strokeCount
   let surigyeokResult = null;
@@ -93,7 +120,13 @@ function computeAnalysis(
 
   // 종합 점수
   let totalScore: number | null = null;
-  if (baleumOhaengResult || baleumEumyangResult || surigyeokResult || jawonOhaengResult || hoeksuEumyangResult) {
+  if (
+    baleumOhaengResult ||
+    baleumEumyangResult ||
+    surigyeokResult ||
+    jawonOhaengResult ||
+    hoeksuEumyangResult
+  ) {
     let score = 0;
     if (baleumOhaengResult) {
       score += toScore(baleumOhaengResult.level) * 25;
@@ -124,23 +157,37 @@ function computeAnalysis(
 }
 
 export function useNamingToolState() {
-  const [hangulInput, setHangulInput] = useState<HangulInput>({ surname: '', first1: '', first2: '' });
-  const [hanjaInput, setHanjaInput] = useState<HanjaInput>({ surname: null, first1: null, first2: null });
+  const [hangulInput, setHangulInput] = useState<HangulInput>({
+    surname: '',
+    first1: '',
+    first2: '',
+  });
+  const [hanjaInput, setHanjaInput] = useState<HanjaInput>({
+    surname: null,
+    first1: null,
+    first2: null,
+  });
   const [sajuInput, setSajuInput] = useState<SajuInput>({ yongsin: null });
   const [gender, setGender] = useState<Gender>('male');
 
-  const resolvedHanjaInput = useMemo<HanjaInput>(() => ({
-    surname: getValidHanja(hangulInput.surname, hanjaInput.surname),
-    first1: getValidHanja(hangulInput.first1, hanjaInput.first1),
-    first2: getValidHanja(hangulInput.first2, hanjaInput.first2),
-  }), [hangulInput, hanjaInput]);
+  const resolvedHanjaInput = useMemo<HanjaInput>(
+    () => ({
+      surname: getValidHanja(hangulInput.surname, hanjaInput.surname),
+      first1: getValidHanja(hangulInput.first1, hanjaInput.first1),
+      first2: getValidHanja(hangulInput.first2, hanjaInput.first2),
+    }),
+    [hangulInput, hanjaInput],
+  );
 
   /** 컴포넌트 표시용 computed view */
-  const nameInput: NameInput = useMemo(() => ({
-    surname: resolveSlot(hangulInput.surname, resolvedHanjaInput.surname),
-    first1: resolveSlot(hangulInput.first1, resolvedHanjaInput.first1),
-    first2: resolveSlot(hangulInput.first2, resolvedHanjaInput.first2),
-  }), [hangulInput, resolvedHanjaInput]);
+  const nameInput: NameInput = useMemo(
+    () => ({
+      surname: resolveSlot(hangulInput.surname, resolvedHanjaInput.surname),
+      first1: resolveSlot(hangulInput.first1, resolvedHanjaInput.first1),
+      first2: resolveSlot(hangulInput.first2, resolvedHanjaInput.first2),
+    }),
+    [hangulInput, resolvedHanjaInput],
+  );
 
   const analysis = useMemo(
     () => computeAnalysis(hangulInput, resolvedHanjaInput, sajuInput, gender),
@@ -148,19 +195,25 @@ export function useNamingToolState() {
   );
 
   function updateHangul(slot: SlotKey, hangul: string) {
-    setHangulInput(prev => ({ ...prev, [slot]: hangul }));
+    setHangulInput((prev) => ({ ...prev, [slot]: hangul }));
   }
 
   function updateHanja(slot: SlotKey, selection: HanjaSelection) {
-    setHanjaInput(prev => ({ ...prev, [slot]: selection }));
+    setHanjaInput((prev) => ({ ...prev, [slot]: selection }));
   }
 
   function updateSaju(data: Partial<SajuInput>) {
-    setSajuInput(prev => ({ ...prev, ...data }));
+    setSajuInput((prev) => ({ ...prev, ...data }));
   }
 
   return {
-    nameInput, sajuInput, gender, setGender,
-    analysis, updateHangul, updateHanja, updateSaju,
+    nameInput,
+    sajuInput,
+    gender,
+    setGender,
+    analysis,
+    updateHangul,
+    updateHanja,
+    updateSaju,
   };
 }

@@ -15,7 +15,11 @@ export default function LoginScreen() {
   async function handleAppleSignIn() {
     try {
       const { identityToken, fullName, email } = await signIn();
-      const { access_token, user_id, profile } = await signInWithApple(identityToken, fullName, email);
+      const { access_token, user_id, profile } = await signInWithApple(
+        identityToken,
+        fullName,
+        email,
+      );
       await setAuth(access_token, user_id, profile);
     } catch (error: any) {
       if (error?.code === 'ERR_REQUEST_CANCELED') return;
@@ -24,12 +28,30 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center', gap: 48 }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.bg,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 48,
+      }}
+    >
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <Font tag="primaryMedium" style={{ fontSize: 28, letterSpacing: 4, color: colors.textPrimary }}>
+        <Font
+          tag="primaryMedium"
+          style={{ fontSize: 28, letterSpacing: 4, color: colors.textPrimary }}
+        >
           명주 스튜디오
         </Font>
-        <Font tag="secondary" style={{ fontSize: 11, letterSpacing: 1.5, color: colors.textTertiary }}>
+        <Font
+          tag="secondary"
+          style={{
+            fontSize: 11,
+            letterSpacing: 1.5,
+            color: colors.textTertiary,
+          }}
+        >
           命主 · 이름의 시작
         </Font>
       </View>

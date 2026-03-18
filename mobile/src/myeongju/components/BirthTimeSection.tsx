@@ -9,7 +9,7 @@ import TimePickerSheet from './TimePickerSheet';
 interface Props {
   timeUnknown: boolean;
   isAm: boolean;
-  hour: number;   // 1–12
+  hour: number; // 1–12
   minute: number; // 0–59
   regionOffset: number | null;
   onToggleUnknown: () => void;
@@ -21,17 +21,25 @@ interface Props {
 const THUMB_TRAVEL = 18;
 
 export default function BirthTimeSection({
-  timeUnknown, isAm, hour, minute, regionOffset,
-  onToggleUnknown, onAmPmChange, onHourChange, onMinuteChange,
+  timeUnknown,
+  isAm,
+  hour,
+  minute,
+  regionOffset,
+  onToggleUnknown,
+  onAmPmChange,
+  onHourChange,
+  onMinuteChange,
 }: Props) {
-  const hour24 = isAm ? (hour === 12 ? 0 : hour) : (hour === 12 ? 12 : hour + 12);
+  const hour24 = isAm ? (hour === 12 ? 0 : hour) : hour === 12 ? 12 : hour + 12;
   const totalMinutes = hour24 * 60 + minute - (regionOffset ?? 0);
   const adjustedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
   const adjustedHour24 = Math.floor(adjustedMinutes / 60);
   const adjustedMin = adjustedMinutes % 60;
   const sijan = getSijan(adjustedHour24);
   const adjustedIsAm = adjustedHour24 < 12;
-  const adjustedHourDisplay = adjustedHour24 % 12 === 0 ? 12 : adjustedHour24 % 12;
+  const adjustedHourDisplay =
+    adjustedHour24 % 12 === 0 ? 12 : adjustedHour24 % 12;
   const adjustedAmPm = adjustedIsAm ? '오전' : '오후';
 
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -56,7 +64,11 @@ export default function BirthTimeSection({
     outputRange: [primitives.hanji500, primitives.ink700],
   });
 
-  function handleTimeConfirm(newIsAm: boolean, newHour: number, newMinute: number) {
+  function handleTimeConfirm(
+    newIsAm: boolean,
+    newHour: number,
+    newMinute: number,
+  ) {
     onAmPmChange(newIsAm);
     onHourChange(newHour);
     onMinuteChange(newMinute);
@@ -66,8 +78,14 @@ export default function BirthTimeSection({
     <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
       <View className="flex-row items-end gap-1.5 mb-3.5">
-        <Font tag="secondaryMedium" className="text-overline text-textTertiary">생시</Font>
-        <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 9, letterSpacing: 0.8 }}>
+        <Font tag="secondaryMedium" className="text-overline text-textTertiary">
+          생시
+        </Font>
+        <Font
+          tag="secondary"
+          className="text-textDisabled"
+          style={{ fontSize: 9, letterSpacing: 0.8 }}
+        >
           태어난 시각
         </Font>
       </View>
@@ -79,8 +97,16 @@ export default function BirthTimeSection({
         onPress={onToggleUnknown}
       >
         <View className="flex-row items-center gap-2">
-          <Ionicons name="information-circle-outline" size={15} color={primitives.ink500} />
-          <Font tag="secondary" className="text-textSecondary" style={{ fontSize: 13 }}>
+          <Ionicons
+            name="information-circle-outline"
+            size={15}
+            color={primitives.ink500}
+          />
+          <Font
+            tag="secondary"
+            className="text-textSecondary"
+            style={{ fontSize: 13 }}
+          >
             생시를 모릅니다
           </Font>
         </View>
@@ -93,7 +119,8 @@ export default function BirthTimeSection({
           <Animated.View
             className="rounded-full bg-white"
             style={{
-              width: 18, height: 18,
+              width: 18,
+              height: 18,
               transform: [{ translateX: thumbTranslateX }],
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 1 },
@@ -111,7 +138,10 @@ export default function BirthTimeSection({
           {/* 오전/오후 + 시:분 */}
           <View className="flex-row gap-2 mb-3">
             {/* 오전/오후 세로 토글 */}
-            <View className="border-[1.5px] border-border rounded-lg overflow-hidden shrink-0" style={{ width: 52 }}>
+            <View
+              className="border-[1.5px] border-border rounded-lg overflow-hidden shrink-0"
+              style={{ width: 52 }}
+            >
               <Pressable
                 className={`py-2.5 items-center justify-center ${isAm ? 'bg-fillBold' : 'bg-transparent'}`}
                 style={{ minHeight: 34 }}
@@ -152,7 +182,12 @@ export default function BirthTimeSection({
               <Font
                 tag="primary"
                 className="text-textPrimary text-center"
-                style={{ fontSize: 34, lineHeight: 44, letterSpacing: -1, minWidth: 48 }}
+                style={{
+                  fontSize: 34,
+                  lineHeight: 44,
+                  letterSpacing: -1,
+                  minWidth: 48,
+                }}
               >
                 {String(hour).padStart(2, '0')}
               </Font>
@@ -166,7 +201,12 @@ export default function BirthTimeSection({
               <Font
                 tag="primary"
                 className="text-textPrimary text-center"
-                style={{ fontSize: 34, lineHeight: 44, letterSpacing: -1, minWidth: 48 }}
+                style={{
+                  fontSize: 34,
+                  lineHeight: 44,
+                  letterSpacing: -1,
+                  minWidth: 48,
+                }}
               >
                 {String(minute).padStart(2, '0')}
               </Font>
@@ -199,7 +239,11 @@ export default function BirthTimeSection({
                 </Font>
                 <Font
                   tag="primaryLight"
-                  style={{ fontSize: 14, letterSpacing: 1, color: primitives.gold400 }}
+                  style={{
+                    fontSize: 14,
+                    letterSpacing: 1,
+                    color: primitives.gold400,
+                  }}
                 >
                   {sijan.hanjaFull}
                 </Font>

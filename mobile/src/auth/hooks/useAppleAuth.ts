@@ -25,7 +25,9 @@ export function useAppleAuth() {
       throw new Error('Apple identity token을 받지 못했습니다.');
     }
     const fullName = credential.fullName
-      ? [credential.fullName.familyName, credential.fullName.givenName].filter(Boolean).join('')
+      ? [credential.fullName.familyName, credential.fullName.givenName]
+          .filter(Boolean)
+          .join('')
       : null;
     return {
       identityToken: credential.identityToken,

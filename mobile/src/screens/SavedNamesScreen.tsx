@@ -9,11 +9,24 @@ export default function SavedNamesScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <AppHeader />
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <Font tag="primaryMedium" style={{ fontSize: 18, color: colors.textPrimary }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+        }}
+      >
+        <Font
+          tag="primaryMedium"
+          style={{ fontSize: 18, color: colors.textPrimary }}
+        >
           저장된 이름
         </Font>
-        <Font tag="secondary" style={{ fontSize: 14, color: colors.textTertiary }}>
+        <Font
+          tag="secondary"
+          style={{ fontSize: 14, color: colors.textTertiary }}
+        >
           저장된 이름 목록이 여기에 표시됩니다.
         </Font>
       </View>

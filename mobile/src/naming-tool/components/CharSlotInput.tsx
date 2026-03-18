@@ -20,10 +20,17 @@ interface Props {
   disabled?: boolean;
 }
 
-export default function CharSlotInput({ label, value, onUpdate, role, disabled }: Props) {
+export default function CharSlotInput({
+  label,
+  value,
+  onUpdate,
+  role,
+  disabled,
+}: Props) {
   const [editing, setEditing] = useState(false);
   const [strokeInput, setStrokeInput] = useState('');
-  const { query, results, loading, search, clearResults } = useHanjaSearch(role);
+  const { query, results, loading, search, clearResults } =
+    useHanjaSearch(role);
 
   function handleSelectResult(result: (typeof results)[0]) {
     onUpdate({
@@ -53,13 +60,18 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
 
   return (
     <View className={clsx('flex-1 items-center', disabled && 'opacity-35')}>
-      <Text className={`${textClassNames.overline} text-textTertiary mb-1`}>{label}</Text>
+      <Text className={`${textClassNames.overline} text-textTertiary mb-1`}>
+        {label}
+      </Text>
 
       <Pressable
         className="w-[72px] h-20 rounded-md border-[1.5px] items-center justify-center border-border bg-surfaceRaised"
         style={
           ohaengColor
-            ? { borderColor: ohaengColor.border, backgroundColor: ohaengColor.light }
+            ? {
+                borderColor: ohaengColor.border,
+                backgroundColor: ohaengColor.light,
+              }
             : undefined
         }
         onPress={() => !disabled && setEditing((e) => !e)}
@@ -72,7 +84,9 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
           {hasHanja ? value.hanja : '?'}
         </Text>
         {value.hangul ? (
-          <Text className={`${textClassNames.overline} text-textTertiary mt-0.5`}>
+          <Text
+            className={`${textClassNames.overline} text-textTertiary mt-0.5`}
+          >
             {value.hangul}
           </Text>
         ) : null}
@@ -95,7 +109,10 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
                 borderColor: ohaengColor.border,
               }}
             >
-              <Text className={textClassNames.overline} style={{ color: ohaengColor.base }}>
+              <Text
+                className={textClassNames.overline}
+                style={{ color: ohaengColor.base }}
+              >
                 {value.charOhaeng}
               </Text>
             </View>
@@ -128,15 +145,25 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
         >
           <TextInput
             className="border border-border rounded-sm px-2 py-1 bg-bg text-textPrimary"
-            style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, lineHeight: 19 }}
+            style={{
+              fontFamily: 'NotoSansKR_400Regular',
+              fontSize: 11,
+              lineHeight: 19,
+            }}
             value={query}
             onChangeText={search}
-            placeholder={role === 'surname' ? '성씨 검색 (예: 김)' : '음 검색 (예: 민)'}
+            placeholder={
+              role === 'surname' ? '성씨 검색 (예: 김)' : '음 검색 (예: 민)'
+            }
             placeholderTextColor={colors.textDisabled}
             autoFocus
           />
           {loading && (
-            <ActivityIndicator size="small" color={colors.textTertiary} className="mt-2" />
+            <ActivityIndicator
+              size="small"
+              color={colors.textTertiary}
+              className="mt-2"
+            />
           )}
           {results.length > 0 && (
             <ScrollView
@@ -152,7 +179,11 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
                 >
                   <Text
                     className={textClassNames.hanjaLg}
-                    style={{ fontSize: 20, color: colors.textPrimary, marginRight: 8 }}
+                    style={{
+                      fontSize: 20,
+                      color: colors.textPrimary,
+                      marginRight: 8,
+                    }}
                   >
                     {r.hanja}
                   </Text>
@@ -160,8 +191,12 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
                     <Text className={`${textClassNames.uiSm} text-textPrimary`}>
                       {r.eum} · {r.mean}
                     </Text>
-                    <Text className={`${textClassNames.bodySm} text-textTertiary`}>
-                      {r.strokeCount != null ? `${r.strokeCount}획` : '획수 미상'}
+                    <Text
+                      className={`${textClassNames.bodySm} text-textTertiary`}
+                    >
+                      {r.strokeCount != null
+                        ? `${r.strokeCount}획`
+                        : '획수 미상'}
                       {r.charOhaeng ? ` · ${r.charOhaeng}` : ''}
                     </Text>
                   </View>
@@ -170,12 +205,18 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
             </ScrollView>
           )}
           <View className="flex-row items-center mt-3 pt-3 border-t border-border">
-            <Text className={`${textClassNames.bodySm} text-textSecondary mr-2`}>
+            <Text
+              className={`${textClassNames.bodySm} text-textSecondary mr-2`}
+            >
               획수 직접입력
             </Text>
             <TextInput
               className="flex-1 border border-border rounded-sm px-2 py-1 bg-bg text-textPrimary"
-              style={{ fontFamily: 'NotoSansKR_400Regular', fontSize: 11, lineHeight: 19 }}
+              style={{
+                fontFamily: 'NotoSansKR_400Regular',
+                fontSize: 11,
+                lineHeight: 19,
+              }}
               value={strokeInput}
               onChangeText={setStrokeInput}
               placeholder="예: 8"
@@ -187,7 +228,9 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
               className="bg-textSecondary rounded-sm px-2 py-1 ml-2"
               onPress={handleManualStroke}
             >
-              <Text className={`${textClassNames.label} text-textInverse`}>적용</Text>
+              <Text className={`${textClassNames.label} text-textInverse`}>
+                적용
+              </Text>
             </Pressable>
           </View>
           <Pressable
@@ -197,7 +240,9 @@ export default function CharSlotInput({ label, value, onUpdate, role, disabled }
               clearResults();
             }}
           >
-            <Text className={`${textClassNames.bodySm} text-textTertiary`}>닫기</Text>
+            <Text className={`${textClassNames.bodySm} text-textTertiary`}>
+              닫기
+            </Text>
           </Pressable>
         </View>
       )}

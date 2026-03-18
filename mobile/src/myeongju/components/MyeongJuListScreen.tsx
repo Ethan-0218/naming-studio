@@ -51,8 +51,22 @@ export default function MyeongJuListScreen() {
         <AddMyeongJuButton onPress={handleAddPress} />
 
         {/* 명주 수 */}
-        <View style={{ paddingHorizontal: 20, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-          <Font tag="secondary" style={{ fontSize: 11, color: colors.textTertiary, letterSpacing: 0.6 }}>
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingVertical: 13,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
+          <Font
+            tag="secondary"
+            style={{
+              fontSize: 11,
+              color: colors.textTertiary,
+              letterSpacing: 0.6,
+            }}
+          >
             {'명주 '}
             <Font tag="secondaryMedium" style={{ color: colors.textSecondary }}>
               {profiles.length}
@@ -66,7 +80,14 @@ export default function MyeongJuListScreen() {
             <ActivityIndicator color={colors.textTertiary} />
           </View>
         ) : (
-          <View style={{ padding: 12, paddingHorizontal: 16, paddingBottom: 20, gap: 9 }}>
+          <View
+            style={{
+              padding: 12,
+              paddingHorizontal: 16,
+              paddingBottom: 20,
+              gap: 9,
+            }}
+          >
             {profiles.map((profile) => (
               <ProfileCard
                 key={profile.id}

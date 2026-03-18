@@ -20,7 +20,13 @@ interface Props {
   role: 'surname' | 'name';
 }
 
-export default function HanjaSlotInput({ label, hangul, value, onUpdateHanja, role }: Props) {
+export default function HanjaSlotInput({
+  label,
+  hangul,
+  value,
+  onUpdateHanja,
+  role,
+}: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const hasHanja = !!value.hanja;
@@ -36,7 +42,9 @@ export default function HanjaSlotInput({ label, hangul, value, onUpdateHanja, ro
       </Font>
 
       <Pressable
-        onPress={() => { if (hangul) setSheetOpen(true); }}
+        onPress={() => {
+          if (hangul) setSheetOpen(true);
+        }}
         className={clsx(
           'w-full rounded-md border-[1.5px] items-center justify-center',
           !hasHanja && 'border-dashed bg-surface border-border',

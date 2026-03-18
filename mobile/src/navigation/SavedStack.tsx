@@ -7,7 +7,9 @@ const Stack = createNativeStackNavigator<SavedStackParamList>();
 
 export function SavedStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+    <Stack.Navigator
+      screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+    >
       <Stack.Screen name="SavedNames" component={SavedNamesScreen} />
     </Stack.Navigator>
   );

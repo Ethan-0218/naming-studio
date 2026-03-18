@@ -1,10 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './App.tsx',
-    './index.ts',
-    './src/**/*.{js,jsx,ts,tsx}',
-  ],
+  content: ['./App.tsx', './index.ts', './src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
@@ -61,7 +57,7 @@ module.exports = {
       },
       spacing: {
         0: 0,
-        '0.5': 2,
+        0.5: 2,
         1: 4,
         2: 8,
         3: 12,
@@ -116,15 +112,45 @@ module.exports = {
   // 변수/동적 className으로 쓰이는 design-system 클래스가 번들에 포함되도록
   safelist: [
     // typography (textClassNames)
-    'text-display', 'text-title1', 'text-title2', 'text-heading',
-    'text-numeralLg', 'text-numeralMd', 'text-hanjaLg', 'text-hanjaSm', 'text-serifLabel',
-    'text-bodyLg', 'text-body', 'text-bodySm', 'text-uiMd', 'text-uiSm', 'text-label', 'text-caption', 'text-overline',
-    'font-serif-light', 'font-serif-regular', 'font-serif-medium', 'font-serif-semi-bold',
-    'font-sans-regular', 'font-sans-medium', 'uppercase',
+    'text-display',
+    'text-title1',
+    'text-title2',
+    'text-heading',
+    'text-numeralLg',
+    'text-numeralMd',
+    'text-hanjaLg',
+    'text-hanjaSm',
+    'text-serifLabel',
+    'text-bodyLg',
+    'text-body',
+    'text-bodySm',
+    'text-uiMd',
+    'text-uiSm',
+    'text-label',
+    'text-caption',
+    'text-overline',
+    'font-serif-light',
+    'font-serif-regular',
+    'font-serif-medium',
+    'font-serif-semi-bold',
+    'font-sans-regular',
+    'font-sans-medium',
+    'uppercase',
     // semantic text colors
-    'text-textPrimary', 'text-textSecondary', 'text-textTertiary', 'text-textDisabled', 'text-textInverse',
+    'text-textPrimary',
+    'text-textSecondary',
+    'text-textTertiary',
+    'text-textDisabled',
+    'text-textInverse',
     // backgrounds / borders
-    'bg-bg', 'bg-bgSubtle', 'bg-surface', 'bg-surfaceRaised', 'bg-fillBold', 'bg-border',
-    'border-border', 'border-borderStrong', 'border-textSecondary',
+    'bg-bg',
+    'bg-bgSubtle',
+    'bg-surface',
+    'bg-surfaceRaised',
+    'bg-fillBold',
+    'bg-border',
+    'border-border',
+    'border-borderStrong',
+    'border-textSecondary',
   ],
 };

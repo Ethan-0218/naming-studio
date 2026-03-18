@@ -22,7 +22,10 @@ export default function LogoutButton() {
         className="flex-row items-center justify-center gap-2 py-[13px] rounded-lg border-[1.5px] bg-ohaeng-fire-light border-ohaeng-fire-border active:opacity-70"
       >
         <Ionicons name="log-out-outline" size={16} color={colors.negative} />
-        <Font tag="secondaryMedium" style={{ fontSize: 14, color: colors.negative, letterSpacing: 0.4 }}>
+        <Font
+          tag="secondaryMedium"
+          style={{ fontSize: 14, color: colors.negative, letterSpacing: 0.4 }}
+        >
           로그아웃
         </Font>
       </Pressable>

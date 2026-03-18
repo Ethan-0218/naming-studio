@@ -13,14 +13,20 @@ interface Props {
 }
 
 export default function BirthDateSection({
-  calendarType, year, month, day,
-  onCalendarTypeChange, onDateChange,
+  calendarType,
+  year,
+  month,
+  day,
+  onCalendarTypeChange,
+  onDateChange,
 }: Props) {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pillWidth, setPillWidth] = useState(0);
 
   // 슬라이딩 인디케이터 애니메이션
-  const slideAnim = useRef(new Animated.Value(calendarType === '양력' ? 0 : 1)).current;
+  const slideAnim = useRef(
+    new Animated.Value(calendarType === '양력' ? 0 : 1),
+  ).current;
 
   useEffect(() => {
     Animated.spring(slideAnim, {
@@ -38,7 +44,12 @@ export default function BirthDateSection({
 
   return (
     <View className="px-5 py-[22px] border-b border-border">
-      <Font tag="secondaryMedium" className="text-overline text-textTertiary mb-3.5">생년월일</Font>
+      <Font
+        tag="secondaryMedium"
+        className="text-overline text-textTertiary mb-3.5"
+      >
+        생년월일
+      </Font>
 
       {/* 양력 / 음력 토글 */}
       <View
@@ -90,18 +101,54 @@ export default function BirthDateSection({
       >
         {/* 년 */}
         <View className="flex-[1.6] flex-row items-center justify-between bg-surfaceRaised border-[1.5px] border-borderStrong rounded-lg h-[52px] px-3">
-          <Font tag="primary" className="text-textPrimary" style={{ fontSize: 20, lineHeight: 20 }}>{year}</Font>
-          <Font tag="secondary" className="text-textTertiary self-end pb-2" style={{ fontSize: 11 }}>년</Font>
+          <Font
+            tag="primary"
+            className="text-textPrimary"
+            style={{ fontSize: 20, lineHeight: 20 }}
+          >
+            {year}
+          </Font>
+          <Font
+            tag="secondary"
+            className="text-textTertiary self-end pb-2"
+            style={{ fontSize: 11 }}
+          >
+            년
+          </Font>
         </View>
         {/* 월 */}
         <View className="flex-1 flex-row items-center justify-between bg-surfaceRaised border-[1.5px] border-borderStrong rounded-lg h-[52px] px-3">
-          <Font tag="primary" className="text-textPrimary" style={{ fontSize: 20, lineHeight: 20 }}>{month}</Font>
-          <Font tag="secondary" className="text-textTertiary self-end pb-2" style={{ fontSize: 11 }}>월</Font>
+          <Font
+            tag="primary"
+            className="text-textPrimary"
+            style={{ fontSize: 20, lineHeight: 20 }}
+          >
+            {month}
+          </Font>
+          <Font
+            tag="secondary"
+            className="text-textTertiary self-end pb-2"
+            style={{ fontSize: 11 }}
+          >
+            월
+          </Font>
         </View>
         {/* 일 */}
         <View className="flex-1 flex-row items-center justify-between bg-surfaceRaised border-[1.5px] border-borderStrong rounded-lg h-[52px] px-3">
-          <Font tag="primary" className="text-textPrimary" style={{ fontSize: 20, lineHeight: 20 }}>{day}</Font>
-          <Font tag="secondary" className="text-textTertiary self-end pb-2" style={{ fontSize: 11 }}>일</Font>
+          <Font
+            tag="primary"
+            className="text-textPrimary"
+            style={{ fontSize: 20, lineHeight: 20 }}
+          >
+            {day}
+          </Font>
+          <Font
+            tag="secondary"
+            className="text-textTertiary self-end pb-2"
+            style={{ fontSize: 11 }}
+          >
+            일
+          </Font>
         </View>
       </Pressable>
 

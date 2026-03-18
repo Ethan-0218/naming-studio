@@ -51,9 +51,15 @@ function mapResult(r: RawHanjaResult): HanjaSearchResult {
 
 const EMPTY_RESULTS: HanjaSearchResult[] = [];
 
-async function fetchHanjaSearch(role: 'surname' | 'name', q: string): Promise<HanjaSearchResult[]> {
-  const endpoint = role === 'surname' ? '/api/surname-search' : '/api/hanja-search';
-  const res = await fetch(`${BACKEND_URL}${endpoint}?q=${encodeURIComponent(q)}`);
+async function fetchHanjaSearch(
+  role: 'surname' | 'name',
+  q: string,
+): Promise<HanjaSearchResult[]> {
+  const endpoint =
+    role === 'surname' ? '/api/surname-search' : '/api/hanja-search';
+  const res = await fetch(
+    `${BACKEND_URL}${endpoint}?q=${encodeURIComponent(q)}`,
+  );
   const raw: RawHanjaResult[] = await res.json();
   return raw.map(mapResult);
 }
@@ -69,7 +75,11 @@ export function useHanjaSearch(role: 'surname' | 'name') {
     };
   }, []);
 
-  const { data, isFetching: loading, isSuccess } = useQuery({
+  const {
+    data,
+    isFetching: loading,
+    isSuccess,
+  } = useQuery({
     queryKey: queryKeys.hanja.search(role, debouncedQuery),
     queryFn: () => fetchHanjaSearch(role, debouncedQuery),
     enabled: debouncedQuery.trim().length > 0,
@@ -100,5 +110,13 @@ export function useHanjaSearch(role: 'surname' | 'name') {
 
   // activeQuery: 현재 results가 어느 검색어에 대한 결과인지 (debouncedQuery)
   // hasResults: fetch가 완료되어 실제 결과가 있는 상태인지 (fetching 중 false)
-  return { query, results, loading, search, clearResults, activeQuery: debouncedQuery, hasResults: isSuccess };
+  return {
+    query,
+    results,
+    loading,
+    search,
+    clearResults,
+    activeQuery: debouncedQuery,
+    hasResults: isSuccess,
+  };
 }

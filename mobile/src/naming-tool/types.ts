@@ -56,7 +56,7 @@ export interface EumyangHarmonyResult {
   chars: (Eumyang | null)[];
   reason: string;
   combinationKey: string;
-  rating: string;  // 吉 | 凶 — 음양조화.json 기준
+  rating: string; // 吉 | 凶 — 음양조화.json 기준
 }
 
 export interface SuriEntry {
@@ -70,10 +70,10 @@ export interface SuriEntry {
 }
 
 export interface SurigyeokResult {
-  wongyeok: SuriEntry;    // 원격
-  hyeongyeok: SuriEntry;  // 형격
-  igyeok: SuriEntry;      // 이격
-  jeongyeok: SuriEntry;   // 정격
+  wongyeok: SuriEntry; // 원격
+  hyeongyeok: SuriEntry; // 형격
+  igyeok: SuriEntry; // 이격
+  jeongyeok: SuriEntry; // 정격
   totalScore: number;
 }
 

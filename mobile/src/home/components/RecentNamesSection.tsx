@@ -4,9 +4,27 @@ import { primitives } from '@/design-system';
 import { Font } from '@/components/Font';
 
 const RECENT_NAMES = [
-  { hanja: '金敏俊', name: '김 민 준', date: '오늘 · 발음오행 · 수리책', score: 87, label: '매우 좋음' },
-  { hanja: '朴서윤', name: '박 서 윤', date: '어제 · 자원오행 · 획수음양', score: 74, label: '좋음' },
-  { hanja: '崔도윤', name: '최 도 윤', date: '3일 전 · 발음오행 · 수리책', score: 61, label: '보통' },
+  {
+    hanja: '金敏俊',
+    name: '김 민 준',
+    date: '오늘 · 발음오행 · 수리책',
+    score: 87,
+    label: '매우 좋음',
+  },
+  {
+    hanja: '朴서윤',
+    name: '박 서 윤',
+    date: '어제 · 자원오행 · 획수음양',
+    score: 74,
+    label: '좋음',
+  },
+  {
+    hanja: '崔도윤',
+    name: '최 도 윤',
+    date: '3일 전 · 발음오행 · 수리책',
+    score: 61,
+    label: '보통',
+  },
 ];
 
 function scoreColor(score: number): string {
@@ -26,7 +44,11 @@ export default function RecentNamesSection() {
         >
           최근 분석 이름
         </Font>
-        <Font tag="secondary" className="text-textTertiary" style={{ fontSize: 11, letterSpacing: 0.5 }}>
+        <Font
+          tag="secondary"
+          className="text-textTertiary"
+          style={{ fontSize: 11, letterSpacing: 0.5 }}
+        >
           전체 보기 →
         </Font>
       </View>
@@ -37,7 +59,9 @@ export default function RecentNamesSection() {
             key={item.name}
             className="flex-row items-center gap-3.5 px-4 py-[14px]"
             style={({ pressed }) => ({
-              backgroundColor: pressed ? primitives.hanji200 : primitives.hanji50,
+              backgroundColor: pressed
+                ? primitives.hanji200
+                : primitives.hanji50,
             })}
           >
             <Font
@@ -55,18 +79,30 @@ export default function RecentNamesSection() {
               >
                 {item.name}
               </Font>
-              <Font tag="secondary" className="text-textDisabled mt-0.5" style={{ fontSize: 11 }}>
+              <Font
+                tag="secondary"
+                className="text-textDisabled mt-0.5"
+                style={{ fontSize: 11 }}
+              >
                 {item.date}
               </Font>
             </View>
             <View className="items-end gap-0.5">
               <Font
                 tag="primaryMedium"
-                style={{ fontSize: 20, color: scoreColor(item.score), lineHeight: 20 }}
+                style={{
+                  fontSize: 20,
+                  color: scoreColor(item.score),
+                  lineHeight: 20,
+                }}
               >
                 {item.score}
               </Font>
-              <Font tag="secondary" className="text-textDisabled" style={{ fontSize: 10 }}>
+              <Font
+                tag="secondary"
+                className="text-textDisabled"
+                style={{ fontSize: 10 }}
+              >
                 {item.label}
               </Font>
             </View>

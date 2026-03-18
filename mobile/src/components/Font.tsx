@@ -5,12 +5,12 @@ import { Text, TextProps } from 'react-native';
 // primary  = 장식/헤딩 폰트 (현재: Noto Serif KR)
 // secondary = UI/본문 폰트  (현재: Noto Sans KR)
 export const FONT_MAP = {
-  primaryLight:    'NotoSerifKR_300Light',
-  primary:         'NotoSerifKR_400Regular',
-  primaryMedium:   'NotoSerifKR_500Medium',
-  primaryBold:     'NotoSerifKR_600SemiBold',
-  secondaryLight:  'NotoSansKR_300Light',
-  secondary:       'NotoSansKR_400Regular',
+  primaryLight: 'NotoSerifKR_300Light',
+  primary: 'NotoSerifKR_400Regular',
+  primaryMedium: 'NotoSerifKR_500Medium',
+  primaryBold: 'NotoSerifKR_600SemiBold',
+  secondaryLight: 'NotoSansKR_300Light',
+  secondary: 'NotoSansKR_400Regular',
   secondaryMedium: 'NotoSansKR_500Medium',
 } as const;
 

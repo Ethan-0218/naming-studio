@@ -30,21 +30,25 @@ export function computeSurigyeok(
   ireum2Stroke: number | null,
   gender: Gender,
 ): SurigyeokResult {
-  const wongyeok = ireum2Stroke != null
-    ? computeSuriEntry(ireum1Stroke + ireum2Stroke, gender)
-    : computeSuriEntry(ireum1Stroke * 2, gender);
+  const wongyeok =
+    ireum2Stroke != null
+      ? computeSuriEntry(ireum1Stroke + ireum2Stroke, gender)
+      : computeSuriEntry(ireum1Stroke * 2, gender);
 
   const hyeongyeok = computeSuriEntry(sungStroke + ireum1Stroke, gender);
 
-  const igyeok = ireum2Stroke != null
-    ? computeSuriEntry(sungStroke + ireum2Stroke, gender)
-    : computeSuriEntry(sungStroke + ireum1Stroke, gender);
+  const igyeok =
+    ireum2Stroke != null
+      ? computeSuriEntry(sungStroke + ireum2Stroke, gender)
+      : computeSuriEntry(sungStroke + ireum1Stroke, gender);
 
-  const jeongyeok = ireum2Stroke != null
-    ? computeSuriEntry(sungStroke + ireum1Stroke + ireum2Stroke, gender)
-    : computeSuriEntry(sungStroke + ireum1Stroke, gender);
+  const jeongyeok =
+    ireum2Stroke != null
+      ? computeSuriEntry(sungStroke + ireum1Stroke + ireum2Stroke, gender)
+      : computeSuriEntry(sungStroke + ireum1Stroke, gender);
 
-  const totalScore = (wongyeok.score + hyeongyeok.score + igyeok.score + jeongyeok.score) / 4;
+  const totalScore =
+    (wongyeok.score + hyeongyeok.score + igyeok.score + jeongyeok.score) / 4;
 
   return { wongyeok, hyeongyeok, igyeok, jeongyeok, totalScore };
 }

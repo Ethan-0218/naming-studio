@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '@/design-system';
 import NavBar from '@/components/NavBar';
@@ -51,8 +46,15 @@ export default function NamingToolScreen({ onBack }: Props) {
         backgroundColor: colors.bgSubtle,
       }}
     >
-      <SafeAreaView edges={['top']} style={{ backgroundColor: colors.bgSubtle }}>
-        <NavBar title="스스로 이름짓기" subtitle="이름 분석 및 작명" onBack={onBack} />
+      <SafeAreaView
+        edges={['top']}
+        style={{ backgroundColor: colors.bgSubtle }}
+      >
+        <NavBar
+          title="스스로 이름짓기"
+          subtitle="이름 분석 및 작명"
+          onBack={onBack}
+        />
       </SafeAreaView>
 
       <ScrollView

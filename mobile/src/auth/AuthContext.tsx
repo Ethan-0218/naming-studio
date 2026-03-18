@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { clearToken, loadToken, saveToken } from './tokenStorage';
 
 export interface UserProfile {
@@ -17,7 +23,11 @@ interface AuthState {
 
 interface AuthContextValue {
   auth: AuthState;
-  setAuth: (token: string, userId: string, profile: UserProfile) => Promise<void>;
+  setAuth: (
+    token: string,
+    userId: string,
+    profile: UserProfile,
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -38,21 +48,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadToken().then((saved) => {
       if (saved) {
-        setAuthState({ token: saved.token, userId: saved.userId, profile: saved.profile, isLoading: false });
+        setAuthState({
+          token: saved.token,
+          userId: saved.userId,
+          profile: saved.profile,
+          isLoading: false,
+        });
       } else {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     });
   }, []);
 
-  const setAuth = useCallback(async (token: string, userId: string, profile: UserProfile) => {
-    await saveToken(token, userId, profile);
-    setAuthState({ token, userId, profile, isLoading: false });
-  }, []);
+  const setAuth = useCallback(
+    async (token: string, userId: string, profile: UserProfile) => {
+      await saveToken(token, userId, profile);
+      setAuthState({ token, userId, profile, isLoading: false });
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     await clearToken();
-    setAuthState({ token: null, userId: null, profile: null, isLoading: false });
+    setAuthState({
+      token: null,
+      userId: null,
+      profile: null,
+      isLoading: false,
+    });
   }, []);
 
   return (

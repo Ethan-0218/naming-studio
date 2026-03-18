@@ -56,4 +56,9 @@ build/
 *.egg-info/
 *.egg
 
+# Generated SQLite databases (rebuild with: bash backend/scripts/bootstrap.sh)
+backend/db/name_hanja_combinations.sqlite3
+backend/db/scored_combinations.sqlite3
+
 .env*
+
