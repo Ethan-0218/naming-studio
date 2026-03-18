@@ -6,6 +6,7 @@ import { colors, primitives } from '@/design-system';
 import { Font } from '@/components/Font';
 import { useAuth } from '@/auth/AuthContext';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
+import NavBar from '@/components/NavBar';
 import ProfileCard from './ProfileCard';
 import LoginCard from './LoginCard';
 import SettingsGroup from './SettingsGroup';
@@ -24,21 +25,7 @@ export default function MyProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bgSubtle" edges={['top']}>
-      {/* Navbar */}
-      <View className="h-14 px-5 justify-center bg-bgSubtle border-b border-border">
-        <Font
-          tag="primaryMedium"
-          style={{ fontSize: 20, color: colors.textPrimary, letterSpacing: 2 }}
-        >
-          내 정보
-        </Font>
-        <Font
-          tag="secondary"
-          style={{ fontSize: 9, color: colors.textDisabled, letterSpacing: 2 }}
-        >
-          MY PAGE
-        </Font>
-      </View>
+      <NavBar title="내 정보" subtitle="MY PAGE" />
 
       <ScrollView className="flex-1 bg-bg" showsVerticalScrollIndicator={false}>
         {/* 로그인/비로그인 상단 카드 */}
@@ -58,7 +45,7 @@ export default function MyProfileScreen() {
             badgeText={isLoggedIn ? `${myeongJuCount}개` : '로그인 필요'}
             badgeVariant={isLoggedIn ? 'count' : 'locked'}
             onPress={() =>
-              isLoggedIn ? navigation.navigate('MyeongJuManage') : undefined
+              isLoggedIn ? navigation.navigate('MyeongJuList') : undefined
             }
           />
           <SettingsRow

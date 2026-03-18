@@ -71,7 +71,7 @@ export default function AddMyeongJuScreen() {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: colors.bgSubtle }}
-      edges={['top']}
+      edges={['top', 'bottom']}
     >
       <NavBar
         title="새 명주 추가"

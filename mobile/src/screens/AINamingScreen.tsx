@@ -1919,7 +1919,10 @@ export default function AINamingScreen() {
           </View>
         )}
 
-        <View className={s.inputRow}>
+        <View
+          className={s.inputRow}
+          style={{ paddingBottom: insets.bottom || 10 }}
+        >
           <TextInput
             className={s.input}
             value={input}

@@ -3,12 +3,12 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '@/design-system';
 import { Font } from '@/components/Font';
-import AppHeader from '@/home/components/AppHeader';
+import NavBar from '@/components/NavBar';
 
 export default function SavedNamesScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <AppHeader />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgSubtle }}>
+      <NavBar title="저장" subtitle="SAVED" />
       <View
         style={{
           flex: 1,

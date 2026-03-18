@@ -1,6 +1,9 @@
 import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { colors } from '@/design-system';
 import NavBar from '@/components/NavBar';
 import { useNamingToolState } from '../hooks/useNamingToolState';
@@ -22,6 +25,7 @@ function Divider() {
 }
 
 export default function NamingToolScreen({ onBack }: Props) {
+  const { bottom } = useSafeAreaInsets();
   const {
     nameInput,
     sajuInput,
@@ -61,7 +65,7 @@ export default function NamingToolScreen({ onBack }: Props) {
         style={{ flex: 1 }}
         contentContainerStyle={{
           padding: 16,
-          paddingBottom: 32,
+          paddingBottom: bottom + 16,
           backgroundColor: colors.bg,
         }}
         keyboardShouldPersistTaps="handled"

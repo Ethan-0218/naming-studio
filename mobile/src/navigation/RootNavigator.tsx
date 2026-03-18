@@ -1,27 +1,24 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { HomeStack } from './HomeStack';
-import { SavedStack } from './SavedStack';
-import { ProfileStack } from './ProfileStack';
-import AppTabBar from '../home/components/AppTabBar';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RootStackParamList } from './types';
+import { TabNavigator } from './TabNavigator';
+import MyeongJuListScreen from '@/screens/MyeongJuListScreen';
+import AddMyeongJuScreen from '@/screens/AddMyeongJuScreen';
+import AINamingScreen from '@/screens/AINamingScreen';
+import SelfNamingScreen from '@/screens/SelfNamingScreen';
 
-export type RootTabParamList = {
-  홈: undefined;
-  저장: undefined;
-  내정보: undefined;
-};
-
-const Tab = createBottomTabNavigator<RootTabParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   return (
-    <Tab.Navigator
-      tabBar={(props) => <AppTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
+    <Stack.Navigator
+      screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
     >
-      <Tab.Screen name="홈" component={HomeStack} />
-      <Tab.Screen name="저장" component={SavedStack} />
-      <Tab.Screen name="내정보" component={ProfileStack} />
-    </Tab.Navigator>
+      <Stack.Screen name="Tabs" component={TabNavigator} />
+      <Stack.Screen name="MyeongJuList" component={MyeongJuListScreen} />
+      <Stack.Screen name="AddMyeongJu" component={AddMyeongJuScreen} />
+      <Stack.Screen name="AINaming" component={AINamingScreen} />
+      <Stack.Screen name="SelfNaming" component={SelfNamingScreen} />
+    </Stack.Navigator>
   );
 }

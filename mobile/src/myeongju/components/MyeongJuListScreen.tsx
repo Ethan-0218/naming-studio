@@ -1,6 +1,9 @@
 import React from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors } from '@/design-system';
 import { Font } from '@/components/Font';
@@ -11,6 +14,7 @@ import { MyeongJuProfile } from '../types';
 import { useMyeongJuList } from '../hooks/useMyeongJuList';
 
 export default function MyeongJuListScreen() {
+  const { bottom } = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   // mode is present when accessed from HomeStack (naming flow), absent in MyeongJuStack (manage mode)
@@ -44,11 +48,12 @@ export default function MyeongJuListScreen() {
       <NavBar
         title="명주 목록"
         subtitle="命主 · 이름 주인"
-        onBack={isManageMode ? undefined : () => navigation.goBack()}
+        onBack={() => navigation.goBack()}
       />
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}
+        contentContainerStyle={{ paddingBottom: bottom }}
         showsVerticalScrollIndicator={false}
       >
         <AddMyeongJuButton onPress={handleAddPress} />

@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/design-system';
 import { RootStackParamList } from '../../navigation/types';
 import { useMyeongJuList } from '../../myeongju/hooks/useMyeongJuList';
-import AppHeader from './AppHeader';
+import NavBar from '@/components/NavBar';
 import HeroSection from './HeroSection';
 import ActionCardsSection from './ActionCardsSection';
 import RecentNamesSection from './RecentNamesSection';
@@ -46,7 +46,7 @@ export default function HomeScreen() {
       style={{ flex: 1, backgroundColor: colors.bgSubtle }}
       edges={['top']}
     >
-      <AppHeader />
+      <NavBar title="이름공방" subtitle="名工房 · 이름 분석 및 작명" />
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ backgroundColor: colors.bg }}
