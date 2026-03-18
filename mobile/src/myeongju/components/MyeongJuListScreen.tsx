@@ -1,45 +1,54 @@
 import React from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors } from '@/design-system';
 import { Font } from '@/components/Font';
-import { RootStackParamList } from '../../navigation/types';
-import BottomNav from '../../home/components/BottomNav';
 import NavBar from '@/components/NavBar';
 import AddMyeongJuButton from './AddMyeongJuButton';
 import ProfileCard from './ProfileCard';
 import { MyeongJuProfile } from '../types';
 import { useMyeongJuList } from '../hooks/useMyeongJuList';
 
-type NavProp = NativeStackNavigationProp<RootStackParamList, 'MyeongJuList'>;
-type ScreenRoute = RouteProp<RootStackParamList, 'MyeongJuList'>;
-
 export default function MyeongJuListScreen() {
-  const navigation = useNavigation<NavProp>();
-  const route = useRoute<ScreenRoute>();
-  const { mode } = route.params;
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  // mode is present when accessed from HomeStack (naming flow), absent in MyeongJuStack (manage mode)
+  const mode: 'ai' | 'self' | undefined = route.params?.mode;
+  const isManageMode = !mode;
 
   const { data: profiles = [], isLoading: loading } = useMyeongJuList();
 
   function handleSelectProfile(_profile: MyeongJuProfile) {
     if (mode === 'ai') {
       navigation.navigate('AINaming');
-    } else {
+    } else if (mode === 'self') {
       navigation.navigate('SelfNaming');
+    }
+    // In manage mode, tapping a profile does nothing yet (detail screen planned)
+  }
+
+  function handleAddPress() {
+    if (isManageMode) {
+      navigation.navigate('AddMyeongJu');
+    } else {
+      navigation.navigate('AddMyeongJu', { mode });
     }
   }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgSubtle }}>
-      <NavBar title="명주 목록" subtitle="命主 · 이름 주인" onBack={() => navigation.goBack()} />
+      <NavBar
+        title="명주 목록"
+        subtitle="命主 · 이름 주인"
+        onBack={isManageMode ? undefined : () => navigation.goBack()}
+      />
 
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}
         showsVerticalScrollIndicator={false}
       >
-        <AddMyeongJuButton onPress={() => navigation.navigate('AddMyeongJu', { mode })} />
+        <AddMyeongJuButton onPress={handleAddPress} />
 
         {/* 명주 수 */}
         <View style={{ paddingHorizontal: 20, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: colors.border }}>
@@ -68,8 +77,6 @@ export default function MyeongJuListScreen() {
           </View>
         )}
       </ScrollView>
-
-      <BottomNav activeTab="명주" />
     </SafeAreaView>
   );
 }

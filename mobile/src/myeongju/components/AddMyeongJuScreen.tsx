@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors } from '@/design-system';
-import { RootStackParamList } from '../../navigation/types';
 import { REGIONS, Region } from '../data';
 import { useCreateMyeongJu } from '../hooks/useCreateMyeongJu';
 import NavBar from '@/components/NavBar';
@@ -15,13 +13,11 @@ import BirthRegionSection from './BirthRegionSection';
 import RegionBottomSheet from './RegionBottomSheet';
 import AddMyeongJuFooter from './AddMyeongJuFooter';
 
-type NavProp = NativeStackNavigationProp<RootStackParamList, 'AddMyeongJu'>;
-type ScreenRoute = RouteProp<RootStackParamList, 'AddMyeongJu'>;
-
 export default function AddMyeongJuScreen() {
-  const navigation = useNavigation<NavProp>();
-  const route = useRoute<ScreenRoute>();
-  const { mode } = route.params;
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  // mode is present in HomeStack (naming flow); absent in MyeongJuStack (manage flow)
+  const mode: 'ai' | 'self' | undefined = route.params?.mode;
 
   // 폼 상태
   const [gender, setGender] = useState<'male' | 'female'>('male');
@@ -47,8 +43,10 @@ export default function AddMyeongJuScreen() {
         onSuccess: () => {
           if (mode === 'ai') {
             navigation.navigate('AINaming');
-          } else {
+          } else if (mode === 'self') {
             navigation.navigate('SelfNaming');
+          } else {
+            navigation.goBack();
           }
         },
         onError: () => {

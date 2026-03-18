@@ -12,7 +12,6 @@ import ActionCardsSection from './ActionCardsSection';
 import RecentNamesSection from './RecentNamesSection';
 import InfoBanner from './InfoBanner';
 import TipChipsSection from './TipChipsSection';
-import BottomNav from './BottomNav';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -53,7 +52,6 @@ export default function HomeScreen() {
         <Divider />
         <TipChipsSection />
       </ScrollView>
-      <BottomNav />
     </SafeAreaView>
   );
 }

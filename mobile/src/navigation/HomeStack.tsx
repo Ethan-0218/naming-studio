@@ -1,0 +1,22 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { HomeStackParamList } from './types';
+import HomeScreen from '../screens/HomeScreen';
+import MyeongJuListScreen from '../screens/MyeongJuListScreen';
+import AddMyeongJuScreen from '../screens/AddMyeongJuScreen';
+import AINamingScreen from '../screens/AINamingScreen';
+import SelfNamingScreen from '../screens/SelfNamingScreen';
+
+const Stack = createNativeStackNavigator<HomeStackParamList>();
+
+export function HomeStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="MyeongJuList" component={MyeongJuListScreen} />
+      <Stack.Screen name="AddMyeongJu" component={AddMyeongJuScreen} />
+      <Stack.Screen name="AINaming" component={AINamingScreen} />
+      <Stack.Screen name="SelfNaming" component={SelfNamingScreen} />
+    </Stack.Navigator>
+  );
+}
