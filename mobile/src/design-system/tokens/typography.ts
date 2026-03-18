@@ -139,14 +139,14 @@ export const textStyles = {
   numeralLg: buildTextStyle('serif', '600', {
     fontSize: 32,
     letterSpacing: -1,
-    lineHeight: Math.round(32 * 1), // 32
+    lineHeight: Math.round(32 * 1.2), // 32
   }),
 
   /** 수리격 숫자 등 중형 숫자 — 카드 내 핵심 정보 */
   numeralMd: buildTextStyle('serif', '500', {
     fontSize: 20,
     letterSpacing: 0,
-    lineHeight: Math.round(20 * 1), // 20
+    lineHeight: Math.round(20 * 1.2), // 20
   }),
 
   /**
@@ -157,7 +157,7 @@ export const textStyles = {
   hanjaLg: buildTextStyle('serif', '500', {
     fontSize: 24,
     letterSpacing: 0,
-    lineHeight: Math.round(24 * 1), // 24
+    lineHeight: Math.round(24 * 1.2), // 24
   }),
 
   /**
@@ -168,7 +168,7 @@ export const textStyles = {
   hanjaSm: buildTextStyle('serif', '500', {
     fontSize: 16,
     letterSpacing: 0,
-    lineHeight: Math.round(16 * 1), // 16
+    lineHeight: Math.round(16 * 1.2), // 16
   }),
 
   /** Serif 계열 레이블·배지 — 발음오행 등 강조 배지 */

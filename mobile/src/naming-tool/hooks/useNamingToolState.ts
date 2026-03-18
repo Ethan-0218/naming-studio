@@ -143,7 +143,7 @@ function computeAnalysis(
     if (hoeksuEumyangResult) {
       score += toScore(hoeksuEumyangResult.rating) * 10;
     }
-    totalScore = Math.min(100, score);
+    totalScore = Math.round(Math.min(100, score));
   }
 
   return {
