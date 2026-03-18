@@ -56,7 +56,7 @@ class UserRepository:
         with self._pool.connection() as conn:
             row = conn.execute(
                 """
-                SELECT id, email, display_name, oauth_provider, created_at
+                SELECT id, email, display_name, oauth_provider, created_at, is_premium
                 FROM users
                 WHERE id = %s
                 """,
@@ -70,4 +70,5 @@ class UserRepository:
             "display_name": row["display_name"],
             "oauth_provider": row["oauth_provider"],
             "created_at": row["created_at"],
+            "is_premium": row["is_premium"],
         }

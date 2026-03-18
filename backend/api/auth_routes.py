@@ -24,6 +24,7 @@ class UserProfile(BaseModel):
     display_name: str | None
     oauth_provider: str | None
     created_at: datetime
+    is_premium: bool
 
 
 class AuthResponse(BaseModel):
@@ -33,6 +34,7 @@ class AuthResponse(BaseModel):
     display_name: str | None
     oauth_provider: str | None
     created_at: datetime
+    is_premium: bool
 
 
 def _get_pool():
@@ -70,6 +72,7 @@ async def apple_login(body: AppleLoginRequest):
         display_name=profile["display_name"] if profile else None,
         oauth_provider=profile["oauth_provider"] if profile else "apple",
         created_at=profile["created_at"] if profile else datetime.utcnow(),
+        is_premium=profile["is_premium"] if profile else False,
     )
 
 
@@ -89,4 +92,5 @@ async def get_me(user_id: str = Depends(get_current_user)):
         display_name=profile["display_name"],
         oauth_provider=profile["oauth_provider"],
         created_at=profile["created_at"],
+        is_premium=profile["is_premium"],
     )

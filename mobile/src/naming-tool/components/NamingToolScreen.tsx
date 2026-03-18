@@ -1,5 +1,6 @@
 import NavBar from '@/components/NavBar';
 import { colors } from '@/design-system';
+import { useAuth } from '@/auth/AuthContext';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
 import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
@@ -33,6 +34,7 @@ export default function NamingToolScreen({
   onChangeMyeongJu,
 }: Props) {
   const { bottom } = useSafeAreaInsets();
+  const { auth } = useAuth();
   const { data: profiles = [] } = useMyeongJuList();
   const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
   const gender = selectedProfile?.gender ?? 'male';
@@ -110,6 +112,7 @@ export default function NamingToolScreen({
           sajuInput={sajuInput}
           nameInput={nameInput}
           onUpdate={updateSaju}
+          isPurchased={auth.profile?.isPremium ?? false}
         />
 
         <Divider />

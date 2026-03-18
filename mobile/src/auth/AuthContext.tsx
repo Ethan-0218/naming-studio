@@ -12,6 +12,7 @@ export interface UserProfile {
   email: string | null;
   oauthProvider: string | null;
   createdAt: string; // ISO string
+  isPremium: boolean;
 }
 
 interface AuthState {

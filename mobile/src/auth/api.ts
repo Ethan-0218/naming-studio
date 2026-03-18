@@ -27,6 +27,7 @@ export async function signInWithApple(
     email: data.email ?? null,
     oauthProvider: data.oauth_provider ?? 'apple',
     createdAt: data.created_at,
+    isPremium: data.is_premium ?? false,
   };
   return { access_token: data.access_token, user_id: data.user_id, profile };
 }
@@ -46,5 +47,6 @@ export async function fetchUserProfile(token: string): Promise<UserProfile> {
     email: data.email ?? null,
     oauthProvider: data.oauth_provider ?? null,
     createdAt: data.created_at,
+    isPremium: data.is_premium ?? false,
   };
 }
