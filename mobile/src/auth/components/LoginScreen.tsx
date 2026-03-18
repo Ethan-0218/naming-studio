@@ -14,11 +14,11 @@ export default function LoginScreen() {
 
   async function handleAppleSignIn() {
     try {
-      const identityToken = await signIn();
-      const { access_token, user_id } = await signInWithApple(identityToken);
-      await setAuth(access_token, user_id);
+      const { identityToken, fullName, email } = await signIn();
+      const { access_token, user_id, profile } = await signInWithApple(identityToken, fullName, email);
+      await setAuth(access_token, user_id, profile);
     } catch (error: any) {
-      if (error?.code === 'ERR_REQUEST_CANCELED') return; // 사용자가 취소
+      if (error?.code === 'ERR_REQUEST_CANCELED') return;
       Alert.alert('오류', 'Apple 로그인에 실패했습니다. 다시 시도해 주세요.');
     }
   }

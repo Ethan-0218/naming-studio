@@ -7,16 +7,11 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { RootNavigator } from '@/navigation/RootNavigator';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
-import LoginScreen from '@/auth/components/LoginScreen';
 
 function AppContent() {
   const { auth } = useAuth();
 
   if (auth.isLoading) return null;
-
-  if (!auth.token) {
-    return <LoginScreen />;
-  }
 
   return (
     <NavigationContainer>

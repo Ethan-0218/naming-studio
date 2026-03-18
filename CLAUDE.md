@@ -112,3 +112,32 @@ The mobile app is currently a minimal Expo stub. `constants/config.ts` exports `
 - **스크린 파일 역할:** 스크린 컴포넌트(`*Screen.tsx`)는 하위 컴포넌트들을 조합하는 오케스트레이터 역할만 수행한다. UI 로직은 각 컴포넌트로 위임한다.
 - **SafeAreaView:** `react-native`의 `SafeAreaView`는 deprecated이므로 반드시 `react-native-safe-area-context`에서 import한다.
 - **Text 렌더링:** React Native의 `Text` 컴포넌트를 직접 사용하지 않는다. 반드시 `Font` 컴포넌트(`@/components/Font`)를 사용해 `tag` prop으로 폰트를 지정한다. 단, `Animated.Text`나 서드파티 컴포넌트 내부에서 불가피한 경우는 예외. 폰트 교체 시 `src/components/Font.tsx`의 `FONT_MAP`만 수정하면 앱 전체에 반영된다.
+
+### Mobile — React Native 스타일링 규칙
+
+React Native는 웹 CSS가 아닌 별도의 스타일 시스템을 사용한다. 아래 규칙을 반드시 준수한다.
+
+**스타일링 방식:**
+- 인라인 `style` prop은 **폰트 설정 시에만** 사용한다 (Font 컴포넌트의 `style` prop으로 `fontSize`, `color`, `letterSpacing` 등 전달).
+- 그 외 모든 스타일링은 **NativeWind의 `className`** 을 통해 작성한다. 인라인 `style={{ ... }}`을 남발하지 않는다.
+
+**flexDirection 기본값 차이:**
+- 웹(CSS): `flex-direction` 기본값은 `row`
+- React Native: `flexDirection` 기본값은 `column`
+- **가로 배치가 필요하면 항상 명시적으로 `className="flex-row"`를 작성한다.** 생략하면 세로 배치가 된다.
+
+**NativeWind에서 사용 불가 — 웹 전용 클래스 (작성 금지):**
+- `cursor-*`, `transition-*`, `animate-*` — RN 미지원
+- `shadow-*` — RN에서는 `shadow` 클래스가 iOS shadowOffset/Opacity/Radius를 매핑하지만, cross-platform 동작 확인 필요
+- `hover:*`, `focus:*` — RN에서 hover/focus 없음 (터치는 `active:*` 사용)
+- `grid`, `grid-cols-*` — RN 미지원, flex로 대체
+- `fixed`, `sticky` — RN의 position은 `absolute`/`relative`만 지원
+- `underline`, `line-through` — RN에서는 `no-underline` 대신 NativeWind `underline`/`line-through` 클래스 사용 가능하나 동작 확인 필요; Font style prop으로 처리 권장
+- `font-bold`, `font-semibold` 등 — fontFamily가 아닌 fontWeight만 변경됨. 폰트는 반드시 Font 컴포넌트의 `tag` prop으로 지정한다.
+
+**NativeWind className 작성 패턴:**
+- `gap-2` = 8px, `gap-3` = 12px, `gap-4` = 16px (프로젝트 커스텀 spacing 기준)
+- 표준 spacing 외 값은 arbitrary value 사용: `px-[36px]`, `h-[54px]`
+- 동적 색상(props로 전달받는 색상)은 inline `style={{ backgroundColor: color }}`을 허용한다
+- 서드파티 컴포넌트(예: `AppleAuthenticationButton`)에 className이 적용되지 않을 때는 inline style을 허용한다
+- `active:opacity-70`, `active:bg-surface` 등으로 Pressable 터치 상태 표현
