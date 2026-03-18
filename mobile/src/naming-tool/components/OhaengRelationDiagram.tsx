@@ -69,6 +69,30 @@ interface ArrowProps {
   nodes: readonly OhaengNodeData[];
 }
 
+const DASH_LEN = 5;
+const GAP_LEN = 4;
+
+function DashedLine({ width, color }: { width: number; color: string }) {
+  const count = Math.floor(width / (DASH_LEN + GAP_LEN));
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <View
+          key={i}
+          style={{
+            position: 'absolute',
+            left: i * (DASH_LEN + GAP_LEN),
+            top: 8,
+            width: DASH_LEN,
+            height: 1.5,
+            backgroundColor: color,
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
 function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
   const { fromIdx, toIdx, relation } = pair;
   const from = CENTERS[fromIdx];
@@ -108,18 +132,7 @@ function ArrowEdge({ pair, pairIndex, nodes }: ArrowProps) {
         }}
       >
         {isDashed ? (
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 8,
-              height: 0,
-              borderTopWidth: 1.5,
-              borderTopColor: color,
-              borderStyle: 'dashed',
-            }}
-          />
+          <DashedLine width={effectiveDist} color={color} />
         ) : (
           <>
             <View
@@ -289,9 +302,15 @@ function Legend() {
       </View>
       <View className="flex-row items-center">
         <View
-          className="w-3.5 h-0 border-t-[1.5px] border-dashed border-borderStrong mr-1"
-          style={{ width: 14, borderTopColor: colors.borderStrong }}
-        />
+          style={{
+            width: 14,
+            height: 18,
+            position: 'relative',
+            marginRight: 4,
+          }}
+        >
+          <DashedLine width={14} color={colors.borderStrong} />
+        </View>
         <Font
           tag="secondaryMedium"
           className="text-caption"
