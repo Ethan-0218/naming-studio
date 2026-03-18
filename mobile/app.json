@@ -2,6 +2,7 @@
   "expo": {
     "name": "mobile",
     "slug": "mobile",
+    "scheme": "namingstudio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -29,18 +30,39 @@
               {
                 "fontFamily": "Noto Serif KR",
                 "fontDefinitions": [
-                  { "path": "node_modules/@expo-google-fonts/noto-serif-kr/300Light/NotoSerifKR_300Light.ttf", "weight": 300 },
-                  { "path": "node_modules/@expo-google-fonts/noto-serif-kr/400Regular/NotoSerifKR_400Regular.ttf", "weight": 400 },
-                  { "path": "node_modules/@expo-google-fonts/noto-serif-kr/500Medium/NotoSerifKR_500Medium.ttf", "weight": 500 },
-                  { "path": "node_modules/@expo-google-fonts/noto-serif-kr/600SemiBold/NotoSerifKR_600SemiBold.ttf", "weight": 600 }
+                  {
+                    "path": "node_modules/@expo-google-fonts/noto-serif-kr/300Light/NotoSerifKR_300Light.ttf",
+                    "weight": 300
+                  },
+                  {
+                    "path": "node_modules/@expo-google-fonts/noto-serif-kr/400Regular/NotoSerifKR_400Regular.ttf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "node_modules/@expo-google-fonts/noto-serif-kr/500Medium/NotoSerifKR_500Medium.ttf",
+                    "weight": 500
+                  },
+                  {
+                    "path": "node_modules/@expo-google-fonts/noto-serif-kr/600SemiBold/NotoSerifKR_600SemiBold.ttf",
+                    "weight": 600
+                  }
                 ]
               },
               {
                 "fontFamily": "Noto Sans KR",
                 "fontDefinitions": [
-                  { "path": "node_modules/@expo-google-fonts/noto-sans-kr/300Light/NotoSansKR_300Light.ttf", "weight": 300 },
-                  { "path": "node_modules/@expo-google-fonts/noto-sans-kr/400Regular/NotoSansKR_400Regular.ttf", "weight": 400 },
-                  { "path": "node_modules/@expo-google-fonts/noto-sans-kr/500Medium/NotoSansKR_500Medium.ttf", "weight": 500 }
+                  {
+                    "path": "node_modules/@expo-google-fonts/noto-sans-kr/300Light/NotoSansKR_300Light.ttf",
+                    "weight": 300
+                  },
+                  {
+                    "path": "node_modules/@expo-google-fonts/noto-sans-kr/400Regular/NotoSansKR_400Regular.ttf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "node_modules/@expo-google-fonts/noto-sans-kr/500Medium/NotoSansKR_500Medium.ttf",
+                    "weight": 500
+                  }
                 ]
               }
             ]
@@ -57,7 +79,8 @@
             ]
           }
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "ios": {
       "supportsTablet": true

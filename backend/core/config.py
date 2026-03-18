@@ -27,3 +27,10 @@ SCORED_COMBINATIONS_DB_PATH: Path = Path(
         str(_here.parent / "db" / "scored_combinations.sqlite3"),
     )
 )
+
+# Auth
+JWT_SECRET: str = os.getenv("JWT_SECRET", "dev-secret-change-in-production")
+JWT_ALGORITHM: str = "HS256"
+JWT_EXPIRE_DAYS: int = int(os.getenv("JWT_EXPIRE_DAYS", "30"))
+# Expo Go에서는 host.exp.Exponent, 프로덕션에서는 실제 bundle ID로 변경
+APPLE_BUNDLE_ID: str = os.getenv("APPLE_BUNDLE_ID", "host.exp.Exponent")

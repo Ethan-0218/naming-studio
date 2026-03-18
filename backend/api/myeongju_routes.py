@@ -6,8 +6,10 @@ import logging
 from datetime import datetime, timedelta
 from typing import Literal
 
-from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
+
+from auth.dependencies import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -121,21 +123,18 @@ def _row_to_response(row: dict) -> MyeongJuResponse:
 # ─── 엔드포인트 ────────────────────────────────────────────────────────────────
 
 @router.post("/myeongju", response_model=MyeongJuResponse)
-def create_myeongju(
+async def create_myeongju(
     body: CreateMyeongJuRequest,
     request: Request,
-    x_device_id: str = Header(..., alias="X-Device-ID"),
+    user_id: str = Depends(get_current_user),
 ):
     from db.postgres_pool import _pool_instance
     if _pool_instance is None:
         raise HTTPException(status_code=503, detail="DB 미연결")
 
-    from db.user_repository import UserRepository
     from db.myeongju_repository import MyeongJuRepository
     from domain.saju.사주팔자 import 사주팔자
     from domain.saju.성별 import 성별
-
-    user_id = UserRepository(_pool_instance).upsert_by_device_id(x_device_id)
 
     # 1. 음력 → 양력 변환
     year, month, day = body.year, body.month, body.day
@@ -191,17 +190,15 @@ def create_myeongju(
 
 
 @router.get("/myeongju", response_model=list[MyeongJuResponse])
-def list_myeongju(
+async def list_myeongju(
     request: Request,
-    x_device_id: str = Header(..., alias="X-Device-ID"),
+    user_id: str = Depends(get_current_user),
 ):
     from db.postgres_pool import _pool_instance
     if _pool_instance is None:
         raise HTTPException(status_code=503, detail="DB 미연결")
 
-    from db.user_repository import UserRepository
     from db.myeongju_repository import MyeongJuRepository
 
-    user_id = UserRepository(_pool_instance).upsert_by_device_id(x_device_id)
     rows = MyeongJuRepository(_pool_instance).list_by_user(user_id)
     return [_row_to_response(r) for r in rows]

@@ -6,6 +6,24 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RootStack } from '@/navigation/RootStack';
 import { queryClient } from '@/lib/queryClient';
+import { AuthProvider, useAuth } from '@/auth/AuthContext';
+import LoginScreen from '@/auth/components/LoginScreen';
+
+function AppContent() {
+  const { auth } = useAuth();
+
+  if (auth.isLoading) return null;
+
+  if (!auth.token) {
+    return <LoginScreen />;
+  }
+
+  return (
+    <NavigationContainer>
+      <RootStack />
+    </NavigationContainer>
+  );
+}
 
 export default function App() {
   const [fontsLoaded, fontError] = useAppFonts();
@@ -14,9 +32,9 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <RootStack />
-        </NavigationContainer>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

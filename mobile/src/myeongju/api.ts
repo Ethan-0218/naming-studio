@@ -1,6 +1,12 @@
 import { BACKEND_URL } from '../../constants/config';
-import { getDeviceId } from '../shared/deviceId';
+import { getToken } from '../auth/tokenStorage';
 import { MyeongJuProfile, OhaengType } from './types';
+
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await getToken();
+  if (!token) throw new Error('로그인이 필요합니다.');
+  return { Authorization: `Bearer ${token}` };
+}
 
 interface CreateMyeongJuParams {
   gender: 'male' | 'female';
@@ -49,8 +55,6 @@ function to24h(isAm: boolean, hour: number): number {
 }
 
 export async function createMyeongJu(params: CreateMyeongJuParams): Promise<MyeongJuProfile> {
-  const deviceId = await getDeviceId();
-
   const birth_hour = params.timeUnknown ? null : to24h(params.isAm, params.hour);
   const birth_minute = params.timeUnknown ? null : params.minute;
 
@@ -58,7 +62,7 @@ export async function createMyeongJu(params: CreateMyeongJuParams): Promise<Myeo
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Device-ID': deviceId,
+      ...(await authHeaders()),
     },
     body: JSON.stringify({
       gender: params.gender,
@@ -84,10 +88,8 @@ export async function createMyeongJu(params: CreateMyeongJuParams): Promise<Myeo
 }
 
 export async function listMyeongJu(): Promise<MyeongJuProfile[]> {
-  const deviceId = await getDeviceId();
-
   const res = await fetch(`${BACKEND_URL}/api/myeongju`, {
-    headers: { 'X-Device-ID': deviceId },
+    headers: await authHeaders(),
   });
 
   if (!res.ok) {

@@ -25,3 +25,17 @@ class UserRepository:
                 (device_id,),
             ).fetchone()
         return str(row["id"])
+
+    def upsert_by_apple_id(self, apple_id: str) -> str:
+        """apple_id로 users 행을 upsert하고 UUID 문자열을 반환합니다."""
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO users (apple_id, oauth_provider)
+                VALUES (%s, 'apple')
+                ON CONFLICT (apple_id) DO UPDATE SET last_seen_at = NOW()
+                RETURNING id
+                """,
+                (apple_id,),
+            ).fetchone()
+        return str(row["id"])
