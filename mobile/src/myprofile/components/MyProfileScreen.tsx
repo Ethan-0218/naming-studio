@@ -49,7 +49,7 @@ export default function MyProfileScreen() {
         )}
 
         {/* 이름공방 서비스 */}
-        <SettingsGroup title="이름공방 서비스">
+        <SettingsGroup title="">
           <SettingsRow
             iconName="people-outline"
             iconBg={primitives.gold200}
