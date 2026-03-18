@@ -69,7 +69,7 @@ export default function NameInputSection({
         <View style={{ gap: 4 }}>
           <Font
             tag="secondaryMedium"
-            className="text-overline text-textTertiary uppercase"
+            className="text-serifLabel text-textTertiary uppercase"
           >
             한 글
           </Font>
@@ -82,7 +82,7 @@ export default function NameInputSection({
               >
                 <Font
                   tag="secondaryMedium"
-                  className="text-overline text-textTertiary uppercase"
+                  className="text-label text-textTertiary uppercase"
                 >
                   {SLOT_LABELS[slot]}
                 </Font>
@@ -125,7 +125,7 @@ export default function NameInputSection({
         <View style={{ gap: 4 }}>
           <Font
             tag="secondaryMedium"
-            className="text-overline text-textTertiary uppercase"
+            className="text-serifLabel text-textTertiary uppercase"
           >
             한 자
           </Font>

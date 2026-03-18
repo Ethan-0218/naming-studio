@@ -33,7 +33,7 @@ export default function AddMyeongJuButton({ onPress }: Props) {
             tag="secondary"
             className="mt-0.5"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: 'rgba(251,247,238,0.4)',
               letterSpacing: 0.4,
             }}

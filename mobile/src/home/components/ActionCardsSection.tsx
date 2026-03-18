@@ -18,7 +18,7 @@ export default function ActionCardsSection({
       <Font
         tag="secondary"
         className="text-textTertiary mb-3 px-1"
-        style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
+        style={{ fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}
       >
         시작하기
       </Font>
@@ -34,7 +34,7 @@ export default function ActionCardsSection({
               <Ionicons name="sparkles" size={10} color="#fff" />
               <Font
                 tag="secondaryMedium"
-                style={{ fontSize: 10, color: '#fff', letterSpacing: 0.8 }}
+                style={{ fontSize: 12, color: '#fff', letterSpacing: 0.8 }}
               >
                 AI 추천
               </Font>

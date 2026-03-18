@@ -46,7 +46,7 @@ function Badge({
       <Font
         tag="secondaryMedium"
         style={{
-          fontSize: 11,
+          fontSize: 12,
           color: BADGE_TEXT_COLOR[variant],
           letterSpacing: 0.4,
         }}
@@ -97,7 +97,7 @@ export default function SettingsRow({
           <Font
             tag="secondary"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: colors.textTertiary,
               letterSpacing: 0.4,
             }}

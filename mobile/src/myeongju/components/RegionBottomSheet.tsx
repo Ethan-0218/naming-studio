@@ -174,7 +174,7 @@ export default function RegionBottomSheet({
                         <Font
                           tag="secondary"
                           className={`shrink ${isSelected ? 'text-warningBorder' : 'text-textTertiary'}`}
-                          style={{ fontSize: 11.5 }}
+                          style={{ fontSize: 12 }}
                         >
                           {item.full}
                         </Font>
@@ -190,7 +190,7 @@ export default function RegionBottomSheet({
                                 ? 'text-warningBorder'
                                 : 'text-textDisabled'
                             }
-                            style={{ fontSize: 11, letterSpacing: 0.4 }}
+                            style={{ fontSize: 12, letterSpacing: 0.4 }}
                           >
                             약 {item.offset}분
                           </Font>

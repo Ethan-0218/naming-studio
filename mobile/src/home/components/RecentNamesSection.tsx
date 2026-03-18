@@ -40,14 +40,14 @@ export default function RecentNamesSection() {
         <Font
           tag="secondary"
           className="text-textTertiary"
-          style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
+          style={{ fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}
         >
           최근 분석 이름
         </Font>
         <Font
           tag="secondary"
           className="text-textTertiary"
-          style={{ fontSize: 11, letterSpacing: 0.5 }}
+          style={{ fontSize: 12, letterSpacing: 0.5 }}
         >
           전체 보기 →
         </Font>
@@ -82,7 +82,7 @@ export default function RecentNamesSection() {
               <Font
                 tag="secondary"
                 className="text-textDisabled mt-0.5"
-                style={{ fontSize: 11 }}
+                style={{ fontSize: 12 }}
               >
                 {item.date}
               </Font>
@@ -101,7 +101,7 @@ export default function RecentNamesSection() {
               <Font
                 tag="secondary"
                 className="text-textDisabled"
-                style={{ fontSize: 10 }}
+                style={{ fontSize: 12 }}
               >
                 {item.label}
               </Font>

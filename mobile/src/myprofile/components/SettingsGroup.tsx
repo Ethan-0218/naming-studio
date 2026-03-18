@@ -14,7 +14,7 @@ export default function SettingsGroup({ title, children }: Props) {
         <Font
           tag="secondaryMedium"
           className="px-5 pt-5 pb-2 uppercase"
-          style={{ fontSize: 10, color: '#C0AE92', letterSpacing: 2.2 }}
+          style={{ fontSize: 12, color: '#C0AE92', letterSpacing: 2.2 }}
         >
           {title}
         </Font>

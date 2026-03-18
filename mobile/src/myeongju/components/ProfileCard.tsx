@@ -49,7 +49,7 @@ export default function ProfileCard({ profile, onPress, onDelete }: Props) {
         <Font
           tag="secondary"
           style={{
-            fontSize: 9.5,
+            fontSize: 12,
             letterSpacing: 0.6,
             color: ohaeng.base,
             opacity: 0.8,
@@ -85,7 +85,7 @@ export default function ProfileCard({ profile, onPress, onDelete }: Props) {
             <Font
               tag="secondaryMedium"
               className="text-textSecondary"
-              style={{ fontSize: 10 }}
+              style={{ fontSize: 12 }}
             >
               {genderLabel}
             </Font>
@@ -99,7 +99,7 @@ export default function ProfileCard({ profile, onPress, onDelete }: Props) {
               <Font
                 tag="secondary"
                 className="text-textDisabled"
-                style={{ fontSize: 9.5, letterSpacing: 0 }}
+                style={{ fontSize: 12, letterSpacing: 0 }}
               >
                 {profile.calendarType}
               </Font>
@@ -115,7 +115,7 @@ export default function ProfileCard({ profile, onPress, onDelete }: Props) {
           <Font
             tag="secondary"
             className="text-textDisabled mt-0.5"
-            style={{ fontSize: 11.5, lineHeight: 17 }}
+            style={{ fontSize: 12, lineHeight: 17 }}
           >
             {profile.birthTime}
           </Font>
@@ -128,7 +128,7 @@ export default function ProfileCard({ profile, onPress, onDelete }: Props) {
               <Font
                 tag="secondary"
                 className="text-textDisabled"
-                style={{ fontSize: 10.5 }}
+                style={{ fontSize: 12 }}
               >
                 미분석
               </Font>
@@ -137,7 +137,7 @@ export default function ProfileCard({ profile, onPress, onDelete }: Props) {
                 <Font
                   tag="secondary"
                   className="text-textTertiary"
-                  style={{ fontSize: 10.5 }}
+                  style={{ fontSize: 12 }}
                 >
                   분석 {profile.analysisCount}회
                 </Font>
@@ -147,7 +147,7 @@ export default function ProfileCard({ profile, onPress, onDelete }: Props) {
                     <Font
                       tag="secondary"
                       className="text-textTertiary"
-                      style={{ fontSize: 10.5 }}
+                      style={{ fontSize: 12 }}
                     >
                       저장 {profile.savedCount}개
                     </Font>

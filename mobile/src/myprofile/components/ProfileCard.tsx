@@ -23,7 +23,7 @@ function ProviderTag({ provider }: { provider: string | null }) {
         <Font
           tag="secondaryMedium"
           style={{
-            fontSize: 10.5,
+            fontSize: 12,
             color: colors.textInverse,
             letterSpacing: 0.4,
           }}
@@ -96,7 +96,7 @@ export default function ProfileCard({ profile }: Props) {
               <Font
                 tag="secondary"
                 style={{
-                  fontSize: 10.5,
+                  fontSize: 12,
                   color: colors.textTertiary,
                   letterSpacing: 0.4,
                 }}

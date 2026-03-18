@@ -30,7 +30,7 @@ export default function HeroSection() {
       <Font
         tag="secondary"
         style={{
-          fontSize: 11,
+          fontSize: 12,
           letterSpacing: 2.5,
           color: colors.textTertiary,
           textTransform: 'uppercase',

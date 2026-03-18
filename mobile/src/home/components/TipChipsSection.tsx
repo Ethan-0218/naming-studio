@@ -17,7 +17,7 @@ export default function TipChipsSection() {
       <Font
         tag="secondary"
         className="text-textTertiary mb-3 px-1"
-        style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' }}
+        style={{ fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}
       >
         분석 항목 살펴보기
       </Font>

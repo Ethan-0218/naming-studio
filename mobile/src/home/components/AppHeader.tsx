@@ -18,7 +18,7 @@ export default function AppHeader() {
         <Font
           tag="secondary"
           className="text-textTertiary mt-px"
-          style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' }}
+          style={{ fontSize: 12, letterSpacing: 3, textTransform: 'uppercase' }}
         >
           名工房 · 이름 분석 및 작명
         </Font>

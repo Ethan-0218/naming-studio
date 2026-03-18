@@ -32,7 +32,7 @@ export default function BottomNav({ activeTab = '홈' }: Props) {
             <Font
               tag={isActive ? 'secondaryMedium' : 'secondary'}
               className={isActive ? 'text-fillAccent' : 'text-textDisabled'}
-              style={{ fontSize: 10 }}
+              style={{ fontSize: 12 }}
             >
               {tab.label}
             </Font>

@@ -19,7 +19,7 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
         <Font
           tag="secondary"
           className="text-textTertiary flex-1"
-          style={{ fontSize: 11.5, lineHeight: 19 }}
+          style={{ fontSize: 12, lineHeight: 19 }}
         >
           {'출생 지역에 따라 '}
           <Font tag="secondaryMedium" className="text-textSecondary">
@@ -54,13 +54,16 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
     <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
       <View className="flex-row items-end gap-1.5 mb-3.5">
-        <Font tag="secondaryMedium" className="text-overline text-textTertiary">
+        <Font
+          tag="secondaryMedium"
+          className="text-serifLabel text-textTertiary"
+        >
           출생 지역
         </Font>
         <Font
           tag="secondary"
           className="text-textDisabled"
-          style={{ fontSize: 9, letterSpacing: 0.8 }}
+          style={{ fontSize: 12, letterSpacing: 0.8 }}
         >
           지방시 보정
         </Font>

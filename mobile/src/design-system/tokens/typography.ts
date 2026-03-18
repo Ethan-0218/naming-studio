@@ -196,9 +196,9 @@ export const textStyles = {
 
   /** 보조 설명 / 힌트 / 빈 상태 메시지 */
   bodySm: buildTextStyle('sans', '400', {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 0,
-    lineHeight: Math.round(11 * 1.7), // 19
+    lineHeight: Math.round(12 * 1.7), // 20
   }),
 
   /** 버튼·탭 레이블, 중형 UI 액션 텍스트 */
@@ -217,24 +217,24 @@ export const textStyles = {
 
   /** 뱃지·칩·태그 (성별 선택, 오행 배지 등) */
   label: buildTextStyle('sans', '500', {
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 0.5,
-    lineHeight: Math.round(11 * 1.4), // 15
+    lineHeight: Math.round(12 * 1.4), // 17
   }),
 
   /** 부가 정보 / 한자 뜻·음·획수 — weight 올려 가독성 확보 */
   caption: buildTextStyle('sans', '500', {
-    fontSize: 10,
+    fontSize: 12,
     letterSpacing: 0.5,
-    lineHeight: Math.round(10 * 1.5), // 15
+    lineHeight: Math.round(12 * 1.5), // 18
   }),
 
   /** 섹션 구분 라벨 — 항상 uppercase로 렌더링됨 */
   overline: buildTextStyle('sans', '500', {
-    fontSize: 9,
+    fontSize: 12,
     letterSpacing: 2,
     textTransform: 'uppercase' as const,
-    lineHeight: Math.round(9 * 1.5), // 14
+    lineHeight: Math.round(12 * 1.5), // 18
   }),
 } as const satisfies Record<string, TextStyle>;
 

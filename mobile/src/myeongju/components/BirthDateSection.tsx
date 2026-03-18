@@ -46,7 +46,7 @@ export default function BirthDateSection({
     <View className="px-5 py-[22px] border-b border-border">
       <Font
         tag="secondaryMedium"
-        className="text-overline text-textTertiary mb-3.5"
+        className="text-serifLabel text-textTertiary mb-3.5"
       >
         생년월일
       </Font>
@@ -111,7 +111,7 @@ export default function BirthDateSection({
           <Font
             tag="secondary"
             className="text-textTertiary self-end pb-2"
-            style={{ fontSize: 11 }}
+            style={{ fontSize: 12 }}
           >
             년
           </Font>
@@ -128,7 +128,7 @@ export default function BirthDateSection({
           <Font
             tag="secondary"
             className="text-textTertiary self-end pb-2"
-            style={{ fontSize: 11 }}
+            style={{ fontSize: 12 }}
           >
             월
           </Font>
@@ -145,7 +145,7 @@ export default function BirthDateSection({
           <Font
             tag="secondary"
             className="text-textTertiary self-end pb-2"
-            style={{ fontSize: 11 }}
+            style={{ fontSize: 12 }}
           >
             일
           </Font>

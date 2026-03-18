@@ -36,7 +36,7 @@ export default function ScoreSummarySection({ score }: Props) {
       <View className="flex-1 justify-center">
         <Font
           tag="secondaryMedium"
-          className="text-overline text-textTertiary uppercase"
+          className="text-label text-textTertiary uppercase"
         >
           종합 점수
         </Font>

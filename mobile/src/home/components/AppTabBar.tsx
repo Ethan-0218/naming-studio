@@ -59,7 +59,7 @@ export default function AppTabBar({ state, navigation }: BottomTabBarProps) {
             <Font
               tag={isActive ? 'secondaryMedium' : 'secondary'}
               style={{
-                fontSize: 10,
+                fontSize: 12,
                 color: isActive ? primitives.gold600 : primitives.ink300,
               }}
             >

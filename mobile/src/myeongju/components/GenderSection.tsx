@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ohaengColors } from '@/design-system';
+import { colors, ohaengColors } from '@/design-system';
 import { Font } from '@/components/Font';
 
 interface Props {
@@ -28,12 +28,13 @@ function GenderCard({
 
   return (
     <Pressable
-      className="flex-1 flex-row items-center gap-4 rounded-[18px] border-[1.5px] p-4 pt-[18px]"
-      style={({ pressed }) => ({
-        borderColor: selected ? scheme.border : '#e7e5e4',
-        backgroundColor: selected ? scheme.light : '#fafaf9',
-        opacity: pressed ? 0.84 : 1,
-      })}
+      className="flex-1 flex-row items-center gap-4 rounded-[18px] p-4 pt-[18px]"
+      style={{
+        borderColor: selected ? scheme.border : colors.borderStrong,
+        backgroundColor: selected ? scheme.light : colors.surfaceRaised,
+        borderWidth: 1.5,
+        borderStyle: 'solid',
+      }}
       onPress={onPress}
     >
       {/* check circle — top-right absolute */}
@@ -54,7 +55,7 @@ function GenderCard({
         style={{
           fontSize: 38,
           lineHeight: 48,
-          color: selected ? scheme.base : '#d6d3d1',
+          color: selected ? scheme.base : colors.textSecondary,
           width: 46,
         }}
       >
@@ -77,7 +78,7 @@ function GenderCard({
         <Font
           tag="secondary"
           style={{
-            fontSize: 11,
+            fontSize: 12,
             letterSpacing: 0.8,
             color: selected ? scheme.border : '#d6d3d1',
           }}
@@ -94,7 +95,7 @@ export default function GenderSection({ gender, onChange }: Props) {
     <View className="px-5 py-[22px] border-b border-border">
       <Font
         tag="secondaryMedium"
-        className="text-overline text-textTertiary mb-3.5"
+        className="text-serifLabel text-textTertiary mb-3.5"
       >
         성별
       </Font>

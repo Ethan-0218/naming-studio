@@ -104,7 +104,7 @@ function PickerColumn({
         <Font
           tag="secondary"
           className="text-textTertiary"
-          style={{ fontSize: 11 }}
+          style={{ fontSize: 12 }}
         >
           {unit}
         </Font>

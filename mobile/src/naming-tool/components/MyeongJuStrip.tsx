@@ -44,7 +44,7 @@ export default function MyeongJuStrip({ profile, onPress }: Props) {
           <Font
             tag="secondary"
             style={{
-              fontSize: 9,
+              fontSize: 12,
               letterSpacing: 0.4,
               color: ohaeng.base,
               opacity: 0.8,
@@ -86,14 +86,14 @@ export default function MyeongJuStrip({ profile, onPress }: Props) {
           <View className="rounded-full py-px px-[6px] border border-border bg-surface">
             <Font
               tag="secondaryMedium"
-              style={{ fontSize: 9.5, color: colors.textSecondary }}
+              style={{ fontSize: 12, color: colors.textSecondary }}
             >
               {genderLabel}
             </Font>
           </View>
           <Font
             tag="secondary"
-            style={{ fontSize: 11.5, color: colors.textTertiary }}
+            style={{ fontSize: 12, color: colors.textTertiary }}
           >
             {'· '}
             {profile.birthDate}

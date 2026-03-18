@@ -134,7 +134,7 @@ export default function HanjaPickerSheet({
             className="border-[1.5px] border-border rounded-md px-3 py-2 mb-2 bg-surfaceRaised text-textPrimary"
             style={{
               fontFamily: 'NotoSansKR_400Regular',
-              fontSize: 11,
+              fontSize: 12,
               lineHeight: 19,
             }}
             value={meanFilter}

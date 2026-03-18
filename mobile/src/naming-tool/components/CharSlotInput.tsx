@@ -147,7 +147,7 @@ export default function CharSlotInput({
             className="border border-border rounded-sm px-2 py-1 bg-bg text-textPrimary"
             style={{
               fontFamily: 'NotoSansKR_400Regular',
-              fontSize: 11,
+              fontSize: 12,
               lineHeight: 19,
             }}
             value={query}

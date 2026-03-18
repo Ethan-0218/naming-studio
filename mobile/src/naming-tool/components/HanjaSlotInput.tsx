@@ -11,6 +11,7 @@ import { ohaengColors, colors } from '@/design-system';
 import { Font, FONT_MAP } from '@/components/Font';
 import { CharSlotData, HanjaSelection } from '../types';
 import HanjaPickerSheet from './HanjaPickerSheet';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Props {
   label: string;
@@ -36,7 +37,7 @@ export default function HanjaSlotInput({
     <View className="flex-1 items-center min-w-0" style={{ gap: 4 }}>
       <Font
         tag="secondaryMedium"
-        className="text-overline text-textTertiary uppercase"
+        className="text-label text-textTertiary uppercase"
       >
         {label}
       </Font>
@@ -71,8 +72,8 @@ export default function HanjaSlotInput({
               className="text-center text-caption"
               style={{
                 color: oc?.base ?? colors.textSecondary,
-                fontSize: 10,
-                lineHeight: 14,
+                fontSize: 12,
+                lineHeight: 16,
               }}
               numberOfLines={1}
             >
@@ -81,16 +82,10 @@ export default function HanjaSlotInput({
           </>
         ) : (
           <>
-            <Font
-              tag="primaryLight"
-              className="text-textDisabled"
-              style={{ fontSize: 22, lineHeight: 26 }}
-            >
-              +
-            </Font>
+            <Ionicons name="add" size={16} color={colors.textDisabled} />
             <Font
               tag="secondaryMedium"
-              className="text-overline text-textTertiary uppercase"
+              className="text-overline text-textTertiary"
             >
               한자 선택
             </Font>

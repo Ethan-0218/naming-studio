@@ -47,7 +47,7 @@ export default function LoginScreen() {
         <Font
           tag="secondary"
           style={{
-            fontSize: 11,
+            fontSize: 12,
             letterSpacing: 1.5,
             color: colors.textTertiary,
           }}

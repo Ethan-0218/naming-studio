@@ -78,13 +78,16 @@ export default function BirthTimeSection({
     <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
       <View className="flex-row items-end gap-1.5 mb-3.5">
-        <Font tag="secondaryMedium" className="text-overline text-textTertiary">
+        <Font
+          tag="secondaryMedium"
+          className="text-serifLabel text-textTertiary"
+        >
           생시
         </Font>
         <Font
           tag="secondary"
           className="text-textDisabled"
-          style={{ fontSize: 9, letterSpacing: 0.8 }}
+          style={{ fontSize: 12, letterSpacing: 0.8 }}
         >
           태어난 시각
         </Font>
@@ -262,7 +265,7 @@ export default function BirthTimeSection({
               <Font
                 tag="secondary"
                 className="mt-[2px]"
-                style={{ fontSize: 11, color: primitives.gold400 }}
+                style={{ fontSize: 12, color: primitives.gold400 }}
               >
                 사주의 시주(時柱)로 사용됩니다
               </Font>
@@ -272,7 +275,7 @@ export default function BirthTimeSection({
                 <Font
                   tag="secondary"
                   className="text-textTertiary mt-[3px]"
-                  style={{ fontSize: 10 }}
+                  style={{ fontSize: 12 }}
                 >
                   {`지역 보정 후: ${adjustedAmPm} ${adjustedHourDisplay}:${String(adjustedMin).padStart(2, '0')}`}
                 </Font>

@@ -99,7 +99,7 @@ export default function MyeongJuListScreen() {
           <Font
             tag="secondary"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: colors.textTertiary,
               letterSpacing: 0.6,
             }}
