@@ -52,11 +52,11 @@ export default function AddMyeongJuScreen() {
         regionOffset: selectedRegion.offset,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           if (mode === 'ai') {
             navigation.navigate('AINaming');
           } else if (mode === 'self') {
-            navigation.navigate('SelfNaming');
+            navigation.navigate('SelfNaming', { profileId: data.id });
           } else {
             navigation.goBack();
           }

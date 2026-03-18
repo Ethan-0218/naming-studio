@@ -25,7 +25,6 @@ interface Props {
 
 export default function ProfileCard({ profile, onPress }: Props) {
   const ohaeng = ohaengColors[profile.ohaeng];
-  const genderColor = GENDER_COLORS[profile.gender];
   const genderLabel = profile.gender === 'male' ? '남' : '여';
   const hasAnalysis = profile.analysisCount !== undefined;
 
