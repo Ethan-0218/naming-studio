@@ -143,7 +143,7 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
             tag="secondary"
             className="text-bodySm text-textDisabled text-center py-4"
           >
-            한자의 획수를 모두 입력하면 수리격이 계산됩니다
+            한자를 모두 선택하면 수리격이 계산됩니다
           </Font>
         )}
       </SectionCard>
