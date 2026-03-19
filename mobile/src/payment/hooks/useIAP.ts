@@ -117,7 +117,13 @@ function useIAPWithNative(options: UsePurchaseOptions) {
         if (iap.products.length === 0) {
           await iap.fetchProducts({ skus: ALL_PRODUCT_IDS, type: 'in-app' });
         }
-        await iap.requestPurchase({ sku: productId });
+        await iap.requestPurchase({
+          request: {
+            apple: { sku: productId },
+            google: { skus: [productId] },
+          },
+          type: 'in-app',
+        });
       } catch (err) {
         setIsPurchasing(false);
         const msg =
