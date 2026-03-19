@@ -1,10 +1,4 @@
-import sys
 import unittest
-from pathlib import Path
-
-backend_root = Path(__file__).resolve().parents[3]
-if str(backend_root) not in sys.path:
-    sys.path.insert(0, str(backend_root))
 
 from domain.jakmyeong.발음오행 import 발음오행_from_초성
 from domain.saju.오행 import 오행

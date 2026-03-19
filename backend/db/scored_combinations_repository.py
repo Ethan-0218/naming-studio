@@ -241,21 +241,3 @@ class ScoredCombinationsRepository:
         # score 기준 재정렬
         covered_rows.sort(key=lambda r: r[3], reverse=True)
         return covered_rows
-
-    def get_covered_names(
-        self,
-        surname_hanja: str,
-        names: list[str],
-    ) -> set[str]:
-        """사전 DB에 존재하는 이름 집합을 반환합니다 (폴백 대상 식별용)."""
-        if not names:
-            return set()
-
-        placeholders = ",".join("?" * len(names))
-        with sqlite3.connect(self._scored_db_path) as conn:
-            rows = conn.execute(
-                f"SELECT DISTINCT name FROM scored_combinations "
-                f"WHERE surname_hanja = ? AND name IN ({placeholders})",
-                [surname_hanja] + names,
-            ).fetchall()
-        return {r[0] for r in rows}

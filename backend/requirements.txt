@@ -10,3 +10,6 @@ python-dotenv>=1.0.0
 korean-lunar-calendar>=0.3.0
 python-jose[cryptography]>=3.3.0
 httpx>=0.27.0
+
+# 테스트 커버리지 (CI에서도 사용 시 requirements-dev.txt와 함께 설치)
+pytest-cov>=6.0.0

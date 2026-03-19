@@ -1,13 +1,7 @@
 # 오행조화 도메인 단위 테스트.
 # 3글자: JSON 5단계(大吉/吉/平/凶/大凶) 기준. 2글자: 알고리즘 폴백.
 
-import sys
 import unittest
-from pathlib import Path
-
-backend_root = Path(__file__).resolve().parents[3]
-if str(backend_root) not in sys.path:
-    sys.path.insert(0, str(backend_root))
 
 from domain.jakmyeong import 오행조화
 from domain.saju import 오행

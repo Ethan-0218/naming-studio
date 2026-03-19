@@ -1,12 +1,5 @@
 # 사주팔자.spec.ts 이식
 
-import sys
-from pathlib import Path
-
-backend_root = Path(__file__).resolve().parents[3]
-if str(backend_root) not in sys.path:
-    sys.path.insert(0, str(backend_root))
-
 from domain.saju import 사주팔자
 from domain.saju import 성별
 from domain.saju import 십간

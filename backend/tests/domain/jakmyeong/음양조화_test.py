@@ -1,12 +1,6 @@
 # 음양조화 도메인 단위 테스트
 
-import sys
 import unittest
-from pathlib import Path
-
-backend_root = Path(__file__).resolve().parents[3]
-if str(backend_root) not in sys.path:
-    sys.path.insert(0, str(backend_root))
 
 from domain.jakmyeong import 음양조화
 from domain.saju.음양 import 음양

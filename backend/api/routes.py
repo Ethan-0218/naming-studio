@@ -321,6 +321,8 @@ async def chat(request: NamingRequest, req: Request):
         )
         return _build_naming_response(session_id, result, req)
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

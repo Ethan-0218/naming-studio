@@ -17,6 +17,7 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+pip install -r requirements-dev.txt  # vulture 등 (선택)
 cp .env.example .env  # Set OPENAI_API_KEY
 
 # 최초 세팅: generated SQLite DB 생성 (name_hanja_combinations, scored_combinations)
@@ -29,7 +30,8 @@ uvicorn main:app --reload  # Dev server on :8000
 ```bash
 cd backend
 source .venv/bin/activate
-pytest                                        # All tests
+pytest                                        # All tests (pytest.ini에서 커버리지 포함)
+pytest --no-cov                             # 커버리지 없이 빠르게
 pytest tests/domain/                          # Domain unit tests only
 pytest tests/db/                              # DB integration tests
 pytest tests/domain/jakmyeong/음양조화_test.py  # Single test file

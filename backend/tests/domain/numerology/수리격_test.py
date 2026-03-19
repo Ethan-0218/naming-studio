@@ -1,12 +1,6 @@
 # 수리격 도메인 단위 테스트
 
-import sys
 import unittest
-from pathlib import Path
-
-backend_root = Path(__file__).resolve().parents[3]
-if str(backend_root) not in sys.path:
-    sys.path.insert(0, str(backend_root))
 
 from domain.numerology import 격, 이름수리격, load_수리격, 성별_to_gender_key
 

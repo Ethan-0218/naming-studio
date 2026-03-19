@@ -1,0 +1,2 @@
+# 정적 분석 (데드 코드): pip install -r requirements.txt -r requirements-dev.txt
+vulture>=2.11

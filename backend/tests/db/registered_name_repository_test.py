@@ -1,14 +1,6 @@
 # registered_name.sqlite3 기반 RegisteredNameRepository 통합 테스트
 
-import sys
-from pathlib import Path
-
 import pytest
-
-backend_root = Path(__file__).resolve().parents[2]
-if str(backend_root) in sys.path:
-    sys.path.remove(str(backend_root))
-sys.path.insert(0, str(backend_root))
 
 from core.config import REGISTERED_NAME_DB_PATH
 from db import RegisteredName, RegisteredNameRepository

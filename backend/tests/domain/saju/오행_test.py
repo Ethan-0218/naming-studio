@@ -1,12 +1,6 @@
 # 오행 from_string, from_stroke_count 단위 테스트
 
-import sys
 import unittest
-from pathlib import Path
-
-backend_root = Path(__file__).resolve().parents[3]
-if str(backend_root) not in sys.path:
-    sys.path.insert(0, str(backend_root))
 
 from domain.saju import 오행
 
