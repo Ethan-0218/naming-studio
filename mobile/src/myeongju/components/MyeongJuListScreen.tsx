@@ -43,7 +43,7 @@ export default function MyeongJuListScreen() {
 
   function handleSelectProfile(profile: MyeongJuProfile) {
     if (mode === 'ai') {
-      navigation.navigate('AINaming');
+      navigation.navigate('AINaming', { profileId: profile.id });
     } else if (mode === 'self') {
       navigation.navigate('SelfNaming', { profileId: profile.id });
     }

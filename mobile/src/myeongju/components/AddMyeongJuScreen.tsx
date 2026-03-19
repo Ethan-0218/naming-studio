@@ -12,6 +12,8 @@ import BirthTimeSection from './BirthTimeSection';
 import BirthRegionSection from './BirthRegionSection';
 import RegionBottomSheet from './RegionBottomSheet';
 import AddMyeongJuFooter from './AddMyeongJuFooter';
+import SurnameSection from './SurnameSection';
+import { SelectedHanja } from '@/shared/components/HanjaSearchField';
 
 export default function AddMyeongJuScreen() {
   const navigation = useNavigation<any>();
@@ -20,6 +22,8 @@ export default function AddMyeongJuScreen() {
   const mode: 'ai' | 'self' | undefined = route.params?.mode;
 
   // 폼 상태
+  const [surname, setSurname] = useState<SelectedHanja | null>(null);
+  const [surnameError, setSurnameError] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [calendarType, setCalendarType] = useState<'양력' | '음력'>('양력');
   const [year, setYear] = useState(2024);
@@ -37,6 +41,11 @@ export default function AddMyeongJuScreen() {
 
   function handleSubmit() {
     if (createMyeongJu.isPending) return;
+    if (!surname) {
+      setSurnameError('성씨를 선택해주세요');
+      return;
+    }
+    setSurnameError('');
     createMyeongJu.mutate(
       {
         gender,
@@ -50,11 +59,13 @@ export default function AddMyeongJuScreen() {
         minute,
         regionName: selectedRegion.name,
         regionOffset: selectedRegion.offset,
+        surname: surname.hangul,
+        surnameHanja: surname.hanja,
       },
       {
         onSuccess: (data) => {
           if (mode === 'ai') {
-            navigation.navigate('AINaming');
+            navigation.navigate('AINaming', { profileId: data.id });
           } else if (mode === 'self') {
             navigation.navigate('SelfNaming', { profileId: data.id });
           } else {
@@ -84,6 +95,13 @@ export default function AddMyeongJuScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <SurnameSection
+          selected={surname}
+          onSelect={setSurname}
+          onClear={() => setSurname(null)}
+          error={surnameError}
+        />
+
         <GenderSection gender={gender} onChange={setGender} />
 
         <BirthDateSection

@@ -12,19 +12,26 @@ function extractTimePeriod(birthTime: string): string {
 
 interface Props {
   profile: MyeongJuProfile;
-  onPress: () => void;
+  onPress?: () => void;
+  readOnly?: boolean;
 }
 
-export default function MyeongJuStrip({ profile, onPress }: Props) {
+export default function MyeongJuStrip({
+  profile,
+  onPress,
+  readOnly = false,
+}: Props) {
   const ohaeng = ohaengColors[profile.ohaeng];
   const genderLabel = profile.gender === 'male' ? '남' : '여';
   const timePeriod = extractTimePeriod(profile.birthTime);
 
+  const Container = readOnly ? View : TouchableOpacity;
+  const containerProps = readOnly ? {} : { onPress, activeOpacity: 0.7 };
+
   return (
-    <TouchableOpacity
-      className="flex-row items-center border-b border-border bg-surfaceRaised"
-      onPress={onPress}
-      activeOpacity={0.7}
+    <Container
+      className="flex-row items-center border-b border-border bg-bgSubtle"
+      {...(containerProps as any)}
     >
       {/* 오행 뱃지 */}
       <View className="pl-4">
@@ -104,13 +111,15 @@ export default function MyeongJuStrip({ profile, onPress }: Props) {
       </View>
 
       {/* chevron */}
-      <View className="px-4">
-        <Ionicons
-          name="chevron-forward"
-          size={16}
-          color={colors.textTertiary}
-        />
-      </View>
-    </TouchableOpacity>
+      {!readOnly && (
+        <View className="px-4">
+          <Ionicons
+            name="chevron-forward"
+            size={16}
+            color={colors.textTertiary}
+          />
+        </View>
+      )}
+    </Container>
   );
 }

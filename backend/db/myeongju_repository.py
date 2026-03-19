@@ -32,6 +32,8 @@ class MyeongJuRepository:
         ohaeng: str,
         ilji_hangul: str,
         ilji_hanja: str,
+        surname: str = "",
+        surname_hanja: str = "",
     ) -> dict:
         with self._pool.connection() as conn:
             row = conn.execute(
@@ -42,21 +44,24 @@ class MyeongJuRepository:
                     time_unknown, birth_hour, birth_minute,
                     region_name, region_offset,
                     solar_date, solar_time,
-                    ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja
+                    ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
+                    surname, surname_hanja
                 ) VALUES (
                     %s, %s, %s,
                     %s, %s, %s,
                     %s, %s, %s,
                     %s, %s,
                     %s, %s,
-                    %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s,
+                    %s, %s
                 )
                 RETURNING id, created_at,
                     gender, calendar_type,
                     birth_year, birth_month, birth_day,
                     time_unknown, birth_hour, birth_minute,
                     region_name,
-                    ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja
+                    ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
+                    surname, surname_hanja
                 """,
                 (
                     user_id, gender, calendar_type,
@@ -65,6 +70,7 @@ class MyeongJuRepository:
                     region_name, region_offset,
                     solar_date, solar_time,
                     ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
+                    surname, surname_hanja,
                 ),
             ).fetchone()
         return dict(row)
@@ -86,7 +92,8 @@ class MyeongJuRepository:
                     birth_year, birth_month, birth_day,
                     time_unknown, birth_hour, birth_minute,
                     region_name,
-                    ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja
+                    ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
+                    surname, surname_hanja
                 FROM myeongju
                 WHERE user_id = %s
                 ORDER BY created_at DESC

@@ -68,6 +68,8 @@ class CreateMyeongJuRequest(BaseModel):
     birth_minute: int | None = None
     region_name: str | None = None
     region_offset: int | None = None
+    surname: str = ""
+    surname_hanja: str = ""
 
 
 class MyeongJuResponse(BaseModel):
@@ -80,6 +82,8 @@ class MyeongJuResponse(BaseModel):
     calendar_type: str
     birth_date: str      # '2024년 3월 12일'
     birth_time: str      # '묘시(卯時) · 오전 5:30' or '시간 모름'
+    surname: str
+    surname_hanja: str
     created_at: str
 
 
@@ -116,6 +120,8 @@ def _row_to_response(row: dict) -> MyeongJuResponse:
         calendar_type=row["calendar_type"],
         birth_date=birth_date,
         birth_time=birth_time,
+        surname=row.get("surname", ""),
+        surname_hanja=row.get("surname_hanja", ""),
         created_at=str(created_at),
     )
 
@@ -184,6 +190,8 @@ async def create_myeongju(
         ohaeng=ilgan.오행.value,
         ilji_hangul=ilji.value,
         ilji_hanja=ilji.한자,
+        surname=body.surname,
+        surname_hanja=body.surname_hanja,
     )
 
     return _row_to_response(row)

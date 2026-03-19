@@ -20,6 +20,8 @@ interface CreateMyeongJuParams {
   minute: number;
   regionName: string | null;
   regionOffset: number | null;
+  surname: string;
+  surnameHanja: string;
 }
 
 interface MyeongJuApiResponse {
@@ -32,6 +34,8 @@ interface MyeongJuApiResponse {
   calendar_type: string;
   birth_date: string;
   birth_time: string;
+  surname: string;
+  surname_hanja: string;
   created_at: string;
 }
 
@@ -46,6 +50,8 @@ function toProfile(r: MyeongJuApiResponse): MyeongJuProfile {
     calendarType: r.calendar_type as '양력' | '음력',
     birthDate: r.birth_date,
     birthTime: r.birth_time,
+    surname: r.surname,
+    surnameHanja: r.surname_hanja,
   };
 }
 
@@ -79,6 +85,8 @@ export async function createMyeongJu(
       birth_minute,
       region_name: params.regionName,
       region_offset: params.regionOffset,
+      surname: params.surname,
+      surname_hanja: params.surnameHanja,
     }),
   });
 

@@ -18,6 +18,8 @@ export interface MyeongJuProfile {
   calendarType: '양력' | '음력';
   birthDate: string;
   birthTime: string;
+  surname: string; // 성씨 한글 (e.g. '김')
+  surnameHanja: string; // 성씨 한자 (e.g. '金')
   analysisCount?: number;
   savedCount?: number;
 }
