@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { Font } from '@/components/Font';
 import { colors } from '@/design-system';
@@ -6,6 +6,8 @@ import { ChatMessage, ContentBlock } from '../types';
 import ChoiceGroupBlock from './ChoiceGroupBlock';
 import NameCard from './NameCard';
 import DebugPanel from './DebugPanel';
+import SimpleMarkdown from './SimpleMarkdown';
+import TypewriterText from './TypewriterText';
 
 const stageLabel: Record<string, string> = {
   welcome: '환영',
@@ -18,81 +20,6 @@ const stageLabel: Record<string, string> = {
   candidate_exploration: '이름 탐색',
 };
 
-function renderInlineBold(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return (
-        <Font
-          key={i}
-          tag="secondaryMedium"
-          style={{ fontSize: 13.5, color: colors.textPrimary }}
-        >
-          {part.slice(2, -2)}
-        </Font>
-      );
-    }
-    return (
-      <Font
-        key={i}
-        tag="secondary"
-        style={{ fontSize: 13.5, color: colors.textPrimary }}
-      >
-        {part}
-      </Font>
-    );
-  });
-}
-
-function SimpleMarkdown({ text }: { text: string }) {
-  const lines = text.split('\n');
-  return (
-    <View>
-      {lines.map((line, i) => {
-        if (line.startsWith('### ')) {
-          return (
-            <Font
-              key={i}
-              tag="secondaryMedium"
-              style={{
-                fontSize: 13.5,
-                color: colors.textPrimary,
-                marginTop: 8,
-                marginBottom: 2,
-              }}
-            >
-              {line.slice(4)}
-            </Font>
-          );
-        }
-        if (line.startsWith('- ')) {
-          return (
-            <View key={i} className="flex-row" style={{ paddingLeft: 8 }}>
-              <Font
-                tag="secondary"
-                style={{ fontSize: 13.5, color: colors.textPrimary }}
-              >
-                {'• '}
-              </Font>
-              <View className="flex-1 flex-row flex-wrap">
-                {renderInlineBold(line.slice(2))}
-              </View>
-            </View>
-          );
-        }
-        if (line === '') {
-          return <View key={i} style={{ height: 6 }} />;
-        }
-        return (
-          <View key={i} className="flex-row flex-wrap">
-            {renderInlineBold(line)}
-          </View>
-        );
-      })}
-    </View>
-  );
-}
-
 interface Props {
   msg: ChatMessage;
   liked: string[];
@@ -103,6 +30,8 @@ interface Props {
   onSend: (text: string) => void;
   /** 바로 다음 메시지가 사용자 답변이면 선택지는 이미 제출된 것으로 표시 (복원 UI) */
   hasUserReplyBelow?: boolean;
+  /** 새로 도착한 메시지에 타이프라이터 효과 적용 */
+  animate?: boolean;
 }
 
 export default function MessageBubble({
@@ -114,7 +43,25 @@ export default function MessageBubble({
   showDebug,
   onSend,
   hasUserReplyBelow = false,
+  animate = false,
 }: Props) {
+  const textCount = useMemo(
+    () => msg.content.filter((b) => b.type === 'TEXT').length,
+    [msg.content],
+  );
+
+  const [textsDone, setTextsDone] = useState(animate ? 0 : textCount);
+
+  useEffect(() => {
+    setTextsDone(animate ? 0 : textCount);
+  }, [animate, msg.id, textCount]);
+
+  const handleTextDone = useCallback(() => {
+    setTextsDone((c) => c + 1);
+  }, []);
+
+  const nonTextVisible = textsDone >= textCount;
+
   if (msg.role === 'user') {
     const text = msg.content
       .filter((b) => b.type === 'TEXT')
@@ -190,10 +137,20 @@ export default function MessageBubble({
                   borderTopLeftRadius: 3,
                 }}
               >
-                <SimpleMarkdown text={block.data.text} />
+                {animate ? (
+                  <TypewriterText
+                    text={block.data.text}
+                    animate={animate}
+                    msPerChar={50}
+                    onDone={handleTextDone}
+                  />
+                ) : (
+                  <SimpleMarkdown text={block.data.text} />
+                )}
               </View>
             );
           }
+          if (!nonTextVisible) return null;
           if (block.type === 'CHOICE_GROUP') {
             return (
               <ChoiceGroupBlock
@@ -205,11 +162,12 @@ export default function MessageBubble({
             );
           }
           if (block.type === 'NAME') {
-            const name = block.data.한글;
+            const name = (block as Extract<ContentBlock, { type: 'NAME' }>).data
+              .한글;
             return (
               <NameCard
                 key={i}
-                data={block.data}
+                data={(block as Extract<ContentBlock, { type: 'NAME' }>).data}
                 liked={liked.includes(name)}
                 disliked={disliked.includes(name)}
                 onLike={() => onLike(name)}

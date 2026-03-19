@@ -1,6 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useRef } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import React, { useRef } from 'react';
+import {
+  KeyboardAvoidingView,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+  Platform,
+  ScrollView,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -42,9 +49,19 @@ export default function AINamingScreen() {
   );
 
   const scrollRef = useRef<ScrollView>(null);
-  useEffect(() => {
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-  }, [session.messages, session.loading]);
+  const isAtBottomRef = useRef(true);
+
+  function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, layoutMeasurement, contentSize } = e.nativeEvent;
+    isAtBottomRef.current =
+      contentOffset.y + layoutMeasurement.height >= contentSize.height - 60;
+  }
+
+  function handleContentSizeChange() {
+    if (isAtBottomRef.current) {
+      scrollRef.current?.scrollToEnd({ animated: false });
+    }
+  }
 
   return (
     <View className="flex-1 bg-bg">
@@ -79,6 +96,9 @@ export default function AINamingScreen() {
           ref={scrollRef}
           className="flex-1 bg-bg"
           contentContainerStyle={{ padding: 13, paddingBottom: 8 }}
+          onScroll={handleScroll}
+          scrollEventThrottle={100}
+          onContentSizeChange={handleContentSizeChange}
         >
           {session.messages.map((msg, i) => (
             <MessageBubble
@@ -93,6 +113,11 @@ export default function AINamingScreen() {
               hasUserReplyBelow={
                 msg.role === 'assistant' &&
                 session.messages[i + 1]?.role === 'user'
+              }
+              animate={
+                msg.role === 'assistant' &&
+                i === session.messages.length - 1 &&
+                !msg.id.startsWith('restored')
               }
             />
           ))}
