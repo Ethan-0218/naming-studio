@@ -280,20 +280,41 @@ async def chat(request: NamingRequest, req: Request):
             result.get("_content_blocks", []),
             result.get("stage"),
         )
-        return _build_naming_response(session_id, result)
+        return _build_naming_response(session_id, result, req)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _build_naming_response(session_id: str, result: dict) -> NamingResponse:
+def _build_naming_response(
+    session_id: str,
+    result: dict,
+    request: Request | None = None,
+) -> NamingResponse:
     """graph.invoke() 결과로 NamingResponse 생성."""
     stage = result.get("stage", "welcome")
+    payment_status = result.get("payment_status", "pending")
+
     payment_required = (
         stage == "payment_gate" or result.get("_payment_required", False)
     )
-    if stage == "candidate_exploration" and result.get("payment_status", "pending") != "completed":
+    if stage == "candidate_exploration" and payment_status != "completed":
         payment_required = True
+
+    # 그래프 상태에 payment_status가 없더라도 DB 구매 기록이 있으면 해제
+    if payment_required and request is not None:
+        try:
+            from core.config import DATABASE_URL
+            if DATABASE_URL:
+                from db.postgres_pool import _pool_instance
+                if _pool_instance is not None:
+                    from db.purchase_repository import PurchaseRepository
+                    ai_status = PurchaseRepository(_pool_instance).get_session_ai_status(session_id)
+                    if ai_status["unlocked"]:
+                        payment_required = False
+        except Exception:
+            import logging as _log
+            _log.getLogger(__name__).warning("구매 상태 DB 조회 실패", exc_info=True)
 
     content_blocks = result.get("_content_blocks", [])
     raw_llm_output = None
@@ -390,7 +411,7 @@ async def chat_stream(request: NamingRequest, req: Request):
                 result.get("_content_blocks", []),
                 result.get("stage"),
             )
-            return _build_naming_response(session_id, result)
+            return _build_naming_response(session_id, result, req)
 
         try:
             ctx = contextvars.copy_context()

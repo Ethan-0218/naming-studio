@@ -18,6 +18,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { BACKEND_URL } from '../../constants/config';
 import { RootStackParamList } from '../navigation/types';
+import AIPaymentModal from '../payment/components/AIPaymentModal';
+import { usePurchaseStatus } from '../payment/hooks/usePurchaseStatus';
 
 type AINamingNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -1334,6 +1336,7 @@ export default function AINamingScreen() {
   const [likedNames, setLikedNames] = useState<string[]>([]);
   const [dislikedNames, setDislikedNames] = useState<string[]>([]);
   const [paymentRequired, setPaymentRequired] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showLiked, setShowLiked] = useState(false);
   const [dolrimjaModalOpen, setDolrimjaModalOpen] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
@@ -1345,6 +1348,8 @@ export default function AINamingScreen() {
   } | null>(null);
   const [reactionCount, setReactionCount] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
+
+  const { data: purchaseStatus } = usePurchaseStatus(sessionId ?? undefined);
 
   useEffect(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -1913,7 +1918,10 @@ export default function AINamingScreen() {
             <Text className={s.payText}>
               더 많은 이름을 탐색하려면 결제가 필요해요
             </Text>
-            <Pressable className={s.payBtn} onPress={handlePayment}>
+            <Pressable
+              className={s.payBtn}
+              onPress={() => setShowPaymentModal(true)}
+            >
               <Text className={s.payBtnText}>결제하고 계속하기 →</Text>
             </Pressable>
           </View>
@@ -1971,6 +1979,18 @@ export default function AINamingScreen() {
       />
 
       {/* Reason Picker */}
+      {/* AI Payment Modal */}
+      <AIPaymentModal
+        visible={showPaymentModal}
+        sessionId={sessionId ?? ''}
+        purchasedCount={purchaseStatus?.aiNamingPurchasedCount ?? 0}
+        onClose={() => setShowPaymentModal(false)}
+        onSuccess={() => {
+          setShowPaymentModal(false);
+          handlePayment();
+        }}
+      />
+
       <ReasonPicker
         visible={reasonPickerVisible}
         name={reasonPickerContext?.name ?? ''}

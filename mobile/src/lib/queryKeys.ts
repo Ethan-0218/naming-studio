@@ -16,4 +16,9 @@ export const queryKeys = {
     search: (role: 'surname' | 'name', q: string) =>
       [...queryKeys.hanja.all, 'search', role, q] as const,
   },
+  purchases: {
+    all: ['purchases'] as const,
+    status: (sessionId?: string) =>
+      [...queryKeys.purchases.all, 'status', sessionId ?? 'global'] as const,
+  },
 } as const;

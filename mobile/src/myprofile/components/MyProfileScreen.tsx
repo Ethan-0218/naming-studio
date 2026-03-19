@@ -6,6 +6,7 @@ import { colors, primitives } from '@/design-system';
 import { Font } from '@/components/Font';
 import { useAuth } from '@/auth/AuthContext';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
+import { usePurchaseStatus } from '@/payment/hooks/usePurchaseStatus';
 import NavBar from '@/components/NavBar';
 import ProfileCard from './ProfileCard';
 import LoginCard from './LoginCard';
@@ -22,6 +23,17 @@ export default function MyProfileScreen() {
 
   const { data: profiles = [] } = useMyeongJuList();
   const myeongJuCount = isLoggedIn ? profiles.length : null;
+  const { data: purchaseStatus } = usePurchaseStatus();
+
+  function getPurchaseBadge() {
+    if (!isLoggedIn) return '로그인 필요';
+    if (!purchaseStatus) return '무료 플랜';
+    if (purchaseStatus.selfNamingPremium && purchaseStatus.purchases.length > 1)
+      return '프리미엄+AI';
+    if (purchaseStatus.selfNamingPremium) return '프리미엄';
+    if (purchaseStatus.purchases.length > 0) return 'AI 이용권 보유';
+    return '무료 플랜';
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-bgSubtle" edges={['top']}>
@@ -53,8 +65,8 @@ export default function MyProfileScreen() {
             iconBg={primitives.ink900}
             iconColor={primitives.hanji300}
             label="결제 내역"
-            badgeText={isLoggedIn ? '무료 플랜' : '로그인 필요'}
-            badgeVariant={isLoggedIn ? 'default' : 'locked'}
+            badgeText={getPurchaseBadge()}
+            badgeVariant={!isLoggedIn ? 'locked' : 'default'}
             isLast
           />
         </SettingsGroup>

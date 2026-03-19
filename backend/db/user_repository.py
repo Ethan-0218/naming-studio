@@ -51,6 +51,14 @@ class UserRepository:
             ).fetchone()
         return str(row["id"])
 
+    def set_premium(self, user_id: str, value: bool) -> None:
+        """사용자의 is_premium 플래그를 업데이트합니다."""
+        with self._pool.connection() as conn:
+            conn.execute(
+                "UPDATE users SET is_premium = %s WHERE id = %s",
+                (value, user_id),
+            )
+
     def get_by_id(self, user_id: str) -> dict[str, Any] | None:
         """user_id로 프로필 조회. 없으면 None 반환."""
         with self._pool.connection() as conn:

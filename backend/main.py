@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router as api_router
 from api.myeongju_routes import router as myeongju_router
 from api.auth_routes import router as auth_router
+from api.payment_routes import router as payment_router
 
 
 @asynccontextmanager
@@ -59,6 +60,7 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api", tags=["api"])
 app.include_router(myeongju_router, prefix="/api", tags=["myeongju"])
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(payment_router, prefix="/api/purchases", tags=["purchases"])
 
 
 @app.get("/health")

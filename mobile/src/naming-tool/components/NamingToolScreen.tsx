@@ -2,8 +2,10 @@ import NavBar from '@/components/NavBar';
 import { colors } from '@/design-system';
 import { useAuth } from '@/auth/AuthContext';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
-import React from 'react';
+import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { usePurchaseStatus } from '@/payment/hooks/usePurchaseStatus';
+import SelfNamingPaywallOverlay from '@/payment/components/SelfNamingPaywallOverlay';
 import { Font } from '@/components/Font';
 import {
   SafeAreaView,
@@ -55,6 +57,11 @@ export default function NamingToolScreen({
     updateHanja,
     updateSaju,
   } = useNamingToolState(gender);
+
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const { data: purchaseStatus } = usePurchaseStatus();
+  const isPremium =
+    purchaseStatus?.selfNamingPremium ?? auth.profile?.isPremium ?? false;
 
   return (
     <KeyboardAvoidingView
@@ -123,7 +130,8 @@ export default function NamingToolScreen({
             sajuInput={sajuInput}
             nameInput={nameInput}
             onUpdate={updateSaju}
-            isPurchased={auth.profile?.isPremium ?? false}
+            isPurchased={isPremium}
+            onPressBuy={isPremium ? undefined : () => setShowPremiumModal(true)}
           />
           <SurigyeokSection
             nameInput={nameInput}
@@ -140,6 +148,12 @@ export default function NamingToolScreen({
           />
         </View>
       </ScrollView>
+
+      <SelfNamingPaywallOverlay
+        visible={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        onSuccess={() => setShowPremiumModal(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

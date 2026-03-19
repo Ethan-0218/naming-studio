@@ -15,6 +15,7 @@ interface Props {
   nameInput: NameInput;
   onUpdate: (data: Partial<SajuInput>) => void;
   isPurchased?: boolean;
+  onPressBuy?: () => void;
 }
 
 const RELATION_BADGE: Record<string, { label: string; color: string }> = {
@@ -34,6 +35,7 @@ export default function YongsinSection({
   nameInput,
   onUpdate,
   isPurchased = false,
+  onPressBuy,
 }: Props) {
   const { yongsin } = sajuInput;
   const slots = [nameInput.surname, nameInput.first1, nameInput.first2];
@@ -136,6 +138,19 @@ export default function YongsinSection({
             </View>
           ))}
         </View>
+
+        {/* 구매 버튼 */}
+        {onPressBuy && (
+          <Pressable
+            onPress={onPressBuy}
+            className="rounded-[10px] py-[12px] items-center mb-2 active:opacity-80"
+            style={{ backgroundColor: primitives.ink900 }}
+          >
+            <Font tag="secondaryMedium" style={{ fontSize: 14, color: '#fff' }}>
+              프리미엄 구매 — 2,900원
+            </Font>
+          </Pressable>
+        )}
 
         {/* 결제 안내 */}
         <Font
