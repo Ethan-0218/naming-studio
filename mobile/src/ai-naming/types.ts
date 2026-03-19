@@ -15,14 +15,29 @@ export interface HanjaOption {
   stroke_count: number;
 }
 
+export interface SurnameSyllable {
+  한글: string;
+  한자: string;
+  meaning: string;
+  오행: string;
+  stroke_count: number | null;
+  sound_eumyang: string;
+  stroke_eumyang: string;
+}
+
 export interface NameData {
   한글: string;
   full_name: string;
+  surname_syllable?: SurnameSyllable;
   syllables: {
     한글: string;
     한자: string;
     meaning: string;
-    오행: string;
+    오행: string; // 발음오행
+    char_오행?: string; // 자원오행 (한글: 목/화/토/금/수)
+    stroke_count?: number | null;
+    sound_eumyang?: string;
+    stroke_eumyang?: string;
     hanja_options?: HanjaOption[];
   }[];
   발음오행_조화: string;

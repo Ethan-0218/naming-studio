@@ -11,6 +11,7 @@ interface Props {
   disliked: boolean;
   onLike: () => void;
   onDislike: () => void;
+  onDetailPress?: () => void;
 }
 
 export default function NameCard({
@@ -19,6 +20,7 @@ export default function NameCard({
   disliked,
   onLike,
   onDislike,
+  onDetailPress,
 }: Props) {
   return (
     <View
@@ -169,26 +171,30 @@ export default function NameCard({
       ) : null}
 
       {/* 상세 분석 링크 행 */}
-      <View
-        className="flex-row items-center justify-between px-3.5 py-2.5"
+      <Pressable
+        className="flex-row items-center justify-between px-3.5 py-2.5 active:opacity-70"
         style={{
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
         }}
+        onPress={onDetailPress}
       >
         <Font
           tag="secondary"
-          style={{ fontSize: 12, color: colors.textTertiary }}
+          style={{
+            fontSize: 12,
+            color: onDetailPress ? colors.textSecondary : colors.textTertiary,
+          }}
         >
           상세 분석 보기
         </Font>
         <Ionicons
           name="chevron-forward"
           size={13}
-          color={colors.textDisabled}
+          color={onDetailPress ? colors.textSecondary : colors.textDisabled}
         />
-      </View>
+      </Pressable>
 
       {/* 좋아요/별로 버튼 */}
       <View

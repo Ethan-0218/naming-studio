@@ -4,33 +4,9 @@ import {
   CharSlotData,
   Gender,
   NameInput,
-  NamingAnalysis,
   SajuInput,
-  OhaengHarmonyResult,
-  EumyangHarmonyResult,
 } from '../types';
-import { baleumOhaengFromChar } from '../domain/baleumOhaeng';
-import { computeOhaengHarmony } from '../domain/ohaengHarmony';
-import { computeEumyangHarmony } from '../domain/eumyangHarmony';
-import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
-import { computeSurigyeok } from '../domain/surigyeok';
-import { toScore } from '../domain/ratingScore';
-import rawWeights from '@shared/data/scoring_weights.json';
-
-// 원가중치 합계(0.60)로 나눠 100점 기준 정규화
-const W_TOTAL =
-  rawWeights.jawonOhaeng +
-  rawWeights.baleumOhaeng +
-  rawWeights.surigyeok +
-  rawWeights.baleumEumyang +
-  rawWeights.hoeksuEumyang;
-const W = {
-  jawonOhaeng: Math.round((rawWeights.jawonOhaeng / W_TOTAL) * 100), // 30
-  baleumOhaeng: Math.round((rawWeights.baleumOhaeng / W_TOTAL) * 100), // 20
-  surigyeok: Math.round((rawWeights.surigyeok / W_TOTAL) * 100), // 25
-  baleumEumyang: Math.round((rawWeights.baleumEumyang / W_TOTAL) * 100), // 13
-  hoeksuEumyang: Math.round((rawWeights.hoeksuEumyang / W_TOTAL) * 100), // 12
-};
+import { computeNamingAnalysis } from '../domain/analysis';
 
 type SlotKey = 'surname' | 'first1' | 'first2';
 
@@ -71,142 +47,6 @@ function resolveSlot(
   };
 }
 
-function computeAnalysis(
-  hangulInput: HangulInput,
-  resolvedHanja: HanjaInput,
-  sajuInput: SajuInput,
-  gender: Gender,
-): NamingAnalysis {
-  const sH = resolvedHanja.surname;
-  const f1H = resolvedHanja.first1;
-  const f2H = resolvedHanja.first2;
-
-  // 발음오행: hangul 초성에서 직접 계산
-  const baleumElements = [
-    hangulInput.surname ? baleumOhaengFromChar(hangulInput.surname) : null,
-    hangulInput.first1 ? baleumOhaengFromChar(hangulInput.first1) : null,
-    hangulInput.first2 ? baleumOhaengFromChar(hangulInput.first2) : null,
-  ];
-  const baleumOhaengResult: OhaengHarmonyResult | null =
-    computeOhaengHarmony(baleumElements);
-
-  // 발음음양: 한자 데이터 우선, 없으면 hangul 폴백
-  const soundEumyangs = [
-    sH?.soundEumyang ?? soundEumyangFromHangul(hangulInput.surname),
-    f1H?.soundEumyang ?? soundEumyangFromHangul(hangulInput.first1),
-    f2H?.soundEumyang ?? soundEumyangFromHangul(hangulInput.first2),
-  ];
-  const baleumEumyangResult: EumyangHarmonyResult | null = soundEumyangs.some(
-    (e) => e !== null,
-  )
-    ? computeEumyangHarmony(soundEumyangs)
-    : null;
-
-  // 자원오행: 유효한 한자 선택의 charOhaeng
-  const jawonElements = [
-    sH?.charOhaeng ?? null,
-    f1H?.charOhaeng ?? null,
-    f2H?.charOhaeng ?? null,
-  ];
-  const jawonOhaengResult: OhaengHarmonyResult | null =
-    computeOhaengHarmony(jawonElements);
-
-  // 획수음양: 유효한 한자 선택의 strokeEumyang
-  const strokeEumyangs = [
-    sH?.strokeEumyang ?? null,
-    f1H?.strokeEumyang ?? null,
-    f2H?.strokeEumyang ?? null,
-  ];
-  const hoeksuEumyangResult: EumyangHarmonyResult | null = strokeEumyangs.some(
-    (e) => e !== null,
-  )
-    ? computeEumyangHarmony(strokeEumyangs)
-    : null;
-
-  // 수리격: 유효한 한자 선택의 strokeCount
-  let surigyeokResult = null;
-  if (sH?.strokeCount != null && f1H?.strokeCount != null) {
-    surigyeokResult = computeSurigyeok(
-      sH.strokeCount,
-      f1H.strokeCount,
-      f2H?.strokeCount ?? null,
-      gender,
-    );
-  }
-
-  // 종합 점수 + 기둥 점수
-  let totalScore: number | null = null;
-  let ohaengScore: number | null = null;
-  let suriScore: number | null = null;
-  let eumyangScore: number | null = null;
-
-  const hasAny =
-    baleumOhaengResult ||
-    baleumEumyangResult ||
-    surigyeokResult ||
-    jawonOhaengResult ||
-    hoeksuEumyangResult;
-
-  if (hasAny) {
-    let score = 0;
-    if (baleumOhaengResult)
-      score += toScore(baleumOhaengResult.level) * W.baleumOhaeng;
-    if (baleumEumyangResult)
-      score += toScore(baleumEumyangResult.rating) * W.baleumEumyang;
-    if (surigyeokResult) score += surigyeokResult.totalScore * W.surigyeok;
-    if (jawonOhaengResult)
-      score += toScore(jawonOhaengResult.level) * W.jawonOhaeng;
-    if (hoeksuEumyangResult)
-      score += toScore(hoeksuEumyangResult.rating) * W.hoeksuEumyang;
-    totalScore = Math.round(Math.min(100, score));
-
-    // 오행 기둥: 발음오행(20) + 자원오행(30), 합산 기준으로 정규화
-    if (baleumOhaengResult && jawonOhaengResult) {
-      ohaengScore = Math.round(
-        ((toScore(baleumOhaengResult.level) * W.baleumOhaeng +
-          toScore(jawonOhaengResult.level) * W.jawonOhaeng) /
-          (W.baleumOhaeng + W.jawonOhaeng)) *
-          100,
-      );
-    } else if (baleumOhaengResult) {
-      ohaengScore = Math.round(toScore(baleumOhaengResult.level) * 100);
-    } else if (jawonOhaengResult) {
-      ohaengScore = Math.round(toScore(jawonOhaengResult.level) * 100);
-    }
-
-    // 수리 기둥
-    if (surigyeokResult) {
-      suriScore = Math.round(surigyeokResult.totalScore * 100);
-    }
-
-    // 음양 기둥: 발음음양(13) + 획수음양(12), 합산 기준으로 정규화
-    if (baleumEumyangResult && hoeksuEumyangResult) {
-      eumyangScore = Math.round(
-        ((toScore(baleumEumyangResult.rating) * W.baleumEumyang +
-          toScore(hoeksuEumyangResult.rating) * W.hoeksuEumyang) /
-          (W.baleumEumyang + W.hoeksuEumyang)) *
-          100,
-      );
-    } else if (baleumEumyangResult) {
-      eumyangScore = Math.round(toScore(baleumEumyangResult.rating) * 100);
-    } else if (hoeksuEumyangResult) {
-      eumyangScore = Math.round(toScore(hoeksuEumyangResult.rating) * 100);
-    }
-  }
-
-  return {
-    baleumOhaeng: baleumOhaengResult,
-    baleumEumyang: baleumEumyangResult,
-    surigyeok: surigyeokResult,
-    jawonOhaeng: jawonOhaengResult,
-    hoeksuEumyang: hoeksuEumyangResult,
-    totalScore,
-    ohaengScore,
-    suriScore,
-    eumyangScore,
-  };
-}
-
 export function useNamingToolState(gender: Gender) {
   const [hangulInput, setHangulInput] = useState<HangulInput>({
     surname: '',
@@ -240,8 +80,8 @@ export function useNamingToolState(gender: Gender) {
   );
 
   const analysis = useMemo(
-    () => computeAnalysis(hangulInput, resolvedHanjaInput, sajuInput, gender),
-    [hangulInput, resolvedHanjaInput, sajuInput, gender],
+    () => computeNamingAnalysis(nameInput, sajuInput, gender),
+    [nameInput, sajuInput, gender],
   );
 
   function updateHangul(slot: SlotKey, hangul: string) {

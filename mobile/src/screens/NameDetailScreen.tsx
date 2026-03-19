@@ -1,31 +1,26 @@
-import NavBar from '@/components/NavBar';
-import { colors } from '@/design-system';
-import { useAuth } from '@/auth/AuthContext';
-import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { usePurchaseStatus } from '@/payment/hooks/usePurchaseStatus';
-import SelfNamingPaywallOverlay from '@/payment/components/SelfNamingPaywallOverlay';
-import { Font } from '@/components/Font';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import { useNamingToolState } from '../hooks/useNamingToolState';
-import BaleumEumyangSection from '@/components/naming/BaleumEumyangSection';
+import NavBar from '@/components/NavBar';
+import { Font } from '@/components/Font';
+import { colors } from '@/design-system';
+import { RootStackParamList } from '@/navigation/types';
+import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
+import MyeongJuStrip from '@/naming-tool/components/MyeongJuStrip';
+import NameDisplaySection from '@/components/naming/NameDisplaySection';
 import BaleumOhaengSection from '@/components/naming/BaleumOhaengSection';
-import HoeksuEumyangSection from '@/components/naming/HoeksuEumyangSection';
-import JawonOhaengSection from '@/components/naming/JawonOhaengSection';
-import MyeongJuStrip from './MyeongJuStrip';
-import NameInputSection from './NameInputSection';
-import SurigyeokSection from '@/components/naming/SurigyeokSection';
+import BaleumEumyangSection from '@/components/naming/BaleumEumyangSection';
 import YongsinSection from '@/components/naming/YongsinSection';
-
-interface Props {
-  onBack: () => void;
-  profileId: string;
-  onChangeMyeongJu: () => void;
-}
+import SurigyeokSection from '@/components/naming/SurigyeokSection';
+import JawonOhaengSection from '@/components/naming/JawonOhaengSection';
+import HoeksuEumyangSection from '@/components/naming/HoeksuEumyangSection';
+import { nameDataToNameInput } from '@/ai-naming/utils';
+import { computeNamingAnalysis } from '@/naming-tool/domain/analysis';
+import { SajuInput } from '@/naming-tool/types';
 
 function Divider() {
   return <View className="h-[1px] bg-border my-5" />;
@@ -39,29 +34,24 @@ function GroupTitle({ children }: { children: string }) {
   );
 }
 
-export default function NamingToolScreen({
-  onBack,
-  profileId,
-  onChangeMyeongJu,
-}: Props) {
+export default function NameDetailScreen() {
+  const navigation = useNavigation<any>();
+  const { nameData, profileId } =
+    useRoute<RouteProp<RootStackParamList, 'NameDetail'>>().params;
   const { bottom } = useSafeAreaInsets();
-  const { auth } = useAuth();
-  const { data: profiles = [] } = useMyeongJuList();
-  const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
-  const gender = selectedProfile?.gender ?? 'male';
-  const {
-    nameInput,
-    sajuInput,
-    analysis,
-    updateHangul,
-    updateHanja,
-    updateSaju,
-  } = useNamingToolState(gender);
 
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
-  const { data: purchaseStatus } = usePurchaseStatus();
-  const isPremium =
-    purchaseStatus?.selfNamingPremium ?? auth.profile?.isPremium ?? false;
+  const { data: profiles = [] } = useMyeongJuList();
+  const profile = profiles.find((p) => p.id === profileId) ?? null;
+  const gender = profile?.gender ?? 'male';
+
+  const nameInput = useMemo(() => nameDataToNameInput(nameData), [nameData]);
+
+  const [sajuInput, setSajuInput] = useState<SajuInput>({ yongsin: null });
+
+  const analysis = useMemo(
+    () => computeNamingAnalysis(nameInput, sajuInput, gender),
+    [nameInput, sajuInput, gender],
+  );
 
   return (
     <KeyboardAvoidingView
@@ -81,15 +71,13 @@ export default function NamingToolScreen({
         style={{ backgroundColor: colors.bgSubtle }}
       >
         <NavBar
-          title="스스로 이름짓기"
-          subtitle="이름 분석 및 작명"
-          onBack={onBack}
+          title={nameData.한글}
+          subtitle="이름 상세 분석"
+          onBack={() => navigation.goBack()}
         />
       </SafeAreaView>
 
-      {selectedProfile && (
-        <MyeongJuStrip profile={selectedProfile} onPress={onChangeMyeongJu} />
-      )}
+      {profile && <MyeongJuStrip profile={profile} readOnly />}
 
       <ScrollView
         style={{ flex: 1 }}
@@ -98,15 +86,9 @@ export default function NamingToolScreen({
           paddingBottom: bottom + 16,
           backgroundColor: colors.bg,
         }}
-        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <NameInputSection
-          analysis={analysis}
-          nameInput={nameInput}
-          onUpdateHangul={updateHangul}
-          onUpdateHanja={updateHanja}
-        />
+        <NameDisplaySection nameInput={nameInput} analysis={analysis} />
 
         <Divider />
 
@@ -129,9 +111,8 @@ export default function NamingToolScreen({
           <YongsinSection
             sajuInput={sajuInput}
             nameInput={nameInput}
-            onUpdate={updateSaju}
-            isPurchased={isPremium}
-            onPressBuy={isPremium ? undefined : () => setShowPremiumModal(true)}
+            onUpdate={(data) => setSajuInput((prev) => ({ ...prev, ...data }))}
+            isPurchased={true}
           />
           <SurigyeokSection
             nameInput={nameInput}
@@ -148,12 +129,6 @@ export default function NamingToolScreen({
           />
         </View>
       </ScrollView>
-
-      <SelfNamingPaywallOverlay
-        visible={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        onSuccess={() => setShowPremiumModal(false)}
-      />
     </KeyboardAvoidingView>
   );
 }

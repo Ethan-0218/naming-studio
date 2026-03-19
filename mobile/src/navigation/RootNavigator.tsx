@@ -6,6 +6,7 @@ import MyeongJuListScreen from '@/screens/MyeongJuListScreen';
 import AddMyeongJuScreen from '@/screens/AddMyeongJuScreen';
 import AINamingScreen from '@/screens/AINamingScreen';
 import SelfNamingScreen from '@/screens/SelfNamingScreen';
+import NameDetailScreen from '@/screens/NameDetailScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,6 +20,7 @@ export function RootNavigator() {
       <Stack.Screen name="AddMyeongJu" component={AddMyeongJuScreen} />
       <Stack.Screen name="AINaming" component={AINamingScreen} />
       <Stack.Screen name="SelfNaming" component={SelfNamingScreen} />
+      <Stack.Screen name="NameDetail" component={NameDetailScreen} />
     </Stack.Navigator>
   );
 }

@@ -284,20 +284,60 @@ def _build_candidate_from_combo(
     for i, char in enumerate(name):
         h = best_name_hanjas[i] if i < len(best_name_hanjas) else None
         s_오행 = syllable_오행_list[i]
+        # char_오행: 자원오행 (character_five_elements), 한자→한글 변환
+        char_오행_obj = 오행.from_string(h.character_five_elements or "") if h else None
         syllables.append({
             "한글": char,
             "한자": h.hanja if h else "",
             "meaning": h.mean if h else "",
-            "오행": s_오행.value if s_오행 else "",
+            "오행": s_오행.value if s_오행 else "",          # 발음오행
+            "char_오행": char_오행_obj.value if char_오행_obj else "",  # 자원오행(한글)
+            "stroke_count": (
+                h.original_stroke_count
+                if h is not None and h.original_stroke_count is not None
+                else (h.dictionary_stroke_count if h else None)
+            ),
+            "sound_eumyang": h.sound_based_yin_yang or "" if h else "",
+            "stroke_eumyang": h.stroke_based_yin_yang or "" if h else "",
             "hanja_options": [],
         })
 
     발음음양_h = _발음음양_harmony(성_hanja_obj, best_name_hanjas)
     획수음양_h = _획수음양_harmony(성_hanja_obj, best_name_hanjas)
 
+    # 성씨 한자 데이터 (프론트엔드 상세 분석 화면에서 완전한 분석을 위해 포함)
+    if 성_hanja_obj:
+        surname_stroke = (
+            성_hanja_obj.original_stroke_count
+            if 성_hanja_obj.original_stroke_count is not None
+            else 성_hanja_obj.dictionary_stroke_count
+        )
+        # character_five_elements는 DB에 한자(木/火/土/金/水)로 저장되므로 한글로 변환
+        surname_char_오행 = 오행.from_string(성_hanja_obj.character_five_elements or "")
+        surname_syllable = {
+            "한글": surname,
+            "한자": 성_hanja_obj.hanja,
+            "meaning": 성_hanja_obj.mean or "",
+            "오행": surname_char_오행.value if surname_char_오행 else "",
+            "stroke_count": surname_stroke,
+            "sound_eumyang": 성_hanja_obj.sound_based_yin_yang or "",
+            "stroke_eumyang": 성_hanja_obj.stroke_based_yin_yang or "",
+        }
+    else:
+        surname_syllable = {
+            "한글": surname,
+            "한자": "",
+            "meaning": "",
+            "오행": "",
+            "stroke_count": None,
+            "sound_eumyang": "",
+            "stroke_eumyang": "",
+        }
+
     candidate = {
         "한글": name,
         "full_name": surname + name,
+        "surname_syllable": surname_syllable,
         "syllables": syllables,
         "발음오행_조화": harmony_level,
         "발음오행_조화_이유": harmony_reason,
@@ -342,7 +382,8 @@ def _build_candidate_from_combo(
                     {
                         "한자": o.hanja,
                         "meaning": o.mean,
-                        "오행": o.character_five_elements or "",
+                        "오행": (오행.from_string(o.character_five_elements or "").value
+                                if 오행.from_string(o.character_five_elements or "") else ""),
                         "stroke_count": (
                             o.original_stroke_count
                             if o.original_stroke_count is not None

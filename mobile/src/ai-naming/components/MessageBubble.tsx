@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { Font } from '@/components/Font';
 import { colors } from '@/design-system';
-import { ChatMessage, ContentBlock } from '../types';
+import { ChatMessage, ContentBlock, NameData } from '../types';
 import ChoiceGroupBlock from './ChoiceGroupBlock';
 import NameCard from './NameCard';
 import DebugPanel from './DebugPanel';
@@ -32,6 +32,8 @@ interface Props {
   hasUserReplyBelow?: boolean;
   /** 새로 도착한 메시지에 타이프라이터 효과 적용 */
   animate?: boolean;
+  /** NAME 카드의 상세 분석 보기 버튼 콜백 */
+  onNameDetailPress?: (nameData: NameData) => void;
 }
 
 export default function MessageBubble({
@@ -44,6 +46,7 @@ export default function MessageBubble({
   onSend,
   hasUserReplyBelow = false,
   animate = false,
+  onNameDetailPress,
 }: Props) {
   const textCount = useMemo(
     () => msg.content.filter((b) => b.type === 'TEXT').length,
@@ -176,16 +179,22 @@ export default function MessageBubble({
             );
           }
           if (block.type === 'NAME') {
-            const name = (block as Extract<ContentBlock, { type: 'NAME' }>).data
-              .한글;
+            const nameBlock = (block as Extract<ContentBlock, { type: 'NAME' }>)
+              .data;
+            const name = nameBlock.한글;
             return (
               <NameCard
                 key={i}
-                data={(block as Extract<ContentBlock, { type: 'NAME' }>).data}
+                data={nameBlock}
                 liked={liked.includes(name)}
                 disliked={disliked.includes(name)}
                 onLike={() => onLike(name)}
                 onDislike={() => onDislike(name)}
+                onDetailPress={
+                  onNameDetailPress
+                    ? () => onNameDetailPress(nameBlock)
+                    : undefined
+                }
               />
             );
           }

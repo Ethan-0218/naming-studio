@@ -27,6 +27,7 @@ import PaymentBanner from '@/ai-naming/components/PaymentBanner';
 import ChatInputBar from '@/ai-naming/components/ChatInputBar';
 import { useAINamingSession } from '@/ai-naming/hooks/useAINamingSession';
 import { RootStackParamList } from '../navigation/types';
+import { NameData } from '@/ai-naming/types';
 
 type AINamingNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -61,6 +62,10 @@ export default function AINamingScreen() {
     if (isAtBottomRef.current) {
       scrollRef.current?.scrollToEnd({ animated: false });
     }
+  }
+
+  function handleNameDetailPress(nameData: NameData) {
+    navigation.navigate('NameDetail', { nameData, profileId });
   }
 
   return (
@@ -119,6 +124,7 @@ export default function AINamingScreen() {
                 i === session.messages.length - 1 &&
                 !msg.id.startsWith('restored')
               }
+              onNameDetailPress={handleNameDetailPress}
             />
           ))}
           {session.loading && (
