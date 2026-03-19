@@ -1,0 +1,8 @@
+{
+  "_comment": "용신 제외 5개 요소 가중치. 합계 0.60. 용신 포함 시 yongsin 0.40 추가로 총 1.0.",
+  "jawonOhaeng": 0.18,
+  "baleumOhaeng": 0.12,
+  "surigyeok": 0.15,
+  "baleumEumyang": 0.08,
+  "hoeksuEumyang": 0.07
+}

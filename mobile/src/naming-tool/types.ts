@@ -84,6 +84,9 @@ export interface NamingAnalysis {
   jawonOhaeng: OhaengHarmonyResult | null;
   hoeksuEumyang: EumyangHarmonyResult | null;
   totalScore: number | null;
+  ohaengScore: number | null; // 오행 기둥 점수 0–100 (발음오행 + 자원오행)
+  suriScore: number | null; // 수리 기둥 점수 0–100
+  eumyangScore: number | null; // 음양 기둥 점수 0–100 (발음음양 + 획수음양)
 }
 
 export interface HanjaSearchResult {

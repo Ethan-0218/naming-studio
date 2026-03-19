@@ -20,13 +20,23 @@
   합계 가중치:    0.60 (정규화 없이 합산, 비교 목적)
 """
 
+import json
 import sqlite3
 import sys
 import time
 from pathlib import Path
 
 _BACKEND = Path(__file__).resolve().parent.parent
+_REPO_ROOT = _BACKEND.parent
 sys.path.insert(0, str(_BACKEND))
+
+_weights_raw = json.loads((_REPO_ROOT / "data" / "scoring_weights.json").read_text())
+_W_TOTAL = sum(v for k, v in _weights_raw.items() if not k.startswith("_"))
+W_JAWON_OHAENG  = _weights_raw["jawonOhaeng"]
+W_BALEUM_OHAENG = _weights_raw["baleumOhaeng"]
+W_SURIGYEOK     = _weights_raw["surigyeok"]
+W_BALEUM_EUMYANG = _weights_raw["baleumEumyang"]
+W_HOEKSU_EUMYANG = _weights_raw["hoeksuEumyang"]
 
 from core.config import (
     HANJA_DB_PATH,
@@ -146,15 +156,15 @@ def _compute_score(
     nr_lut: dict,
 ) -> float:
     score = (
-        char_fe_lut.get((s_char_fe, h1_char_fe, h2_char_fe), 0.5) * 0.18
-        + char_fe_lut.get((s_pron_fe, n1_pron_fe, n2_pron_fe), 0.5) * 0.12
-        + yin_lut.get((s_sound_yin, h1_sound_yin, h2_sound_yin), 0.5) * 0.08
-        + yin_lut.get((s_stroke_yin, h1_stroke_yin, h2_stroke_yin), 0.5) * 0.07
+        char_fe_lut.get((s_char_fe, h1_char_fe, h2_char_fe), 0.5) * W_JAWON_OHAENG
+        + char_fe_lut.get((s_pron_fe, n1_pron_fe, n2_pron_fe), 0.5) * W_BALEUM_OHAENG
+        + yin_lut.get((s_sound_yin, h1_sound_yin, h2_sound_yin), 0.5) * W_BALEUM_EUMYANG
+        + yin_lut.get((s_stroke_yin, h1_stroke_yin, h2_stroke_yin), 0.5) * W_HOEKSU_EUMYANG
     )
     if s_stroke and h1_stroke and h2_stroke:
-        score += nr_lut.get((s_stroke, h1_stroke, h2_stroke, gender_key), 0.5) * 0.15
+        score += nr_lut.get((s_stroke, h1_stroke, h2_stroke, gender_key), 0.5) * W_SURIGYEOK
     else:
-        score += 0.5 * 0.15
+        score += 0.5 * W_SURIGYEOK
     return score
 
 

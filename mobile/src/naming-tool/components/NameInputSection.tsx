@@ -144,7 +144,12 @@ export default function NameInputSection({
           </View>
         </View>
 
-        <ScoreSummarySection score={analysis.totalScore} />
+        <ScoreSummarySection
+          score={analysis.totalScore}
+          ohaengScore={analysis.ohaengScore}
+          suriScore={analysis.suriScore}
+          eumyangScore={analysis.eumyangScore}
+        />
       </View>
     </View>
   );

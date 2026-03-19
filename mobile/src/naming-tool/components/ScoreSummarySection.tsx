@@ -5,13 +5,30 @@ import { Font } from '@/components/Font';
 
 interface Props {
   score: number | null;
+  ohaengScore: number | null;
+  suriScore: number | null;
+  eumyangScore: number | null;
 }
 
-function ScoreLabel(score: number): string {
-  if (score >= 80) return '매우 좋은 이름';
-  if (score >= 60) return '좋은 이름';
-  if (score >= 40) return '보통 이름';
-  return '보완이 필요한 이름';
+function buildScoreLabel(
+  total: number,
+  ohaeng: number | null,
+  suri: number | null,
+): string {
+  const ok = (v: number | null) => v != null && v >= 62;
+  const bad = (v: number | null) => v != null && v < 40;
+
+  if (ok(ohaeng) && ok(suri)) return '오행과 수리의 기운이 균형 잡힌 이름';
+  if (ok(ohaeng) && bad(suri))
+    return '오행의 기운은 좋으나 수리격 보완이 필요한 이름';
+  if (ok(suri) && bad(ohaeng))
+    return '수리격이 안정적이나 오행 조화가 필요한 이름';
+  if (bad(ohaeng) && bad(suri)) return '오행·수리 전반의 보완이 필요한 이름';
+  if (bad(ohaeng)) return '오행 조화의 보완이 필요한 이름';
+  if (bad(suri)) return '수리격 보완이 필요한 이름';
+  if (total >= 75) return '작명 요소가 고르게 갖춰진 이름';
+  if (total >= 45) return '일부 작명 요소의 보완이 권장되는 이름';
+  return '작명 요소 전반의 재검토가 필요한 이름';
 }
 
 function scoreColor(score: number): string {
@@ -24,7 +41,12 @@ function scoreColor(score: number): string {
 const GAUGE_SIZE = 54;
 const INNER_SIZE = 44;
 
-export default function ScoreSummarySection({ score }: Props) {
+export default function ScoreSummarySection({
+  score,
+  ohaengScore,
+  suriScore,
+  eumyangScore,
+}: Props) {
   const pct = score != null ? score / 100 : 0;
   const fillColor = score != null ? scoreColor(score) : colors.textSecondary;
 
@@ -51,7 +73,7 @@ export default function ScoreSummarySection({ score }: Props) {
         </Font>
         {score != null && (
           <Font tag="secondary" className="text-bodySm text-textTertiary">
-            {ScoreLabel(score)}
+            {buildScoreLabel(score, ohaengScore, suriScore)}
           </Font>
         )}
       </View>

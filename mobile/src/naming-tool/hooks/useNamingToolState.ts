@@ -15,6 +15,22 @@ import { computeEumyangHarmony } from '../domain/eumyangHarmony';
 import { soundEumyangFromHangul } from '../domain/soundEumyangMap';
 import { computeSurigyeok } from '../domain/surigyeok';
 import { toScore } from '../domain/ratingScore';
+import rawWeights from '@shared/data/scoring_weights.json';
+
+// 원가중치 합계(0.60)로 나눠 100점 기준 정규화
+const W_TOTAL =
+  rawWeights.jawonOhaeng +
+  rawWeights.baleumOhaeng +
+  rawWeights.surigyeok +
+  rawWeights.baleumEumyang +
+  rawWeights.hoeksuEumyang;
+const W = {
+  jawonOhaeng: Math.round((rawWeights.jawonOhaeng / W_TOTAL) * 100), // 30
+  baleumOhaeng: Math.round((rawWeights.baleumOhaeng / W_TOTAL) * 100), // 20
+  surigyeok: Math.round((rawWeights.surigyeok / W_TOTAL) * 100), // 25
+  baleumEumyang: Math.round((rawWeights.baleumEumyang / W_TOTAL) * 100), // 13
+  hoeksuEumyang: Math.round((rawWeights.hoeksuEumyang / W_TOTAL) * 100), // 12
+};
 
 type SlotKey = 'surname' | 'first1' | 'first2';
 
@@ -118,32 +134,64 @@ function computeAnalysis(
     );
   }
 
-  // 종합 점수
+  // 종합 점수 + 기둥 점수
   let totalScore: number | null = null;
-  if (
+  let ohaengScore: number | null = null;
+  let suriScore: number | null = null;
+  let eumyangScore: number | null = null;
+
+  const hasAny =
     baleumOhaengResult ||
     baleumEumyangResult ||
     surigyeokResult ||
     jawonOhaengResult ||
-    hoeksuEumyangResult
-  ) {
+    hoeksuEumyangResult;
+
+  if (hasAny) {
     let score = 0;
-    if (baleumOhaengResult) {
-      score += toScore(baleumOhaengResult.level) * 25;
-    }
-    if (baleumEumyangResult) {
-      score += toScore(baleumEumyangResult.rating) * 15;
-    }
-    if (surigyeokResult) {
-      score += surigyeokResult.totalScore * 25;
-    }
-    if (jawonOhaengResult) {
-      score += toScore(jawonOhaengResult.level) * 25;
-    }
-    if (hoeksuEumyangResult) {
-      score += toScore(hoeksuEumyangResult.rating) * 10;
-    }
+    if (baleumOhaengResult)
+      score += toScore(baleumOhaengResult.level) * W.baleumOhaeng;
+    if (baleumEumyangResult)
+      score += toScore(baleumEumyangResult.rating) * W.baleumEumyang;
+    if (surigyeokResult) score += surigyeokResult.totalScore * W.surigyeok;
+    if (jawonOhaengResult)
+      score += toScore(jawonOhaengResult.level) * W.jawonOhaeng;
+    if (hoeksuEumyangResult)
+      score += toScore(hoeksuEumyangResult.rating) * W.hoeksuEumyang;
     totalScore = Math.round(Math.min(100, score));
+
+    // 오행 기둥: 발음오행(20) + 자원오행(30), 합산 기준으로 정규화
+    if (baleumOhaengResult && jawonOhaengResult) {
+      ohaengScore = Math.round(
+        ((toScore(baleumOhaengResult.level) * W.baleumOhaeng +
+          toScore(jawonOhaengResult.level) * W.jawonOhaeng) /
+          (W.baleumOhaeng + W.jawonOhaeng)) *
+          100,
+      );
+    } else if (baleumOhaengResult) {
+      ohaengScore = Math.round(toScore(baleumOhaengResult.level) * 100);
+    } else if (jawonOhaengResult) {
+      ohaengScore = Math.round(toScore(jawonOhaengResult.level) * 100);
+    }
+
+    // 수리 기둥
+    if (surigyeokResult) {
+      suriScore = Math.round(surigyeokResult.totalScore * 100);
+    }
+
+    // 음양 기둥: 발음음양(13) + 획수음양(12), 합산 기준으로 정규화
+    if (baleumEumyangResult && hoeksuEumyangResult) {
+      eumyangScore = Math.round(
+        ((toScore(baleumEumyangResult.rating) * W.baleumEumyang +
+          toScore(hoeksuEumyangResult.rating) * W.hoeksuEumyang) /
+          (W.baleumEumyang + W.hoeksuEumyang)) *
+          100,
+      );
+    } else if (baleumEumyangResult) {
+      eumyangScore = Math.round(toScore(baleumEumyangResult.rating) * 100);
+    } else if (hoeksuEumyangResult) {
+      eumyangScore = Math.round(toScore(hoeksuEumyangResult.rating) * 100);
+    }
   }
 
   return {
@@ -153,6 +201,9 @@ function computeAnalysis(
     jawonOhaeng: jawonOhaengResult,
     hoeksuEumyang: hoeksuEumyangResult,
     totalScore,
+    ohaengScore,
+    suriScore,
+    eumyangScore,
   };
 }
 
