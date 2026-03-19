@@ -35,17 +35,6 @@ type AINamingNavProp = NativeStackNavigationProp<
 >;
 type AINamingRoute = RouteProp<RootStackParamList, 'AINaming'>;
 
-const stageLabel: Record<string, string> = {
-  welcome: '환영',
-  info_collection: '정보 수집',
-  preference_interview: '취향 인터뷰',
-  direction_briefing: '방향 브리핑',
-  direction_confirm: '방향 확인',
-  initial_candidates: '초기 후보',
-  payment_gate: '결제 안내',
-  candidate_exploration: '이름 탐색',
-};
-
 // "묘시(卯時) · 오전 5:30" → "05:30" (24h)
 function parseBirthTime(birthTime: string): string | null {
   if (!birthTime || birthTime === '시간 모름') return null;
@@ -156,7 +145,7 @@ export default function AINamingScreen() {
   const [loading, setLoading] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [stage, setStage] = useState('preference_interview');
+  const [, setStage] = useState('preference_interview');
   const [likedNames, setLikedNames] = useState<string[]>([]);
   const [dislikedNames, setDislikedNames] = useState<string[]>([]);
   const [paymentRequired, setPaymentRequired] = useState(false);
@@ -584,9 +573,7 @@ export default function AINamingScreen() {
         setMessages(restored);
       } else {
         const restoreMsg =
-          `세션을 불러왔어요 ✅\n` +
-          `ID: ${id.slice(0, 8)}...\n` +
-          `단계: ${stageLabel[data.stage] ?? data.stage}`;
+          `세션을 불러왔어요 ✅\n` + `ID: ${id.slice(0, 8)}...`;
         setMessages([
           {
             id: 'restored',
@@ -614,8 +601,8 @@ export default function AINamingScreen() {
       {/* 헤더 */}
       <View style={{ paddingTop: insets.top }}>
         <NavBar
-          title="이름이 ✦"
-          subtitle={`${stageLabel[stage] ?? stage} · AI 작명`}
+          title="AI와 함께 이름짓기"
+          subtitle="AI 작명"
           onBack={() => navigation.goBack()}
         />
       </View>
