@@ -4,7 +4,8 @@ from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from agent.state import NamingState
 from agent.prompts import build_system_prompt
-from agent.schemas import NamingDirectionDraftOutput
+from agent.prompts.preference_interview_prompt import build_welcome_message_prompt
+from agent.schemas import NamingDirectionDraftOutput, SimpleMessageOutput
 from agent.progress import emit
 from core.config import OPENAI_API_KEY, OPENAI_MODEL
 
@@ -244,15 +245,22 @@ def preference_interview_node(state: NamingState) -> dict:
     turn = state.get("stage_turn_count", 0)
     messages = list(state.get("messages", []))
 
-    # ── 첫 턴: 인트로 + 첫 질문 (LLM 없이 즉시) ────────────────────────
+    # ── 첫 턴: 사주 기반 환영인사 (LLM) + 첫 질문 ──────────────────────
     if turn == 0:
+        emit("환영 인사를 준비하고 있어요...")
+        llm = ChatOpenAI(model=OPENAI_MODEL, api_key=OPENAI_API_KEY or None, temperature=0.7)
+        structured_llm = llm.with_structured_output(SimpleMessageOutput, method="function_calling")
+        welcome_prompt = build_welcome_message_prompt(state)
+        result = structured_llm.invoke([SystemMessage(content=welcome_prompt)])
+        welcome_text = result.message
+
         blocks = [
-            {"type": "TEXT", "data": {"text": "이름 취향에 대해 몇 가지 여쭤볼게요. 선택지를 탭하거나 직접 말씀해 주셔도 됩니다 😊"}},
+            {"type": "TEXT", "data": {"text": welcome_text}},
             _make_choice_block("sibling_names"),
         ]
         profile["_current_question"] = "sibling_names"
         return {
-            "messages": [AIMessage(content="이름 취향에 대해 몇 가지 여쭤볼게요.")],
+            "messages": [AIMessage(content=welcome_text)],
             "preference_profile": profile,
             "stage": "preference_interview",
             "stage_turn_count": 1,
