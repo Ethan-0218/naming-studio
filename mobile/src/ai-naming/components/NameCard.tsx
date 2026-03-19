@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Font } from '@/components/Font';
 import { colors, ohaengColors } from '@/design-system';
-import { NameData } from '../types';
+import { HanjaCharData, NameData } from '../types';
 
 interface Props {
   data: NameData;
@@ -46,44 +46,22 @@ export default function NameCard({
 
           {/* 음절별 한자 + 오행 */}
           <View className="flex-row items-stretch">
-            {data.syllables.map((syl, i) => (
-              <React.Fragment key={i}>
-                {i > 0 && (
-                  <View
-                    style={{
-                      width: 1,
-                      backgroundColor: colors.border,
-                      alignSelf: 'stretch',
-                    }}
-                  />
-                )}
-                <View className="items-center gap-1 px-2.5">
-                  <Font
-                    tag="primary"
-                    style={{
-                      fontSize: 13,
-                      color: colors.textTertiary,
-                      letterSpacing: 1,
-                    }}
-                  >
-                    {syl.한자 || syl.한글}
-                  </Font>
-                  {syl.오행 ? (
-                    <Font
-                      tag="secondaryMedium"
+            {[data.firstCharacter, data.secondCharacter]
+              .filter((char) => char.hangul !== '')
+              .map((char, i) => (
+                <React.Fragment key={i}>
+                  {i > 0 && (
+                    <View
                       style={{
-                        fontSize: 12,
-                        color:
-                          ohaengColors[syl.오행 as keyof typeof ohaengColors]
-                            ?.base ?? colors.textDisabled,
+                        width: 1,
+                        backgroundColor: colors.border,
+                        alignSelf: 'stretch',
                       }}
-                    >
-                      {syl.오행}
-                    </Font>
-                  ) : null}
-                </View>
-              </React.Fragment>
-            ))}
+                    />
+                  )}
+                  <NameCharChip char={char} />
+                </React.Fragment>
+              ))}
           </View>
         </View>
 
@@ -122,15 +100,15 @@ export default function NameCard({
       ) : null}
 
       {/* 한자 옵션 */}
-      {data.syllables.some(
-        (syl) => syl.hanja_options && syl.hanja_options.length > 0,
+      {[data.firstCharacter, data.secondCharacter].some(
+        (char) => char.hanjaOptions && char.hanjaOptions.length > 0,
       ) ? (
         <View
           className="px-3.5 pb-3 gap-1.5"
           style={{ borderTopWidth: 1, borderTopColor: colors.border }}
         >
-          {data.syllables.map((syl, i) =>
-            syl.hanja_options && syl.hanja_options.length > 0 ? (
+          {[data.firstCharacter, data.secondCharacter].map((char, i) =>
+            char.hanjaOptions && char.hanjaOptions.length > 0 ? (
               <View key={i} className="gap-1">
                 <Font
                   tag="secondaryMedium"
@@ -140,10 +118,10 @@ export default function NameCard({
                     marginTop: 10,
                   }}
                 >
-                  {syl.한글} 한자 선택:
+                  {char.hangul} 한자 선택:
                 </Font>
                 <View className="flex-row flex-wrap gap-1.5">
-                  {syl.hanja_options.map((opt, j) => (
+                  {char.hanjaOptions.map((opt, j) => (
                     <View
                       key={j}
                       className="flex-row items-center gap-0.5 rounded-md px-1.5 py-0.5"
@@ -153,13 +131,13 @@ export default function NameCard({
                         tag="primaryMedium"
                         style={{ fontSize: 14, color: colors.textPrimary }}
                       >
-                        {opt.한자}
+                        {opt.hanja}
                       </Font>
                       <Font
                         tag="secondary"
                         style={{ fontSize: 11, color: colors.textTertiary }}
                       >
-                        {opt.meaning}
+                        {opt.mean}
                       </Font>
                     </View>
                   ))}
@@ -254,6 +232,36 @@ export default function NameCard({
           </Font>
         </Pressable>
       </View>
+    </View>
+  );
+}
+
+function NameCharChip({ char }: { char: HanjaCharData }) {
+  return (
+    <View className="items-center gap-1 px-2.5">
+      <Font
+        tag="primary"
+        style={{
+          fontSize: 13,
+          color: colors.textTertiary,
+          letterSpacing: 1,
+        }}
+      >
+        {char.hanja || char.hangul}
+      </Font>
+      {char.baleumOhaeng ? (
+        <Font
+          tag="secondaryMedium"
+          style={{
+            fontSize: 12,
+            color:
+              ohaengColors[char.baleumOhaeng as keyof typeof ohaengColors]
+                ?.base ?? colors.textDisabled,
+          }}
+        >
+          {char.baleumOhaeng}
+        </Font>
+      ) : null}
     </View>
   );
 }

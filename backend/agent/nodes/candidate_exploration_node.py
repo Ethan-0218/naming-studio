@@ -275,8 +275,9 @@ def _resolve_blocks(content: list, candidates_by_id: dict) -> list[dict]:
                 result.append({"type": "NAME", "data": {
                     "한글": cand["한글"],
                     "full_name": cand["full_name"],
-                    "surname_syllable": cand.get("surname_syllable"),
-                    "syllables": cand["syllables"],
+                    "familyCharacter": cand["familyCharacter"],
+                    "firstCharacter": cand["firstCharacter"],
+                    "secondCharacter": cand["secondCharacter"],
                     "발음오행_조화": cand["발음오행_조화"],
                     "발음오행_조화_이유": cand.get("발음오행_조화_이유", ""),
                     "rarity_signal": cand["rarity_signal"],

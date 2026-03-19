@@ -263,6 +263,60 @@ def _용신_score(
     return 1.0 if any(o in name_오행_set for o in 부족한_오행) else 0.0
 
 
+def _hanja_to_char_data(hangul: str, h: Hanja | None, baleum_오행: 오행 | None, hanja_options: list[dict]) -> dict:
+    """Hanja 객체를 프론트엔드 HanjaCharData 구조로 변환합니다."""
+    if h:
+        stroke_count = (
+            h.original_stroke_count
+            if h.original_stroke_count is not None
+            else h.dictionary_stroke_count
+        )
+        char_오행_obj = 오행.from_string(h.character_five_elements or "")
+        return {
+            "hangul": hangul,
+            "hanja": h.hanja,
+            "mean": h.mean or "",
+            "strokeCount": stroke_count,
+            "soundEumyang": h.sound_based_yin_yang or "",
+            "strokeEumyang": h.stroke_based_yin_yang or "",
+            "baleumOhaeng": baleum_오행.value if baleum_오행 else (h.pronunciation_five_elements or ""),
+            "charOhaeng": char_오행_obj.value if char_오행_obj else "",
+            "strokeOhaeng": h.stroke_five_elements or "",
+            "hanjaOptions": hanja_options,
+        }
+    else:
+        return {
+            "hangul": hangul,
+            "hanja": "",
+            "mean": "",
+            "strokeCount": None,
+            "soundEumyang": "",
+            "strokeEumyang": "",
+            "baleumOhaeng": baleum_오행.value if baleum_오행 else "",
+            "charOhaeng": "",
+            "strokeOhaeng": "",
+            "hanjaOptions": hanja_options,
+        }
+
+
+def _build_hanja_options(hanjas: list[Hanja]) -> list[dict]:
+    """Hanja 목록을 hanjaOptions 배열로 변환합니다."""
+    return [
+        {
+            "hanja": o.hanja,
+            "mean": o.mean or "",
+            "charOhaeng": (오행.from_string(o.character_five_elements or "").value
+                          if 오행.from_string(o.character_five_elements or "") else ""),
+            "strokeCount": (
+                o.original_stroke_count
+                if o.original_stroke_count is not None
+                else o.dictionary_stroke_count
+            ),
+        }
+        for o in hanjas
+    ]
+
+
 def _build_candidate_from_combo(
     name: str,
     surname: str,
@@ -280,70 +334,53 @@ def _build_candidate_from_combo(
     용신_override: float | None = None,
 ) -> dict:
     """조합에서 후보 dict를 구성합니다."""
-    syllables = []
-    for i, char in enumerate(name):
-        h = best_name_hanjas[i] if i < len(best_name_hanjas) else None
-        s_오행 = syllable_오행_list[i]
-        # char_오행: 자원오행 (character_five_elements), 한자→한글 변환
-        char_오행_obj = 오행.from_string(h.character_five_elements or "") if h else None
-        syllables.append({
-            "한글": char,
-            "한자": h.hanja if h else "",
-            "meaning": h.mean if h else "",
-            "오행": s_오행.value if s_오행 else "",          # 발음오행
-            "char_오행": char_오행_obj.value if char_오행_obj else "",  # 자원오행(한글)
-            "stroke_count": (
-                h.original_stroke_count
-                if h is not None and h.original_stroke_count is not None
-                else (h.dictionary_stroke_count if h else None)
-            ),
-            "sound_eumyang": h.sound_based_yin_yang or "" if h else "",
-            "stroke_eumyang": h.stroke_based_yin_yang or "" if h else "",
-            "hanja_options": [],
-        })
-
     발음음양_h = _발음음양_harmony(성_hanja_obj, best_name_hanjas)
     획수음양_h = _획수음양_harmony(성_hanja_obj, best_name_hanjas)
 
-    # 성씨 한자 데이터 (프론트엔드 상세 분석 화면에서 완전한 분석을 위해 포함)
-    if 성_hanja_obj:
-        surname_stroke = (
-            성_hanja_obj.original_stroke_count
-            if 성_hanja_obj.original_stroke_count is not None
-            else 성_hanja_obj.dictionary_stroke_count
-        )
-        # character_five_elements는 DB에 한자(木/火/土/金/水)로 저장되므로 한글로 변환
-        surname_char_오행 = 오행.from_string(성_hanja_obj.character_five_elements or "")
-        surname_syllable = {
-            "한글": surname,
-            "한자": 성_hanja_obj.hanja,
-            "meaning": 성_hanja_obj.mean or "",
-            "오행": surname_char_오행.value if surname_char_오행 else "",
-            "stroke_count": surname_stroke,
-            "sound_eumyang": 성_hanja_obj.sound_based_yin_yang or "",
-            "stroke_eumyang": 성_hanja_obj.stroke_based_yin_yang or "",
-        }
-    else:
-        surname_syllable = {
-            "한글": surname,
-            "한자": "",
-            "meaning": "",
-            "오행": "",
-            "stroke_count": None,
-            "sound_eumyang": "",
-            "stroke_eumyang": "",
-        }
+    # hanja_options 수집 (조합 목록에서 추출)
+    name_combos = combos_by_name.get(name, [])
+    options_per_char: list[list[Hanja]] = [[], []]
+    if name_combos:
+        seen1_ids: set[int] = set()
+        seen2_ids: set[int] = set()
+        seen1: list[Hanja] = []
+        seen2: list[Hanja] = []
+        for h1, h2 in name_combos:
+            if h1.id not in seen1_ids:
+                seen1.append(h1)
+                seen1_ids.add(h1.id)
+            if h2.id not in seen2_ids:
+                seen2.append(h2)
+                seen2_ids.add(h2.id)
+        options_per_char = [seen1[:5], seen2[:5]]
+
+    # 성씨 한자 데이터
+    family_char = _hanja_to_char_data(
+        hangul=surname,
+        h=성_hanja_obj,
+        baleum_오행=None,  # 성씨는 발음오행 필드 대신 h.pronunciation_five_elements 사용
+        hanja_options=[],
+    )
+
+    # 이름 첫째/둘째 글자 데이터
+    def _name_char(index: int) -> dict:
+        char = name[index] if index < len(name) else ""
+        h = best_name_hanjas[index] if index < len(best_name_hanjas) else None
+        s_오행 = syllable_오행_list[index] if index < len(syllable_오행_list) else None
+        options = _build_hanja_options(options_per_char[index]) if index < len(options_per_char) else []
+        return _hanja_to_char_data(hangul=char, h=h, baleum_오행=s_오행, hanja_options=options)
+
+    first_char = _name_char(0)
+    second_char = _name_char(1) if len(name) >= 2 else _hanja_to_char_data("", None, None, [])
 
     candidate = {
         "한글": name,
         "full_name": surname + name,
-        "surname_syllable": surname_syllable,
-        "syllables": syllables,
+        "familyCharacter": family_char,
+        "firstCharacter": first_char,
+        "secondCharacter": second_char,
         "발음오행_조화": harmony_level,
         "발음오행_조화_이유": harmony_reason,
-        "발음오행_조화_설명": harmony_description,
-        "발음음양_설명": 발음음양_h.description if 발음음양_h else "",
-        "획수음양_설명": 획수음양_h.description if 획수음양_h else "",
         "rarity_signal": "희귀" if rn_count < 100 else ("보통" if rn_count < 1000 else "흔한"),
         "reason": "",
         "score_breakdown": {
@@ -359,39 +396,6 @@ def _build_candidate_from_combo(
             ),
         },
     }
-
-    # hanja_options 채우기 (조합 목록에서 추출)
-    name_combos = combos_by_name.get(name, [])
-    if name_combos:
-        seen1: list[Hanja] = []
-        seen1_ids: set[int] = set()
-        seen2: list[Hanja] = []
-        seen2_ids: set[int] = set()
-        for h1, h2 in name_combos:
-            if h1.id not in seen1_ids:
-                seen1.append(h1)
-                seen1_ids.add(h1.id)
-            if h2.id not in seen2_ids:
-                seen2.append(h2)
-                seen2_ids.add(h2.id)
-
-        options_per_syllable = [seen1[:5], seen2[:5]]
-        for i, syllable in enumerate(candidate["syllables"]):
-            if i < len(options_per_syllable):
-                syllable["hanja_options"] = [
-                    {
-                        "한자": o.hanja,
-                        "meaning": o.mean,
-                        "오행": (오행.from_string(o.character_five_elements or "").value
-                                if 오행.from_string(o.character_five_elements or "") else ""),
-                        "stroke_count": (
-                            o.original_stroke_count
-                            if o.original_stroke_count is not None
-                            else o.dictionary_stroke_count
-                        ),
-                    }
-                    for o in options_per_syllable[i]
-                ]
 
     return candidate
 

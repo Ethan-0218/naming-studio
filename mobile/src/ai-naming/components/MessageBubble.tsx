@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Font } from '@/components/Font';
 import { colors } from '@/design-system';
 import { ChatMessage, ContentBlock, NameData } from '../types';
+import { isCompleteNameData } from '../utils';
 import ChoiceGroupBlock from './ChoiceGroupBlock';
 import NameCard from './NameCard';
 import DebugPanel from './DebugPanel';
@@ -181,6 +182,9 @@ export default function MessageBubble({
           if (block.type === 'NAME') {
             const nameBlock = (block as Extract<ContentBlock, { type: 'NAME' }>)
               .data;
+            if (!isCompleteNameData(nameBlock)) {
+              return null;
+            }
             const name = nameBlock.한글;
             return (
               <NameCard

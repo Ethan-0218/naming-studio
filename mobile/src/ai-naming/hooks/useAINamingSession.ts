@@ -3,6 +3,15 @@ import { MyeongJuProfile } from '@/myeongju/types';
 import { SelectedHanja } from '@/shared/components/HanjaSearchField';
 import { BACKEND_URL } from '../../../constants/config';
 import { ApiResponse, ChatMessage, ContentBlock } from '../types';
+import { isCompleteNameData } from '../utils';
+
+/**
+ * 구 포맷·불완전 NAME 블록을 걸러냅니다.
+ * (`firstCharacter` 키만 있고 값이 undefined인 JSON도 `in`으로는 통과하므로 값 검증 필요)
+ */
+function filterLegacyContentBlocks(blocks: ContentBlock[]): ContentBlock[] {
+  return blocks.filter((b) => b.type !== 'NAME' || isCompleteNameData(b.data));
+}
 
 function parseBirthTime(birthTime: string): string | null {
   if (!birthTime || birthTime === '시간 모름') return null;
@@ -119,7 +128,7 @@ export function useAINamingSession(
               ) => ({
                 id: `restored-${i}`,
                 role: m.role as 'user' | 'assistant',
-                content: m.content_blocks,
+                content: filterLegacyContentBlocks(m.content_blocks),
                 stage: m.stage,
               }),
             );
@@ -240,7 +249,7 @@ export function useAINamingSession(
         {
           id: 'ai-start',
           role: 'assistant',
-          content: data.content,
+          content: filterLegacyContentBlocks(data.content),
           stage: data.stage,
           debug: data.debug,
         },
@@ -292,7 +301,7 @@ export function useAINamingSession(
         {
           id: Date.now().toString(),
           role: 'assistant',
-          content: data.content,
+          content: filterLegacyContentBlocks(data.content),
           stage: data.stage,
           debug: data.debug,
         },
@@ -411,7 +420,7 @@ export function useAINamingSession(
         {
           id: Date.now().toString(),
           role: 'assistant',
-          content: data.content,
+          content: filterLegacyContentBlocks(data.content),
           stage: data.stage,
           debug: data.debug,
         },
@@ -449,7 +458,7 @@ export function useAINamingSession(
         {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: data.content,
+          content: filterLegacyContentBlocks(data.content),
           stage: data.stage,
           debug: data.debug,
         },
@@ -527,7 +536,7 @@ export function useAINamingSession(
           ) => ({
             id: `restored-${i}`,
             role: m.role as 'user' | 'assistant',
-            content: m.content_blocks,
+            content: filterLegacyContentBlocks(m.content_blocks),
             stage: m.stage,
           }),
         );
