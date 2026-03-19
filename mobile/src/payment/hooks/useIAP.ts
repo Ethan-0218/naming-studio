@@ -2,6 +2,44 @@ import { useCallback, useRef, useState } from 'react';
 import { ALL_PRODUCT_IDS, ProductId } from '../types';
 import { verifyPurchase } from '../api';
 
+// ─── 개발 모드 결제 우회 ──────────────────────────────────────────────────────
+
+function useIAPDevBypass(options: UsePurchaseOptions) {
+  const { sessionId, onPurchaseComplete, onPurchaseError } = options;
+  const sessionIdRef = useRef(sessionId);
+  sessionIdRef.current = sessionId;
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  const purchaseProduct = useCallback(
+    async (productId: ProductId) => {
+      setIsPurchasing(true);
+      try {
+        const result = await verifyPurchase({
+          productId,
+          transactionId: `dev_bypass_${Date.now()}`,
+          receiptData: '',
+          sessionId: sessionIdRef.current,
+        });
+        onPurchaseComplete?.(result.productType, result.userPremium);
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : '개발 모드 결제 우회 실패';
+        onPurchaseError?.(msg);
+      } finally {
+        setIsPurchasing(false);
+      }
+    },
+    [onPurchaseComplete, onPurchaseError],
+  );
+
+  return {
+    purchaseProduct,
+    isPurchasing,
+    purchaseError: null,
+    isConnected: true,
+  };
+}
+
 // 네이티브 모듈 가용 여부를 모듈 로드 시점에 동기적으로 확인 (상수)
 function _checkIAPAvailable(): boolean {
   try {
@@ -39,6 +77,10 @@ const UNAVAILABLE_MSG = '결제 기능은 정식 빌드에서 이용할 수 있�
  * _IAP_AVAILABLE은 모듈 로드 시 결정되는 상수이므로 훅 호출 순서가 항상 일정합니다.
  */
 export function useIAP(options: UsePurchaseOptions) {
+  if (__DEV__) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useIAPDevBypass(options);
+  }
   if (_IAP_AVAILABLE) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     return useIAPWithNative(options);

@@ -77,7 +77,7 @@ class PurchaseRepository:
                     receipt_data,
                 ),
             ).fetchone()
-        return str(row[0])
+        return str(row["id"])
 
     def get_session_ai_status(self, session_id: str) -> dict:
         """세션의 AI 작명 구매 상태를 반환합니다.

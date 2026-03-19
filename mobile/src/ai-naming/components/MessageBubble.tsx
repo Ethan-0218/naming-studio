@@ -50,17 +50,27 @@ export default function MessageBubble({
     [msg.content],
   );
 
-  const [textsDone, setTextsDone] = useState(animate ? 0 : textCount);
+  // 각 content block에 대해 몇 번째 TEXT 블록인지 미리 계산 (-1 = TEXT 아님)
+  const textIndices = useMemo(() => {
+    let idx = 0;
+    return msg.content.map((b) => (b.type === 'TEXT' ? idx++ : -1));
+  }, [msg.content]);
+
+  // 현재 애니메이션 중인 TEXT 블록 인덱스
+  // animate=false이면 전체 완료로 시작
+  const [animatingTextIdx, setAnimatingTextIdx] = useState(
+    animate ? 0 : textCount,
+  );
 
   useEffect(() => {
-    setTextsDone(animate ? 0 : textCount);
+    setAnimatingTextIdx(animate ? 0 : textCount);
   }, [animate, msg.id, textCount]);
 
   const handleTextDone = useCallback(() => {
-    setTextsDone((c) => c + 1);
+    setAnimatingTextIdx((i) => i + 1);
   }, []);
 
-  const nonTextVisible = textsDone >= textCount;
+  const nonTextVisible = animatingTextIdx >= textCount;
 
   if (msg.role === 'user') {
     const text = msg.content
@@ -128,6 +138,10 @@ export default function MessageBubble({
         {showDebug && <DebugPanel debug={msg.debug} />}
         {msg.content.map((block, i) => {
           if (block.type === 'TEXT') {
+            const myTextIdx = textIndices[i];
+            // 아직 차례가 되지 않은 TEXT 블록은 숨김
+            if (myTextIdx > animatingTextIdx) return null;
+            const isAnimating = animate && myTextIdx === animatingTextIdx;
             return (
               <View
                 key={i}
@@ -137,10 +151,10 @@ export default function MessageBubble({
                   borderTopLeftRadius: 3,
                 }}
               >
-                {animate ? (
+                {isAnimating ? (
                   <TypewriterText
                     text={block.data.text}
-                    animate={animate}
+                    animate={true}
                     msPerChar={50}
                     onDone={handleTextDone}
                   />

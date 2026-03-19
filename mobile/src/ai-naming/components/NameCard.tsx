@@ -22,7 +22,7 @@ export default function NameCard({
 }: Props) {
   return (
     <View
-      className="rounded-[14px] mb-2 w-full overflow-hidden border border-border"
+      className="rounded-[14px] mb-2 w-full border border-border"
       style={{ borderLeftWidth: 3, borderLeftColor: colors.fillAccent }}
     >
       {/* 헤더: 이름 + 점수 */}
@@ -193,7 +193,13 @@ export default function NameCard({
       {/* 좋아요/별로 버튼 */}
       <View
         className="flex-row"
-        style={{ borderTopWidth: 1, borderTopColor: colors.border }}
+        style={{
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          borderBottomLeftRadius: 14,
+          borderBottomRightRadius: 14,
+          overflow: 'hidden',
+        }}
       >
         <Pressable
           className="flex-1 flex-row items-center justify-center gap-1.5 py-2.5"

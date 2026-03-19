@@ -223,6 +223,19 @@ export default function AIPaymentModal({
           </View>
 
           {/* 플랜 카드 목록 */}
+          {__DEV__ && (
+            <View
+              className="mx-[16px] mb-[10px] px-3 py-2 rounded-[8px]"
+              style={{ backgroundColor: colors.fillAccentSub }}
+            >
+              <Font
+                tag="secondaryMedium"
+                style={{ fontSize: 12, color: colors.fillAccent }}
+              >
+                DEV 모드 — 실제 결제 없이 즉시 처리됩니다
+              </Font>
+            </View>
+          )}
           <ScrollView
             className="px-[16px]"
             showsVerticalScrollIndicator={false}
