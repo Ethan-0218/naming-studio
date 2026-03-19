@@ -101,6 +101,8 @@ interface Props {
   onDislike: (name: string) => void;
   showDebug: boolean;
   onSend: (text: string) => void;
+  /** 바로 다음 메시지가 사용자 답변이면 선택지는 이미 제출된 것으로 표시 (복원 UI) */
+  hasUserReplyBelow?: boolean;
 }
 
 export default function MessageBubble({
@@ -111,6 +113,7 @@ export default function MessageBubble({
   onDislike,
   showDebug,
   onSend,
+  hasUserReplyBelow = false,
 }: Props) {
   if (msg.role === 'user') {
     const text = msg.content
@@ -197,7 +200,7 @@ export default function MessageBubble({
                 key={i}
                 data={block.data}
                 onSend={onSend}
-                submitted={false}
+                submitted={hasUserReplyBelow}
               />
             );
           }

@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors } from '@/design-system';
 import { REGIONS, Region } from '../data';
 import { useCreateMyeongJu } from '../hooks/useCreateMyeongJu';
+import { findOrCreateSession } from '../api';
 import NavBar from '@/components/NavBar';
 import GenderSection from './GenderSection';
 import BirthDateSection from './BirthDateSection';
@@ -63,9 +64,13 @@ export default function AddMyeongJuScreen() {
         surnameHanja: surname.hanja,
       },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           if (mode === 'ai') {
-            navigation.navigate('AINaming', { profileId: data.id });
+            const { session_id } = await findOrCreateSession(data.id);
+            navigation.navigate('AINaming', {
+              sessionId: session_id,
+              profileId: data.id,
+            });
           } else if (mode === 'self') {
             navigation.navigate('SelfNaming', { profileId: data.id });
           } else {

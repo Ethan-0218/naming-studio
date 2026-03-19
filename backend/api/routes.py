@@ -105,6 +105,7 @@ class NamingResponse(BaseModel):
     debug: dict | None = None
 
 
+
 @router.get("/session/{session_id}")
 async def get_session_state(session_id: str, req: Request):
     """session_id로 세션 현재 상태를 조회합니다. LLM 호출 없음."""
@@ -117,12 +118,6 @@ async def get_session_state(session_id: str, req: Request):
     except Exception:
         state_values = {}
 
-    found = bool(state_values and state_values.get("stage"))
-    stage = state_values.get("stage", "welcome") if found else None
-    payment_status = state_values.get("payment_status", "pending") if found else "pending"
-    naming_direction = state_values.get("naming_direction") if found else None
-    user_info = state_values.get("user_info") if found else None
-
     messages: list[dict] = []
     if DATABASE_URL:
         try:
@@ -134,9 +129,24 @@ async def get_session_state(session_id: str, req: Request):
             import logging
             logging.getLogger(__name__).warning("session_messages 조회 실패", exc_info=True)
 
+    stage_graph = state_values.get("stage") if state_values else None
+    found = bool(stage_graph) or bool(messages)
+    stage = stage_graph or (messages[-1].get("stage") if messages else None)
+    payment_status = (
+        state_values.get("payment_status", "pending") if state_values else "pending"
+    )
+    naming_direction = state_values.get("naming_direction") if state_values else None
+    user_info = state_values.get("user_info") if state_values else None
+
+    myeongju_id: str | None = None
+    repo = _get_session_repo(req)
+    if repo is not None:
+        myeongju_id = repo.get_myeongju_id(session_id)
+
     return {
         "session_id": session_id,
         "found": found,
+        "myeongju_id": myeongju_id,
         "stage": stage,
         "payment_required": (
             stage == "payment_gate"
@@ -148,6 +158,31 @@ async def get_session_state(session_id: str, req: Request):
         "disliked_names": name_store.get_disliked(session_id),
         "messages": messages,
     }
+
+
+
+class FindOrCreateRequest(BaseModel):
+    myeongju_id: str
+
+
+@router.post("/session/find-or-create")
+async def find_or_create_session(body: FindOrCreateRequest, req: Request):
+    """myeongju_id로 기존 세션을 찾거나 새 세션을 생성합니다.
+
+    명주당 세션은 하나만 생성됩니다. 이미 존재하면 기존 session_id를 반환합니다.
+    """
+    repo = _get_session_repo(req)
+    if repo is None:
+        new_id = str(uuid.uuid4())
+        return {"session_id": new_id, "is_new": True}
+
+    existing = repo.find_by_myeongju_id(body.myeongju_id)
+    if existing:
+        return {"session_id": existing, "is_new": False}
+
+    new_id = str(uuid.uuid4())
+    repo.upsert_session(session_id=new_id, myeongju_id=body.myeongju_id)
+    return {"session_id": new_id, "is_new": True}
 
 
 @router.post("/admin/cleanup-checkpoints")
@@ -215,7 +250,11 @@ async def chat(request: NamingRequest, req: Request):
         # submit_info: 폼 데이터 직접 처리 (LLM 우회)
         if request.action == "submit_info":
             response = _handle_submit_info(session_id, request.message, graph, config)
-            _sync_session(req, session_id, {"stage": response.stage, "user_info": json.loads(request.message)})
+            try:
+                ui = json.loads(request.message)
+            except Exception:
+                ui = {}
+            _sync_session(req, session_id, {"stage": response.stage, "user_info": ui})
             return response
 
         # update_dolrimja: 돌림자 업데이트 후 AI 응답
@@ -348,7 +387,6 @@ def _build_naming_response(
 @router.post("/chat/stream")
 async def chat_stream(request: NamingRequest, req: Request):
     """LLM 호출이 있는 액션을 SSE로 스트리밍합니다."""
-    session_id = request.session_id or str(uuid.uuid4())
 
     async def event_generator():
         loop = asyncio.get_running_loop()
@@ -360,12 +398,17 @@ async def chat_stream(request: NamingRequest, req: Request):
         token = _progress.set_callback(_on_progress)
 
         def _run() -> NamingResponse:
+            session_id = request.session_id or str(uuid.uuid4())
             graph = _get_agent_graph(req)
             config = {"configurable": {"thread_id": session_id}}
 
             if request.action == "submit_info":
                 response = _handle_submit_info(session_id, request.message, graph, config)
-                _sync_session(req, session_id, {"stage": response.stage, "user_info": json.loads(request.message)})
+                try:
+                    ui = json.loads(request.message)
+                except Exception:
+                    ui = {}
+                _sync_session(req, session_id, {"stage": response.stage, "user_info": ui})
                 return response
             if request.action == "update_dolrimja":
                 return _handle_update_dolrimja(session_id, request.message, graph, config)
@@ -510,7 +553,7 @@ def _handle_submit_info(session_id: str, message: str, graph, config: dict) -> N
             text = last.content if hasattr(last, "content") else str(last)
             content_blocks = [{"type": "TEXT", "data": {"text": text}}]
 
-    _save_messages(session_id, summary_text, content_blocks, stage)
+    _save_messages(session_id, None, content_blocks, stage)
     return NamingResponse(
         session_id=session_id,
         stage=stage,

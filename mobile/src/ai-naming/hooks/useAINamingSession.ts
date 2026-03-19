@@ -58,13 +58,14 @@ export interface AINamingSessionState {
 }
 
 export function useAINamingSession(
+  sessionId: string,
   profile: MyeongJuProfile | null,
 ): AINamingSessionState {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [, setStage] = useState('preference_interview');
   const [likedNames, setLikedNames] = useState<string[]>([]);
   const [dislikedNames, setDislikedNames] = useState<string[]>([]);
@@ -85,11 +86,69 @@ export function useAINamingSession(
   const sessionStartedRef = useRef(false);
 
   useEffect(() => {
-    if (profile && !sessionStartedRef.current && !loading) {
-      handleStart();
+    if (!sessionId || !profile) return;
+
+    let cancelled = false;
+
+    sessionStartedRef.current = false;
+    setSessionStarted(false);
+    setCurrentSessionId(null);
+    setMessages([]);
+    setLikedNames([]);
+    setDislikedNames([]);
+    setPaymentRequired(false);
+
+    async function init() {
+      try {
+        const res = await fetch(
+          `${BACKEND_URL}/api/session/${encodeURIComponent(sessionId)}`,
+        );
+        if (cancelled) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (cancelled) return;
+          if (data.found && data.messages && data.messages.length > 0) {
+            const restored: ChatMessage[] = data.messages.map(
+              (
+                m: {
+                  role: string;
+                  content_blocks: ContentBlock[];
+                  stage?: string;
+                },
+                i: number,
+              ) => ({
+                id: `restored-${i}`,
+                role: m.role as 'user' | 'assistant',
+                content: m.content_blocks,
+                stage: m.stage,
+              }),
+            );
+            if (cancelled) return;
+            setCurrentSessionId(data.session_id);
+            setStage(data.stage ?? 'preference_interview');
+            setLikedNames(data.liked_names ?? []);
+            setDislikedNames(data.disliked_names ?? []);
+            setPaymentRequired(data.payment_required ?? false);
+            setMessages(restored);
+            setSessionStarted(true);
+            sessionStartedRef.current = true;
+            return;
+          }
+        }
+      } catch {
+        /* 네트워크 오류 → 새 세션 시작 */
+      }
+      if (!cancelled) {
+        await handleStart();
+      }
     }
+
+    init();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.id]);
+  }, [sessionId, profile?.id ?? '']);
 
   function callApiStream(
     body: object,
@@ -161,33 +220,23 @@ export function useAINamingSession(
       돌림자_한자: '',
     };
 
-    const summaryText = [
-      `${profile.surnameHanja}(${profile.surname})`,
-      profile.gender === 'male' ? '아들' : '딸',
-      profile.birthDate,
-      profile.calendarType,
-      parseBirthTime(profile.birthTime) ?? '시간 모름',
-      '돌림자 없음',
-    ].join(' · ');
-
     try {
       const data = await callApiStream(
-        { message: JSON.stringify(user_info), action: 'submit_info' },
+        {
+          message: JSON.stringify(user_info),
+          action: 'submit_info',
+          session_id: sessionId,
+        },
         (msg) => setProgressMessage(msg),
       );
 
-      setSessionId(data.session_id);
+      setCurrentSessionId(data.session_id);
       setStage(data.stage);
       setLikedNames(data.liked_names);
       setDislikedNames(data.disliked_names);
       setPaymentRequired(data.payment_required);
 
       setMessages([
-        {
-          id: 'user-info',
-          role: 'user',
-          content: [{ type: 'TEXT', data: { text: summaryText } }],
-        },
         {
           id: 'ai-start',
           role: 'assistant',
@@ -230,10 +279,10 @@ export function useAINamingSession(
     setLoading(true);
     try {
       const data = await callApiStream(
-        { message: text, session_id: sessionId },
+        { message: text, session_id: currentSessionId },
         (msg) => setProgressMessage(msg),
       );
-      setSessionId(data.session_id);
+      setCurrentSessionId(data.session_id);
       setStage(data.stage);
       setLikedNames(data.liked_names);
       setDislikedNames(data.disliked_names);
@@ -282,13 +331,13 @@ export function useAINamingSession(
     type: 'liked' | 'disliked',
     reasonKeys: string[],
   ) {
-    if (!sessionId || reasonKeys.length === 0) return;
+    if (!currentSessionId || reasonKeys.length === 0) return;
     fetch(`${BACKEND_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message: '',
-        session_id: sessionId,
+        session_id: currentSessionId,
         reason_keys: reasonKeys,
         reason_for_name: name,
         reason_preference_type: type,
@@ -303,7 +352,7 @@ export function useAINamingSession(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message: '',
-        session_id: sessionId,
+        session_id: currentSessionId,
         action: `${op}:${name}`,
       }),
     });
@@ -327,7 +376,7 @@ export function useAINamingSession(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message: '',
-        session_id: sessionId,
+        session_id: currentSessionId,
         action: `${op}:${name}`,
       }),
     });
@@ -350,7 +399,7 @@ export function useAINamingSession(
       const data = await callApiStream(
         {
           message: '결제 완료했습니다',
-          session_id: sessionId,
+          session_id: currentSessionId,
           action: 'payment_complete',
         },
         (msg) => setProgressMessage(msg),
@@ -389,7 +438,7 @@ export function useAINamingSession(
       const data = await callApiStream(
         {
           message: JSON.stringify(selected),
-          session_id: sessionId,
+          session_id: currentSessionId,
           action: 'update_dolrimja',
         },
         (msg) => setProgressMessage(msg),
@@ -430,7 +479,7 @@ export function useAINamingSession(
   function handleReset() {
     sessionStartedRef.current = false;
     setMessages([]);
-    setSessionId(null);
+    setCurrentSessionId(null);
     setStage('preference_interview');
     setLikedNames([]);
     setDislikedNames([]);
@@ -458,7 +507,7 @@ export function useAINamingSession(
         return;
       }
 
-      setSessionId(data.session_id);
+      setCurrentSessionId(data.session_id);
       setStage(data.stage ?? 'preference_interview');
       setLikedNames(data.liked_names ?? []);
       setDislikedNames(data.disliked_names ?? []);
@@ -484,13 +533,16 @@ export function useAINamingSession(
         );
         setMessages(restored);
       } else {
-        const restoreMsg =
-          `세션을 불러왔어요 ✅\n` + `ID: ${id.slice(0, 8)}...`;
         setMessages([
           {
             id: 'restored',
             role: 'assistant',
-            content: [{ type: 'TEXT', data: { text: restoreMsg } }],
+            content: [
+              {
+                type: 'TEXT',
+                data: { text: `이전 대화를 불러왔어요.` },
+              },
+            ],
             stage: data.stage,
           },
         ]);
@@ -523,7 +575,7 @@ export function useAINamingSession(
     setInput,
     loading,
     progressMessage,
-    sessionId,
+    sessionId: currentSessionId,
     likedNames,
     dislikedNames,
     paymentRequired,

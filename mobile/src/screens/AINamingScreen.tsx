@@ -30,13 +30,13 @@ type AINamingRoute = RouteProp<RootStackParamList, 'AINaming'>;
 export default function AINamingScreen() {
   const navigation = useNavigation<AINamingNavProp>();
   const route = useRoute<AINamingRoute>();
-  const { profileId } = route.params;
+  const { sessionId, profileId } = route.params;
   const insets = useSafeAreaInsets();
 
   const { data: profiles = [] } = useMyeongJuList();
   const profile = profiles.find((p) => p.id === profileId) ?? null;
 
-  const session = useAINamingSession(profile);
+  const session = useAINamingSession(sessionId, profile);
   const { data: purchaseStatus } = usePurchaseStatus(
     session.sessionId ?? undefined,
   );
@@ -80,7 +80,7 @@ export default function AINamingScreen() {
           className="flex-1 bg-bg"
           contentContainerStyle={{ padding: 13, paddingBottom: 8 }}
         >
-          {session.messages.map((msg) => (
+          {session.messages.map((msg, i) => (
             <MessageBubble
               key={msg.id}
               msg={msg}
@@ -90,6 +90,10 @@ export default function AINamingScreen() {
               onDislike={session.handleDislike}
               showDebug={session.showDebug}
               onSend={session.sendMessage}
+              hasUserReplyBelow={
+                msg.role === 'assistant' &&
+                session.messages[i + 1]?.role === 'user'
+              }
             />
           ))}
           {session.loading && (

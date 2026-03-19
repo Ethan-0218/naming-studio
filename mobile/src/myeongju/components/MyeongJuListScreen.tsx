@@ -13,6 +13,7 @@ import ProfileCard from './ProfileCard';
 import { MyeongJuProfile } from '../types';
 import { useMyeongJuList } from '../hooks/useMyeongJuList';
 import { useDeleteMyeongJu } from '../hooks/useDeleteMyeongJu';
+import { findOrCreateSession } from '../api';
 
 const MODE_DESCRIPTION: Record<'ai' | 'self', string> = {
   ai: 'AI 작명에 사용할 명주를 선택해주세요.',
@@ -41,9 +42,13 @@ export default function MyeongJuListScreen() {
     ]);
   }
 
-  function handleSelectProfile(profile: MyeongJuProfile) {
+  async function handleSelectProfile(profile: MyeongJuProfile) {
     if (mode === 'ai') {
-      navigation.navigate('AINaming', { profileId: profile.id });
+      const { session_id } = await findOrCreateSession(profile.id);
+      navigation.navigate('AINaming', {
+        sessionId: session_id,
+        profileId: profile.id,
+      });
     } else if (mode === 'self') {
       navigation.navigate('SelfNaming', { profileId: profile.id });
     }

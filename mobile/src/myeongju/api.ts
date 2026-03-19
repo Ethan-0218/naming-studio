@@ -119,3 +119,15 @@ export async function listMyeongJu(): Promise<MyeongJuProfile[]> {
   const data: MyeongJuApiResponse[] = await res.json();
   return data.map(toProfile);
 }
+
+export async function findOrCreateSession(
+  myeongjuId: string,
+): Promise<{ session_id: string; is_new: boolean }> {
+  const res = await fetch(`${BACKEND_URL}/api/session/find-or-create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ myeongju_id: myeongjuId }),
+  });
+  if (!res.ok) throw new Error(`세션 생성 실패: ${res.status}`);
+  return res.json();
+}
