@@ -34,6 +34,9 @@ class MyeongJuRepository:
         ilji_hanja: str,
         surname: str = "",
         surname_hanja: str = "",
+        yongsin: str | None = None,
+        heesin: str | None = None,
+        gisin: str | None = None,
     ) -> dict:
         with self._pool.connection() as conn:
             row = conn.execute(
@@ -45,7 +48,8 @@ class MyeongJuRepository:
                     region_name, region_offset,
                     solar_date, solar_time,
                     ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
-                    surname, surname_hanja
+                    surname, surname_hanja,
+                    yongsin, heesin, gisin
                 ) VALUES (
                     %s, %s, %s,
                     %s, %s, %s,
@@ -53,7 +57,8 @@ class MyeongJuRepository:
                     %s, %s,
                     %s, %s,
                     %s, %s, %s, %s, %s,
-                    %s, %s
+                    %s, %s,
+                    %s, %s, %s
                 )
                 RETURNING id, created_at,
                     gender, calendar_type,
@@ -61,7 +66,8 @@ class MyeongJuRepository:
                     time_unknown, birth_hour, birth_minute,
                     region_name,
                     ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
-                    surname, surname_hanja
+                    surname, surname_hanja,
+                    yongsin, heesin, gisin
                 """,
                 (
                     user_id, gender, calendar_type,
@@ -71,6 +77,7 @@ class MyeongJuRepository:
                     solar_date, solar_time,
                     ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
                     surname, surname_hanja,
+                    yongsin, heesin, gisin,
                 ),
             ).fetchone()
         return dict(row)
@@ -93,7 +100,8 @@ class MyeongJuRepository:
                     time_unknown, birth_hour, birth_minute,
                     region_name,
                     ilgan_hangul, ilgan_hanja, ohaeng, ilji_hangul, ilji_hanja,
-                    surname, surname_hanja
+                    surname, surname_hanja,
+                    yongsin, heesin, gisin
                 FROM myeongju
                 WHERE user_id = %s
                 ORDER BY created_at DESC

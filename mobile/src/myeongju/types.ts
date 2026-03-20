@@ -20,6 +20,9 @@ export interface MyeongJuProfile {
   birthTime: string;
   surname: string; // 성씨 한글 (e.g. '김')
   surnameHanja: string; // 성씨 한자 (e.g. '金')
+  yongsin: OhaengType | null; // 억부용신 오행
+  heesin: OhaengType | null; // 희신 오행
+  gisin: OhaengType | null; // 기신 오행
   analysisCount?: number;
   savedCount?: number;
 }

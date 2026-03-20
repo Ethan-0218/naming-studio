@@ -37,6 +37,9 @@ interface MyeongJuApiResponse {
   surname: string;
   surname_hanja: string;
   created_at: string;
+  yongsin: string | null;
+  heesin: string | null;
+  gisin: string | null;
 }
 
 function toProfile(r: MyeongJuApiResponse): MyeongJuProfile {
@@ -52,6 +55,9 @@ function toProfile(r: MyeongJuApiResponse): MyeongJuProfile {
     birthTime: r.birth_time,
     surname: r.surname,
     surnameHanja: r.surname_hanja,
+    yongsin: (r.yongsin as OhaengType) ?? null,
+    heesin: (r.heesin as OhaengType) ?? null,
+    gisin: (r.gisin as OhaengType) ?? null,
   };
 }
 

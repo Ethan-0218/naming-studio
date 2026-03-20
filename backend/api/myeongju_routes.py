@@ -85,6 +85,9 @@ class MyeongJuResponse(BaseModel):
     surname: str
     surname_hanja: str
     created_at: str
+    yongsin: str | None  # 억부용신 오행 (e.g. '수')
+    heesin: str | None   # 희신 오행
+    gisin: str | None    # 기신 오행
 
 
 # ─── 헬퍼: DB row → MyeongJuResponse ──────────────────────────────────────────
@@ -123,6 +126,9 @@ def _row_to_response(row: dict) -> MyeongJuResponse:
         surname=row.get("surname", ""),
         surname_hanja=row.get("surname_hanja", ""),
         created_at=str(created_at),
+        yongsin=row.get("yongsin"),
+        heesin=row.get("heesin"),
+        gisin=row.get("gisin"),
     )
 
 
@@ -170,7 +176,24 @@ async def create_myeongju(
     ilgan = saju.일간
     ilji  = saju.일지
 
-    # 4. DB 저장
+    # 4. 억부용신 / 희신 / 기신 계산
+    from domain.saju.억부용신 import 억부용신
+    from domain.saju.희신 import 희신
+    from domain.saju.기신 import 기신
+
+    yongsin_val: str | None = None
+    heesin_val: str | None = None
+    gisin_val: str | None = None
+    try:
+        용신 = 억부용신.from사주팔자(saju)
+        if 용신 is not None:
+            yongsin_val = 용신.오행.value
+            heesin_val  = 희신.from억부용신(용신).오행.value
+            gisin_val   = 기신.from억부용신(용신).오행.value
+    except Exception:
+        logger.exception("억부용신 계산 중 오류 발생")
+
+    # 5. DB 저장
     row = MyeongJuRepository(_pool_instance).create(
         user_id=user_id,
         gender=body.gender,
@@ -192,6 +215,9 @@ async def create_myeongju(
         ilji_hanja=ilji.한자,
         surname=body.surname,
         surname_hanja=body.surname_hanja,
+        yongsin=yongsin_val,
+        heesin=heesin_val,
+        gisin=gisin_val,
     )
 
     return _row_to_response(row)

@@ -47,14 +47,8 @@ export default function NamingToolScreen({
   const { data: profiles = [] } = useMyeongJuList();
   const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
   const gender = selectedProfile?.gender ?? 'male';
-  const {
-    nameInput,
-    sajuInput,
-    analysis,
-    updateHangul,
-    updateHanja,
-    updateSaju,
-  } = useNamingToolState(gender);
+  const { nameInput, analysis, updateHangul, updateHanja } =
+    useNamingToolState(gender);
 
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const isPremium = useSelfNamingPremium();
@@ -123,9 +117,10 @@ export default function NamingToolScreen({
         <GroupTitle>한자 이름 평가</GroupTitle>
         <View style={{ gap: 12 }}>
           <YongsinSection
-            sajuInput={sajuInput}
+            yongsin={selectedProfile?.yongsin ?? null}
+            heesin={selectedProfile?.heesin ?? null}
+            gisin={selectedProfile?.gisin ?? null}
             nameInput={nameInput}
-            onUpdate={updateSaju}
             isPurchased={isPremium}
             onPressBuy={isPremium ? undefined : () => setShowPremiumModal(true)}
           />
