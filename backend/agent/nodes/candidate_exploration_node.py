@@ -149,6 +149,7 @@ def candidate_exploration_node(state: NamingState) -> dict:
             surname_hanja=user_info.get("surname_hanja", ""),
             gender=user_info.get("gender", "남"),
             session_id=session_id,
+            억부용신=사주.get("억부용신") or None,
             부족한_오행=사주.get("부족한_오행", []),
             preferred_오행=preferred_오행,
             max_받침_count=max_받침_count,

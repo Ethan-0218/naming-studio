@@ -7,17 +7,15 @@
     python scripts/build_scored_combinations.py
 
 생성 결과: db/scored_combinations.sqlite3
-  - 성씨 전체(106개) × 이름 상위 5,000개 × 용신오행 5개 × 상위 5개 한자조합
-  - 약 1,325만 행, 약 632MB
-  - 런타임 점수 계산(593ms)을 SQL 인덱스 조회(~5ms)로 대체
+  - 성씨 전체(106개) × 이름 상위 N개 × 용신오행 5종(목~수) × 상위 5개 한자조합
+  - (미지정용 yongshin 행 없음 — 조회 시 억부용신 오행으로만 매칭)
+  - 런타임 점수 계산을 SQL 인덱스 조회로 대체
 
-사전 계산 점수 항목 (용신 제외):
-  - 자원오행 조화: 0.18
-  - 발음오행 조화: 0.12
-  - 수리격:       0.15
-  - 발음음양:     0.08
-  - 획수음양:     0.07
-  합계 가중치:    0.60 (정규화 없이 합산, 비교 목적)
+사전 계산 점수:
+  - 전통 5항 (합 0.60): 자원·발음 오행, 수리격, 발음·획수 음양
+  - 사주보완: 각 yongshin(목~수)별로 성씨 한자 + 이름 두 글자(총 3글자) 자원오행에
+    용신 +2.5 / 희신(용신을 생함) +1.5 / 기신(용신을 극함) -1.5 / 기타 +1
+    → 유효 오행이 있는 글자 수로 0~1 정규화 후 가중 W_SAJU_BOJANG(0.40)을 곱해 합산
 """
 
 import json
@@ -37,6 +35,8 @@ W_BALEUM_OHAENG = _weights_raw["baleumOhaeng"]
 W_SURIGYEOK     = _weights_raw["surigyeok"]
 W_BALEUM_EUMYANG = _weights_raw["baleumEumyang"]
 W_HOEKSU_EUMYANG = _weights_raw["hoeksuEumyang"]
+# 사주보완 가중 (전통 0.60과 합쳐 총 1.0 스케일로 맞추기 위한 값)
+W_SAJU_BOJANG = 0.40
 
 from core.config import (
     HANJA_DB_PATH,
@@ -168,6 +168,62 @@ def _compute_score(
     return score
 
 
+def _정규화_사주보완_점수(
+    용신_한글: str,
+    surname_char_fe: str,
+    h1_char_fe: str,
+    h2_char_fe: str,
+) -> float:
+    """성씨 한자 + 이름 두 글자(총 3글자) 한자 자원오행. 용신·희신·기신(get극아오행).
+
+    글자당: 용신 +2.5, 희신 +1.5, 기신 -1.5, 기타 +1.0 → 유효 글자 N에 대해 선형 0~1.
+    유효 오행이 없으면 0.5.
+    """
+    from domain.saju.오행 import 오행
+
+    w_y, w_h, w_g, w_o = 2.5, 1.5, -1.5, 1.0
+    ys = 오행.from_string(용신_한글)
+    if ys is None:
+        return 0.5
+    o0 = 오행.from_string(surname_char_fe) if surname_char_fe else None
+    o1 = 오행.from_string(h1_char_fe) if h1_char_fe else None
+    o2 = 오행.from_string(h2_char_fe) if h2_char_fe else None
+    elements = [e for e in (o0, o1, o2) if e is not None]
+    if not elements:
+        return 0.5
+    gisin_o = ys.get극아오행()
+    huisin_o = ys.get생아오행()
+    raw = 0.0
+    for e in elements:
+        if e == ys:
+            raw += w_y
+        elif e == huisin_o:
+            raw += w_h
+        elif e == gisin_o:
+            raw += w_g
+        else:
+            raw += w_o
+    n = len(elements)
+    min_raw = w_g * n
+    max_raw = w_y * n
+    if max_raw == min_raw:
+        return 0.5
+    return (raw - min_raw) / (max_raw - min_raw)
+
+
+def _사주보완_가중합(
+    용신_한글: str,
+    surname_char_fe: str,
+    h1_char_fe: str,
+    h2_char_fe: str,
+) -> float:
+    """0~1 정규화 사주보완 × W_SAJU_BOJANG."""
+    return (
+        _정규화_사주보완_점수(용신_한글, surname_char_fe, h1_char_fe, h2_char_fe)
+        * W_SAJU_BOJANG
+    )
+
+
 # ─── Main Build ──────────────────────────────────────────────────────────────
 
 def build() -> None:
@@ -288,7 +344,7 @@ def build() -> None:
             surname_hanja   TEXT    NOT NULL,
             name            TEXT    NOT NULL,
             gender          TEXT    NOT NULL,
-            required_ohaeng TEXT    NOT NULL,
+            yongshin        TEXT    NOT NULL,
             rank            INTEGER NOT NULL,
             hanja1_id       INTEGER NOT NULL,
             hanja2_id       INTEGER NOT NULL,
@@ -296,12 +352,12 @@ def build() -> None:
             rn_count        INTEGER NOT NULL DEFAULT 0,
             받침_count       INTEGER NOT NULL DEFAULT 0,
             name_length     INTEGER NOT NULL DEFAULT 0,
-            PRIMARY KEY (surname_hanja, name, gender, required_ohaeng, rank)
+            PRIMARY KEY (surname_hanja, name, gender, yongshin, rank)
         )
         """
     )
     out_conn.execute(
-        "CREATE INDEX idx_sc_lookup ON scored_combinations(surname_hanja, name, gender, required_ohaeng)"
+        "CREATE INDEX idx_sc_lookup ON scored_combinations(surname_hanja, name, gender, yongshin)"
     )
 
     # 6. 이중 루프: 성씨 × 이름 × 오행 → 상위 5개 조합 INSERT
@@ -338,12 +394,12 @@ def build() -> None:
             n1_pron_fe = syllable_pron_fe_list[0] if len(syllable_pron_fe_list) >= 1 else ""
             n2_pron_fe = syllable_pron_fe_list[1] if len(syllable_pron_fe_list) >= 2 else ""
 
-            # 전체 조합에 대해 점수 계산 (오행 무관)
-            all_scored: list[tuple[float, int, int, object, object]] = []
+            # 전통 0.60 항만 먼저 계산 (조합별 base)
+            base_rows: list[tuple[float, int, int, object, object]] = []
             for h1, h2 in combos:
                 h1_stroke = h1.original_stroke_count or h1.dictionary_stroke_count
                 h2_stroke = h2.original_stroke_count or h2.dictionary_stroke_count
-                score = _compute_score(
+                base = _compute_score(
                     s_char_fe, s_pron_fe, s_sound_yin, s_stroke_yin, s_stroke, gender_key,
                     n1_pron_fe, n2_pron_fe,
                     h1.character_five_elements or "", h1.sound_based_yin_yang or "",
@@ -352,30 +408,42 @@ def build() -> None:
                     h2.stroke_based_yin_yang or "", h2_stroke,
                     char_fe_lut, yin_lut, nr_lut,
                 )
-                all_scored.append((score, h1.id, h2.id, h1, h2))
-            all_scored.sort(key=lambda x: x[0], reverse=True)
+                base_rows.append((base, h1.id, h2.id, h1, h2))
 
             rn_cnt = rn_count_map.get((name, db_gender), 0)
             bc = _받침_count(name)
             nl = len(name)
 
-            # '_all': 오행 무관 상위 TOP_COMBOS개 (용신 없거나 커버 안 될 때 폴백용)
-            for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(all_scored[:TOP_COMBOS], 1):
-                batch.append((s_hanja, name, gender_key, "_all", rank, h1_id, h2_id, score, rn_cnt, bc, nl))
-
-            # 오행별: 해당 용신을 커버하는 조합만 필터
-            for target_ohaeng in OHAENG_LIST:
-                filtered_scored = [
-                    (score, h1_id, h2_id, h1, h2)
-                    for score, h1_id, h2_id, h1, h2 in all_scored
-                    if target_ohaeng in (
-                        {h1.character_five_elements, h2.character_five_elements} | name_pron_fes
+            # yongshin=목~수: 필터 후 base + 해당 용신 기준 사주보완 가중
+            for yongshin in OHAENG_LIST:
+                filtered = [
+                    (b, h1_id, h2_id, h1, h2)
+                    for b, h1_id, h2_id, h1, h2 in base_rows
+                    if yongshin in (
+                        {s_char_fe, h1.character_five_elements, h2.character_five_elements}
+                        | name_pron_fes
                     ) - {""}
                 ]
-                if not filtered_scored:
+                if not filtered:
                     continue
-                for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(filtered_scored[:TOP_COMBOS], 1):
-                    batch.append((s_hanja, name, gender_key, target_ohaeng, rank, h1_id, h2_id, score, rn_cnt, bc, nl))
+                scored = [
+                    (
+                        b + _사주보완_가중합(
+                            yongshin,
+                            s_char_fe,
+                            h1.character_five_elements or "",
+                            h2.character_five_elements or "",
+                        ),
+                        h1_id,
+                        h2_id,
+                        h1,
+                        h2,
+                    )
+                    for b, h1_id, h2_id, h1, h2 in filtered
+                ]
+                scored.sort(key=lambda x: x[0], reverse=True)
+                for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(scored[:TOP_COMBOS], 1):
+                    batch.append((s_hanja, name, gender_key, yongshin, rank, h1_id, h2_id, score, rn_cnt, bc, nl))
 
             if len(batch) >= BATCH_SIZE:
                 out_conn.executemany(

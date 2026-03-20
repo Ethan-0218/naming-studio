@@ -436,6 +436,7 @@ def find_name_candidates(
     gender: str,  # "남" | "여"
     session_id: str,
     surname_hanja: str = "",
+    억부용신: str | None = None,
     부족한_오행: list[str] | None = None,
     preferred_오행: str | None = None,
     max_받침_count: int | None = None,  # 0/1/2, None=제한 없음
@@ -454,8 +455,8 @@ def find_name_candidates(
 ) -> list[dict]:
     """이름 후보를 가져와 종합 점수 계산 후 상위 후보를 반환합니다.
 
-    surname_hanja가 있으면 scored_combinations에서 점수 내림차순으로 직접 조회.
-    없으면 registered_names 기반 기존 로직으로 fallback한다.
+    surname_hanja와 억부용신(목/화/토/금/수)이 모두 있으면 scored_combinations에서
+    해당 yongshin 행만 조회한다. 그렇지 않으면 registered_names 기반 로직으로 한다.
     """
     logger.info(
         "[후보검색] 성=%s 성별=%s pool=%d sc_cursor=%d 제약={max_받침=%s, 선호오행=%s}",
@@ -501,11 +502,11 @@ def find_name_candidates(
     # preferred_오행을 enum으로 정규화 (한글 "수" ↔ 한자 "水" 불일치 방지)
     _preferred_오행_obj = 오행.from_string(preferred_오행) if preferred_오행 else None
 
-    # ── scored_combinations 직접 조회 경로 (surname_hanja 있는 경우) ─────────
-    use_sc_direct = scored_repo.is_available() and bool(surname_hanja)
+    # ── scored_combinations 직접 조회 경로 (성 한자 + 억부용신 있는 경우) ─────────
+    use_sc_direct = scored_repo.is_available() and bool(surname_hanja) and bool(억부용신)
 
     if use_sc_direct:
-        required_ohaengs = 부족한_오행_list if 부족한_오행_list else ["_all"]
+        required_ohaengs = [억부용신]  # 사전 DB yongshin 컬럼과 일치 (목~수)
         rn_floor = _get_rn_floor(rarity_preference)
         sc_rows = scored_repo.get_top_names(
             surname_hanja=surname_hanja,
@@ -706,13 +707,12 @@ def find_name_candidates(
     precomputed_best_fb: dict[str, tuple[Hanja, Hanja, float, bool]] = {}
     fallback_names: list[str] = list(pool_names)
 
-    use_precomputed = scored_repo.is_available() and surname_hanja
+    use_precomputed = scored_repo.is_available() and bool(surname_hanja) and bool(억부용신)
     if use_precomputed:
-        required_ohaengs_fb = 부족한_오행_list if 부족한_오행_list else ["목", "화", "토", "금", "수"]
         precomputed_best_fb = scored_repo.get_best_combination(
             surname_hanja=surname_hanja,
             names=pool_names,
-            required_ohaengs=required_ohaengs_fb,
+            required_ohaengs=[억부용신],
             gender=db_gender,
         )
         covered = set(precomputed_best_fb.keys())

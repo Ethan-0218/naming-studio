@@ -112,10 +112,11 @@ NamingState = {
 
 **정보가 모두 모이면:**
 → `calculate_saju_tool` 실행
-→ 사주팔자 계산 (일간, 신강신약, 용신, **부족한_오행** 등)
+→ 사주팔자 계산 (일간, 신강신약, **억부용신**, **부족한_오행** 등)
 → `preference_interview`로 자동 전환
 
-> `부족한_오행`은 이후 모든 이름 검색의 핵심 필터로 사용됩니다.
+> `scored_combinations` 사전 조회 시 **억부용신** 오행(목~수)으로 `yongshin` 행을 매칭한다.  
+> `부족한_오행`은 런타임 점수·설명 등에 계속 사용된다.
 
 ---
 
@@ -271,27 +272,22 @@ Phase 2: LLM 선별
 
 ### 검색 경로 1: scored_combinations DB (우선)
 
-성 한자(`surname_hanja`)가 있는 경우 사전 채점된 DB에서 직접 조회:
+성 한자(`surname_hanja`)와 **억부용신**(목~수)이 모두 있는 경우 사전 채점 DB에서 `yongshin` 행만 조회:
 
 ```
-ScoredCombinationsRepository.query(
-    filters: {
-        부족한_오행,          ← 사주 기반 필수 필터
-        max_받침_count,       ← 받침 최대 개수
-        sibling_anchor_patterns, ← 형제자매 패턴
-        rarity_preference,   ← 희귀도 (독특/보통/평범)
-    },
-    order_by: composite_score DESC,
-    offset: sc_cursor        ← 페이지네이션
+get_top_names(
+    surname_hanja,
+    required_ohaengs: [억부용신],
+    … 필터(max_받침, 앵커 패턴, 희귀도 하한 등)
 )
 ```
 
 ### 검색 경로 2: registered_names + 런타임 채점 (폴백)
 
-성 한자가 없는 경우:
+성 한자 또는 억부용신이 없는 경우:
 1. 등록 이름 코퍼스에서 조건 필터링
 2. 한자 조합 런타임 생성
-3. scored_combinations에 기존 점수 있으면 재활용
+3. 성 한자·억부용신이 있으면 `get_best_combination(required_ohaengs=[억부용신])`로 사전 점수 재활용
 
 ### 후처리 필터
 
