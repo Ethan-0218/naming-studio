@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { primitives } from '@/design-system';
+import { colors, primitives } from '@/design-system';
 import { Font } from '@/components/Font';
 import { Region } from '../data';
 
@@ -53,10 +53,10 @@ export default function BirthRegionSection({ selectedRegion, onOpen }: Props) {
   return (
     <View className="px-5 py-[22px] border-b border-border">
       {/* 섹션 라벨 */}
-      <View className="flex-row items-end gap-1.5 mb-3.5">
+      <View className="flex-row items-end gap-1.5 mb-2.5">
         <Font
           tag="secondaryMedium"
-          className="text-serifLabel text-textTertiary"
+          style={{ fontSize: 13, color: colors.textTertiary }}
         >
           출생 지역
         </Font>

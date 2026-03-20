@@ -95,7 +95,7 @@ export default function GenderSection({ gender, onChange }: Props) {
     <View className="px-5 py-[22px] border-b border-border">
       <Font
         tag="secondaryMedium"
-        className="text-serifLabel text-textTertiary mb-3.5"
+        style={{ fontSize: 13, color: colors.textTertiary, marginBottom: 10 }}
       >
         성별
       </Font>

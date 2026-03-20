@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Pressable, Animated } from 'react-native';
+import { colors } from '@/design-system';
 import { Font } from '@/components/Font';
 import DatePickerSheet from './DatePickerSheet';
 
@@ -46,7 +47,7 @@ export default function BirthDateSection({
     <View className="px-5 py-[22px] border-b border-border">
       <Font
         tag="secondaryMedium"
-        className="text-serifLabel text-textTertiary mb-3.5"
+        style={{ fontSize: 13, color: colors.textTertiary, marginBottom: 10 }}
       >
         생년월일
       </Font>

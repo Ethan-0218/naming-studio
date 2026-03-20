@@ -27,13 +27,18 @@ export default function AddMyeongJuScreen() {
   const [surnameError, setSurnameError] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [calendarType, setCalendarType] = useState<'양력' | '음력'>('양력');
-  const [year, setYear] = useState(2024);
-  const [month, setMonth] = useState(3);
-  const [day, setDay] = useState(12);
+  const [birthDate, setBirthDate] = useState(() => {
+    const n = new Date();
+    return {
+      year: n.getFullYear(),
+      month: n.getMonth() + 1,
+      day: n.getDate(),
+    };
+  });
   const [timeUnknown, setTimeUnknown] = useState(false);
-  const [isAm, setIsAm] = useState(true);
-  const [hour, setHour] = useState(5);
-  const [minute, setMinute] = useState(30);
+  const [isAm, setIsAm] = useState(false);
+  const [hour, setHour] = useState(1);
+  const [minute, setMinute] = useState(45);
   const [selectedRegion, setSelectedRegion] = useState<Region>(REGIONS[0]); // 서울 기본값
 
   // 지역 바텀시트
@@ -51,9 +56,9 @@ export default function AddMyeongJuScreen() {
       {
         gender,
         calendarType,
-        year,
-        month,
-        day,
+        year: birthDate.year,
+        month: birthDate.month,
+        day: birthDate.day,
         timeUnknown,
         isAm,
         hour,
@@ -111,14 +116,12 @@ export default function AddMyeongJuScreen() {
 
         <BirthDateSection
           calendarType={calendarType}
-          year={year}
-          month={month}
-          day={day}
+          year={birthDate.year}
+          month={birthDate.month}
+          day={birthDate.day}
           onCalendarTypeChange={setCalendarType}
           onDateChange={(y, m, d) => {
-            setYear(y);
-            setMonth(m);
-            setDay(d);
+            setBirthDate({ year: y, month: m, day: d });
           }}
         />
 
@@ -149,7 +152,10 @@ export default function AddMyeongJuScreen() {
         onClose={() => setRegionSheetOpen(false)}
       />
 
-      <AddMyeongJuFooter onSubmit={handleSubmit} />
+      <AddMyeongJuFooter
+        onSubmit={handleSubmit}
+        disabled={!surname || createMyeongJu.isPending}
+      />
     </SafeAreaView>
   );
 }
