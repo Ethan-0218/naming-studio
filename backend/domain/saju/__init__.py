@@ -9,6 +9,8 @@ from .십이지 import 십이지
 from .십이운성 import 십이운성
 from .지장간 import 지장간
 from .오행 import 오행
+from .기신 import 기신
+from .희신 import 희신
 
 __all__ = [
     "사주팔자",
@@ -20,4 +22,6 @@ __all__ = [
     "십이운성",
     "지장간",
     "오행",
+    "기신",
+    "희신",
 ]

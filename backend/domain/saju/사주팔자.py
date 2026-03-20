@@ -7,6 +7,8 @@ from . import 간지
 from . import 성별
 from . import 신강신약
 from . import 억부용신
+from . import 기신
+from . import 희신
 from . import 십신
 from . import 십간
 from . import 십이지
@@ -58,6 +60,8 @@ class 사주팔자:
         if 억부용신_결과 is None:
             raise ValueError("억부용신 계산 결과가 없습니다.")
         self.억부용신 = 억부용신_결과
+        self.기신 = 기신.기신.from억부용신(self.억부용신)
+        self.희신 = 희신.희신.from억부용신(self.억부용신)
 
         self.천간합 = 천간합.천간합.find(self.천간목록)
         self.지지반합 = 지지반합.지지반합.find(self.지지목록)
