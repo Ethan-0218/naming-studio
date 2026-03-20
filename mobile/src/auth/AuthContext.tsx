@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import React, {
   createContext,
   useCallback,
@@ -5,6 +6,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { queryKeys } from '@/lib/queryKeys';
 import { clearToken, loadToken, saveToken } from './tokenStorage';
 
 export interface UserProfile {
@@ -18,6 +20,7 @@ export interface UserProfile {
 interface AuthState {
   token: string | null;
   userId: string | null;
+  /** SecureStore 복원용 오프라인 스냅샷. 표시·isPremium은 useUserProfile 권장. */
   profile: UserProfile | null;
   isLoading: boolean;
 }
@@ -39,6 +42,7 @@ export const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [auth, setAuthState] = useState<AuthState>({
     token: null,
     userId: null,
@@ -49,6 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadToken().then((saved) => {
       if (saved) {
+        if (saved.profile) {
+          queryClient.setQueryData(queryKeys.auth.me(), saved.profile);
+        }
+        void queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
         setAuthState({
           token: saved.token,
           userId: saved.userId,
@@ -59,25 +67,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthState((prev) => ({ ...prev, isLoading: false }));
       }
     });
-  }, []);
+  }, [queryClient]);
 
   const setAuth = useCallback(
     async (token: string, userId: string, profile: UserProfile) => {
       await saveToken(token, userId, profile);
+      queryClient.setQueryData(queryKeys.auth.me(), profile);
       setAuthState({ token, userId, profile, isLoading: false });
     },
-    [],
+    [queryClient],
   );
 
   const logout = useCallback(async () => {
     await clearToken();
+    queryClient.removeQueries({ queryKey: queryKeys.auth.all });
     setAuthState({
       token: null,
       userId: null,
       profile: null,
       isLoading: false,
     });
-  }, []);
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider value={{ auth, setAuth, logout }}>

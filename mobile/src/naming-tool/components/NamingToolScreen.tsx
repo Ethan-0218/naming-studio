@@ -1,10 +1,9 @@
 import NavBar from '@/components/NavBar';
 import { colors } from '@/design-system';
-import { useAuth } from '@/auth/AuthContext';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { usePurchaseStatus } from '@/payment/hooks/usePurchaseStatus';
+import { useSelfNamingPremium } from '@/payment/hooks/useSelfNamingPremium';
 import SelfNamingPaywallOverlay from '@/payment/components/SelfNamingPaywallOverlay';
 import { Font } from '@/components/Font';
 import {
@@ -45,7 +44,6 @@ export default function NamingToolScreen({
   onChangeMyeongJu,
 }: Props) {
   const { bottom } = useSafeAreaInsets();
-  const { auth } = useAuth();
   const { data: profiles = [] } = useMyeongJuList();
   const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
   const gender = selectedProfile?.gender ?? 'male';
@@ -59,9 +57,7 @@ export default function NamingToolScreen({
   } = useNamingToolState(gender);
 
   const [showPremiumModal, setShowPremiumModal] = useState(false);
-  const { data: purchaseStatus } = usePurchaseStatus();
-  const isPremium =
-    purchaseStatus?.selfNamingPremium ?? auth.profile?.isPremium ?? false;
+  const isPremium = useSelfNamingPremium();
 
   return (
     <KeyboardAvoidingView

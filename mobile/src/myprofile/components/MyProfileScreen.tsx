@@ -1,10 +1,11 @@
 import React from 'react';
-import { ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { colors, primitives } from '@/design-system';
 import { Font } from '@/components/Font';
 import { useAuth } from '@/auth/AuthContext';
+import { useUserProfile } from '@/auth/hooks/useUserProfile';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
 import { usePurchaseStatus } from '@/payment/hooks/usePurchaseStatus';
 import NavBar from '@/components/NavBar';
@@ -19,6 +20,7 @@ const APP_VERSION = '1.0.0';
 export default function MyProfileScreen() {
   const navigation = useNavigation<any>();
   const { auth } = useAuth();
+  const { profile, isPending, isError } = useUserProfile();
   const isLoggedIn = !!auth.token;
 
   const { data: profiles = [] } = useMyeongJuList();
@@ -41,8 +43,27 @@ export default function MyProfileScreen() {
 
       <ScrollView className="flex-1 bg-bg" showsVerticalScrollIndicator={false}>
         {/* 로그인/비로그인 상단 카드 */}
-        {isLoggedIn && auth.profile ? (
-          <ProfileCard profile={auth.profile} />
+        {!isLoggedIn ? (
+          <LoginCard />
+        ) : profile ? (
+          <ProfileCard profile={profile} />
+        ) : isPending ? (
+          <View className="m-4 py-16 items-center justify-center bg-surfaceRaised rounded-xl border border-border">
+            <ActivityIndicator />
+          </View>
+        ) : isError ? (
+          <View className="m-4 py-8 px-4 items-center bg-surfaceRaised rounded-xl border border-border">
+            <Font
+              tag="secondary"
+              style={{
+                fontSize: 14,
+                color: colors.textTertiary,
+                textAlign: 'center',
+              }}
+            >
+              프로필을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+            </Font>
+          </View>
         ) : (
           <LoginCard />
         )}

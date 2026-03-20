@@ -30,5 +30,8 @@ export function useInvalidatePurchaseStatus() {
     queryClient.invalidateQueries({
       queryKey: queryKeys.purchases.all,
     });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.auth.me(),
+    });
   };
 }

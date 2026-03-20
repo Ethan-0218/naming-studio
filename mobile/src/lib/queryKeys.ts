@@ -7,6 +7,10 @@
  *   queryKeys.hanja.search('name','지') → ['hanja', 'search', 'name', '지']
  */
 export const queryKeys = {
+  auth: {
+    all: ['auth'] as const,
+    me: () => [...queryKeys.auth.all, 'me'] as const,
+  },
   myeongju: {
     all: ['myeongju'] as const,
     list: () => [...queryKeys.myeongju.all, 'list'] as const,
