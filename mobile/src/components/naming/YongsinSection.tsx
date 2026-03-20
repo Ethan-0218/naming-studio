@@ -120,7 +120,7 @@ export default function YongsinSection({
             {(['용신', '희신', '기신'] as const).map((role) => (
               <View
                 key={role}
-                className="flex-1 rounded-md py-2 items-center"
+                className="flex-1 rounded-sm py-2 items-center"
                 style={{ backgroundColor: colors.border, height: 34 }}
               />
             ))}
@@ -240,7 +240,7 @@ export default function YongsinSection({
     );
   }
 
-  const slots = [nameInput.surname, nameInput.first1, nameInput.first2];
+  const slots = [nameInput.first1, nameInput.first2];
 
   const roleEntries: Array<{ role: '용신' | '희신' | '기신'; ohaeng: Ohaeng }> =
     [
@@ -265,7 +265,7 @@ export default function YongsinSection({
                 {role}
               </Font>
               <View
-                className="flex-row items-center gap-[4px] px-2 py-[4px] rounded-full border"
+                className="flex-row items-center gap-[4px] px-2 py-[4px] rounded-sm border"
                 style={{
                   backgroundColor: oc.light,
                   borderColor: oc.border,
@@ -306,7 +306,7 @@ export default function YongsinSection({
               }}
             >
               <View
-                className="px-[6px] py-[2px] rounded-full self-start"
+                className="px-[6px] py-[2px] rounded-sm self-start"
                 style={{ backgroundColor: style.badgeColor }}
               >
                 <Font
@@ -392,12 +392,11 @@ export default function YongsinSection({
                       미선택
                     </Font>
                   </View>
-                  <Font
-                    tag="secondary"
-                    style={{ fontSize: 14, color: colors.textDisabled }}
-                  >
-                    →
-                  </Font>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={14}
+                    color={colors.textDisabled}
+                  />
                   <View className="flex-1">
                     <View
                       className="self-start px-2 py-[2px] rounded-full border mb-1"
@@ -508,36 +507,37 @@ export default function YongsinSection({
                     </Font>
                   )}
                 </View>
-                <Font
-                  tag="secondary"
-                  style={{ fontSize: 14, color: colors.textTertiary }}
-                >
-                  →
-                </Font>
+                <Ionicons
+                  name="arrow-forward"
+                  size={14}
+                  color={colors.textTertiary}
+                />
                 <View className="flex-1">
-                  {roleInfo && (
-                    <View
-                      className="self-start px-2 py-[2px] rounded-full mb-1"
-                      style={{ backgroundColor: cardStyle.badgeColor }}
-                    >
-                      <Font
-                        tag="secondaryMedium"
-                        style={{ fontSize: 10, color: '#fff' }}
+                  <View className="flex-row items-center gap-2 mb-1">
+                    {roleInfo && (
+                      <View
+                        className="self-start px-2 py-[2px] rounded-sm"
+                        style={{ backgroundColor: cardStyle.badgeColor }}
                       >
-                        {roleInfo.label}
-                      </Font>
-                    </View>
-                  )}
-                  <Font
-                    tag="secondaryMedium"
-                    style={{
-                      fontSize: 12,
-                      color: cardStyle.badgeColor,
-                      marginBottom: 1,
-                    }}
-                  >
-                    {roleInfo?.title ?? '분석 불가'}
-                  </Font>
+                        <Font
+                          tag="secondaryMedium"
+                          style={{ fontSize: 10, color: '#fff' }}
+                        >
+                          {roleInfo.label}
+                        </Font>
+                      </View>
+                    )}
+                    <Font
+                      tag="secondaryMedium"
+                      style={{
+                        fontSize: 12,
+                        color: cardStyle.badgeColor,
+                        marginBottom: 1,
+                      }}
+                    >
+                      {roleInfo?.title ?? '분석 불가'}
+                    </Font>
+                  </View>
                   <Font
                     tag="secondary"
                     style={{
