@@ -12,7 +12,7 @@ export interface MyeongJuProfile {
   id: string;
   ilgan: string; // 일간 한자 (e.g. '壬')
   ohaeng: OhaengType;
-  iljoo: string; // 일주명 한글 (e.g. '임수일주')
+  iljoo: string; // 일주명 한글 (e.g. '임자일주' — 일간+일지)
   iljooHanja: string; // 일주 한자 (e.g. '壬子')
   gender: 'male' | 'female';
   calendarType: '양력' | '음력';

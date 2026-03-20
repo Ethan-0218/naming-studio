@@ -76,7 +76,7 @@ class MyeongJuResponse(BaseModel):
     id: str
     ilgan: str           # '壬'
     ohaeng: str          # '수'
-    iljoo: str           # '임수일주'
+    iljoo: str           # '임자일주' (일간+일지)
     iljoo_hanja: str     # '壬子'
     gender: str
     calendar_type: str
@@ -96,7 +96,7 @@ def _row_to_response(row: dict) -> MyeongJuResponse:
     ilji_hangul  = row["ilji_hangul"]
     ilji_hanja   = row["ilji_hanja"]
 
-    iljoo       = f"{ilgan_hangul}{ohaeng}일주"
+    iljoo       = f"{ilgan_hangul}{ilji_hangul}일주"
     iljoo_hanja = f"{ilgan_hanja}{ilji_hanja}"
 
     birth_date = _format_birth_date(row["birth_year"], row["birth_month"], row["birth_day"])
