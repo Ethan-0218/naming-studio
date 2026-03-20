@@ -75,7 +75,6 @@ export function useAINamingSession(
   const [loading, setLoading] = useState(false);
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [, setStage] = useState('preference_interview');
   const [likedNames, setLikedNames] = useState<string[]>([]);
   const [dislikedNames, setDislikedNames] = useState<string[]>([]);
   const [paymentRequired, setPaymentRequired] = useState(false);
@@ -122,19 +121,16 @@ export function useAINamingSession(
                 m: {
                   role: string;
                   content_blocks: ContentBlock[];
-                  stage?: string;
                 },
                 i: number,
               ) => ({
                 id: `restored-${i}`,
                 role: m.role as 'user' | 'assistant',
                 content: filterLegacyContentBlocks(m.content_blocks),
-                stage: m.stage,
               }),
             );
             if (cancelled) return;
             setCurrentSessionId(data.session_id);
-            setStage(data.stage ?? 'preference_interview');
             setLikedNames(data.liked_names ?? []);
             setDislikedNames(data.disliked_names ?? []);
             setPaymentRequired(data.payment_required ?? false);
@@ -240,7 +236,6 @@ export function useAINamingSession(
       );
 
       setCurrentSessionId(data.session_id);
-      setStage(data.stage);
       setLikedNames(data.liked_names);
       setDislikedNames(data.disliked_names);
       setPaymentRequired(data.payment_required);
@@ -250,7 +245,6 @@ export function useAINamingSession(
           id: 'ai-start',
           role: 'assistant',
           content: filterLegacyContentBlocks(data.content),
-          stage: data.stage,
           debug: data.debug,
         },
       ]);
@@ -292,7 +286,6 @@ export function useAINamingSession(
         (msg) => setProgressMessage(msg),
       );
       setCurrentSessionId(data.session_id);
-      setStage(data.stage);
       setLikedNames(data.liked_names);
       setDislikedNames(data.disliked_names);
       setPaymentRequired(data.payment_required);
@@ -302,7 +295,6 @@ export function useAINamingSession(
           id: Date.now().toString(),
           role: 'assistant',
           content: filterLegacyContentBlocks(data.content),
-          stage: data.stage,
           debug: data.debug,
         },
       ]);
@@ -413,7 +405,6 @@ export function useAINamingSession(
         },
         (msg) => setProgressMessage(msg),
       );
-      setStage(data.stage);
       setPaymentRequired(false);
       setMessages((prev) => [
         ...prev,
@@ -421,7 +412,6 @@ export function useAINamingSession(
           id: Date.now().toString(),
           role: 'assistant',
           content: filterLegacyContentBlocks(data.content),
-          stage: data.stage,
           debug: data.debug,
         },
       ]);
@@ -452,14 +442,12 @@ export function useAINamingSession(
         },
         (msg) => setProgressMessage(msg),
       );
-      setStage(data.stage);
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content: filterLegacyContentBlocks(data.content),
-          stage: data.stage,
           debug: data.debug,
         },
       ]);
@@ -489,7 +477,6 @@ export function useAINamingSession(
     sessionStartedRef.current = false;
     setMessages([]);
     setCurrentSessionId(null);
-    setStage('preference_interview');
     setLikedNames([]);
     setDislikedNames([]);
     setPaymentRequired(false);
@@ -517,7 +504,6 @@ export function useAINamingSession(
       }
 
       setCurrentSessionId(data.session_id);
-      setStage(data.stage ?? 'preference_interview');
       setLikedNames(data.liked_names ?? []);
       setDislikedNames(data.disliked_names ?? []);
       setPaymentRequired(data.payment_required ?? false);
@@ -530,14 +516,12 @@ export function useAINamingSession(
             m: {
               role: string;
               content_blocks: ContentBlock[];
-              stage?: string;
             },
             i: number,
           ) => ({
             id: `restored-${i}`,
             role: m.role as 'user' | 'assistant',
             content: filterLegacyContentBlocks(m.content_blocks),
-            stage: m.stage,
           }),
         );
         setMessages(restored);
@@ -552,7 +536,6 @@ export function useAINamingSession(
                 data: { text: `이전 대화를 불러왔어요.` },
               },
             ],
-            stage: data.stage,
           },
         ]);
       }

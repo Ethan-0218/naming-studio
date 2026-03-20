@@ -57,7 +57,6 @@ export type ContentBlock =
 
 export interface ApiResponse {
   session_id: string;
-  stage: string;
   content: ContentBlock[];
   liked_names: string[];
   disliked_names: string[];
@@ -70,6 +69,5 @@ export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: ContentBlock[];
-  stage?: string;
   debug?: ApiResponse['debug'];
 }

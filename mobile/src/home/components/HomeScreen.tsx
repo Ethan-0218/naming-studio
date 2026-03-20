@@ -1,10 +1,12 @@
 import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CompositeNavigationProp } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/design-system';
-import { RootStackParamList } from '../../navigation/types';
+import { RootStackParamList, TabParamList } from '@/navigation/types';
 import { useMyeongJuList } from '../../myeongju/hooks/useMyeongJuList';
 import NavBar from '@/components/NavBar';
 import HeroSection from './HeroSection';
@@ -13,7 +15,10 @@ import RecentNamesSection from './RecentNamesSection';
 import InfoBanner from './InfoBanner';
 import TipChipsSection from './TipChipsSection';
 
-type HomeNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+type HomeNavProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, '홈'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 function Divider() {
   return (

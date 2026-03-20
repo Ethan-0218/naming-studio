@@ -10,17 +10,6 @@ import DebugPanel from './DebugPanel';
 import SimpleMarkdown from './SimpleMarkdown';
 import TypewriterText from './TypewriterText';
 
-const stageLabel: Record<string, string> = {
-  welcome: '환영',
-  info_collection: '정보 수집',
-  preference_interview: '취향 인터뷰',
-  direction_briefing: '방향 브리핑',
-  direction_confirm: '방향 확인',
-  initial_candidates: '초기 후보',
-  payment_gate: '결제 안내',
-  candidate_exploration: '이름 탐색',
-};
-
 interface Props {
   msg: ChatMessage;
   liked: string[];
@@ -126,19 +115,6 @@ export default function MessageBubble({
 
       {/* 메시지 컨텐츠 */}
       <View className="flex-1 min-w-0">
-        {msg.stage ? (
-          <View
-            className="self-start rounded-md px-2 py-0.5 mb-1"
-            style={{ backgroundColor: colors.fillAccentSub }}
-          >
-            <Font
-              tag="secondaryMedium"
-              style={{ fontSize: 11, color: colors.fillAccent }}
-            >
-              {stageLabel[msg.stage] ?? msg.stage}
-            </Font>
-          </View>
-        ) : null}
         {showDebug && <DebugPanel debug={msg.debug} />}
         {msg.content.map((block, i) => {
           if (block.type === 'TEXT') {
