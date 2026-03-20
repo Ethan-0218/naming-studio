@@ -16,6 +16,7 @@
   - 사주보완: 각 yongshin(목~수)별로 성씨 한자 + 이름 두 글자(총 3글자) 자원오행에
     용신 +2.5 / 희신(용신을 생함) +1.5 / 기신(용신을 극함) -1.5 / 기타 +1
     → 유효 오행이 있는 글자 수로 0~1 정규화 후 가중 W_SAJU_BOJANG(0.40)을 곱해 합산
+  - 등급 컬럼 6개(과락 필터용): jawon/baleum 오행·음양, surigyeok_level, saju_complement_level
 """
 
 import json
@@ -59,13 +60,14 @@ OHAENG_LIST = ["목", "화", "토", "금", "수"]
 
 # ─── Lookup Dict 사전 계산 ────────────────────────────────────────────────────
 
-def _build_char_fe_lookup() -> dict[tuple[str, str, str], float]:
-    """자원오행 조화 점수 lookup: (성_char_fe, h1_char_fe, h2_char_fe) → float."""
+def _build_char_fe_lookup() -> tuple[dict[tuple[str, str, str], float], dict[tuple[str, str, str], str]]:
+    """자원오행 조화: (성,h1,h2) → (total_score, level)."""
     from domain.jakmyeong.오행조화 import 오행조화
     from domain.saju.오행 import 오행
 
     fe_values = ["목", "화", "토", "금", "수", ""]
-    result: dict[tuple[str, str, str], float] = {}
+    scores: dict[tuple[str, str, str], float] = {}
+    levels: dict[tuple[str, str, str], str] = {}
     for s in fe_values:
         for h1 in fe_values:
             for h2 in fe_values:
@@ -75,16 +77,20 @@ def _build_char_fe_lookup() -> dict[tuple[str, str, str], float]:
                         h1_o = 오행.from_string(h1)
                         h2_o = 오행.from_string(h2) if h2 else None
                         harmony = 오행조화.from_오행(s_o, h1_o, h2_o)
-                        result[(s, h1, h2)] = harmony.total_score
+                        key = (s, h1, h2)
+                        scores[key] = harmony.total_score
+                        levels[key] = harmony.level
                     else:
-                        result[(s, h1, h2)] = 0.5
+                        scores[(s, h1, h2)] = 0.5
+                        levels[(s, h1, h2)] = "平"
                 except Exception:
-                    result[(s, h1, h2)] = 0.5
-    return result
+                    scores[(s, h1, h2)] = 0.5
+                    levels[(s, h1, h2)] = "平"
+    return scores, levels
 
 
-def _build_yin_lookup() -> dict[tuple[str, str, str], float]:
-    """음양 조화 점수 lookup: (s_yin, h1_yin, h2_yin) → float."""
+def _build_yin_lookup() -> tuple[dict[tuple[str, str, str], float], dict[tuple[str, str, str], str]]:
+    """음양 조화: (s_yin,h1_yin,h2_yin) → (score, level 문자열)."""
     from domain.jakmyeong.음양조화 import 음양조화
     from domain.saju.음양 import 음양
     import domain.rating_score as rating_score
@@ -97,7 +103,8 @@ def _build_yin_lookup() -> dict[tuple[str, str, str], float]:
         return None
 
     values = ["음", "양", ""]
-    result: dict[tuple[str, str, str], float] = {}
+    scores: dict[tuple[str, str, str], float] = {}
+    levels: dict[tuple[str, str, str], str] = {}
     for s in values:
         for h1 in values:
             for h2 in values:
@@ -105,19 +112,23 @@ def _build_yin_lookup() -> dict[tuple[str, str, str], float]:
                     sv, h1v, h2v = _parse(s), _parse(h1), _parse(h2)
                     if sv and h1v:
                         harmony = 음양조화.from_yin_yang(sv, h1v, h2v)
-                        result[(s, h1, h2)] = rating_score.to_score(harmony.level)
+                        key = (s, h1, h2)
+                        scores[key] = rating_score.to_score(harmony.level)
+                        levels[key] = harmony.level
                     else:
-                        result[(s, h1, h2)] = 0.5
+                        scores[(s, h1, h2)] = 0.5
+                        levels[(s, h1, h2)] = "平"
                 except Exception:
-                    result[(s, h1, h2)] = 0.5
-    return result
+                    scores[(s, h1, h2)] = 0.5
+                    levels[(s, h1, h2)] = "平"
+    return scores, levels
 
 
 def _build_numerology_lookup(
     surname_strokes: list[int],
     name_strokes: list[int],
 ) -> dict[tuple[int, int, int, str], float]:
-    """수리격 점수 lookup: (성_획수, h1_획수, h2_획수, gender) → float."""
+    """수리격 total_score lookup: (성_획, h1_획, h2_획, gender) → float."""
     from domain.numerology.이름수리격 import 이름수리격
 
     result: dict[tuple[int, int, int, str], float] = {}
@@ -224,6 +235,42 @@ def _사주보완_가중합(
     )
 
 
+def _five_dimension_levels(
+    s_char_fe: str,
+    s_pron_fe: str,
+    s_sound_yin: str,
+    s_stroke_yin: str,
+    s_stroke: int | None,
+    gender_key: str,
+    n1_pron_fe: str,
+    n2_pron_fe: str,
+    h1_char_fe: str,
+    h1_sound_yin: str,
+    h1_stroke_yin: str,
+    h1_stroke: int | None,
+    h2_char_fe: str,
+    h2_sound_yin: str,
+    h2_stroke_yin: str,
+    h2_stroke: int | None,
+    char_fe_level_lut: dict[tuple[str, str, str], str],
+    yin_level_lut: dict[tuple[str, str, str], str],
+    nr_lut: dict,
+) -> tuple[str, str, str, str, str]:
+    """자원·발음 오행·발음·획수 음양·수리격(5단) 등급 문자열 (사주보완 제외)."""
+    from domain.numerology.수리종합등급 import 수리격_total_score_to_level
+
+    jawon = char_fe_level_lut.get((s_char_fe, h1_char_fe, h2_char_fe), "平")
+    baleum_o = char_fe_level_lut.get((s_pron_fe, n1_pron_fe, n2_pron_fe), "平")
+    baleum_y = yin_level_lut.get((s_sound_yin, h1_sound_yin, h2_sound_yin), "平")
+    hoeksu_y = yin_level_lut.get((s_stroke_yin, h1_stroke_yin, h2_stroke_yin), "平")
+    if s_stroke and h1_stroke and h2_stroke:
+        ts = nr_lut.get((s_stroke, h1_stroke, h2_stroke, gender_key), 0.5)
+    else:
+        ts = 0.5
+    suri = 수리격_total_score_to_level(ts)
+    return jawon, baleum_o, baleum_y, hoeksu_y, suri
+
+
 # ─── Main Build ──────────────────────────────────────────────────────────────
 
 def build() -> None:
@@ -249,6 +296,7 @@ def build() -> None:
 
     from domain.jakmyeong.발음오행 import 발음오행_from_초성
     from domain.saju.오행 import 오행 as 오행_cls
+    from domain.saju.사주보완등급 import 사주보완_complement_level
 
     surname_data = []
     for r in surname_rows:
@@ -290,10 +338,13 @@ def build() -> None:
     # 3. Lookup Dict 사전 계산
     print("\n  Lookup Dict 계산 중...")
     t_lut = time.time()
-    char_fe_lut = _build_char_fe_lookup()
-    yin_lut = _build_yin_lookup()
+    char_fe_score_lut, char_fe_level_lut = _build_char_fe_lookup()
+    yin_score_lut, yin_level_lut = _build_yin_lookup()
     nr_lut = _build_numerology_lookup(surname_strokes, name_strokes)
-    print(f"    완료 ({time.time()-t_lut:.1f}초): 자원오행 {len(char_fe_lut)}, 음양 {len(yin_lut)}, 수리격 {len(nr_lut):,}")
+    print(
+        f"    완료 ({time.time()-t_lut:.1f}초): 자원오행 {len(char_fe_score_lut)}, "
+        f"음양 {len(yin_score_lut)}, 수리격 {len(nr_lut):,}",
+    )
 
     # 4. name_hanja_combinations에서 대상 이름 조합 전체 로드 (메모리)
     print("\n  한자 조합 로드 중...")
@@ -352,12 +403,36 @@ def build() -> None:
             rn_count        INTEGER NOT NULL DEFAULT 0,
             받침_count       INTEGER NOT NULL DEFAULT 0,
             name_length     INTEGER NOT NULL DEFAULT 0,
+            jawon_ohaeng_level    TEXT NOT NULL,
+            baleum_ohaeng_level   TEXT NOT NULL,
+            baleum_eumyang_level  TEXT NOT NULL,
+            hoeksu_eumyang_level  TEXT NOT NULL,
+            surigyeok_level       TEXT NOT NULL,
+            saju_complement_level TEXT NOT NULL,
             PRIMARY KEY (surname_hanja, name, gender, yongshin, rank)
         )
         """
     )
     out_conn.execute(
         "CREATE INDEX idx_sc_lookup ON scored_combinations(surname_hanja, name, gender, yongshin)"
+    )
+    out_conn.execute(
+        "CREATE INDEX idx_sc_jawon_level ON scored_combinations(jawon_ohaeng_level)"
+    )
+    out_conn.execute(
+        "CREATE INDEX idx_sc_baleum_ohaeng_level ON scored_combinations(baleum_ohaeng_level)"
+    )
+    out_conn.execute(
+        "CREATE INDEX idx_sc_baleum_eumyang_level ON scored_combinations(baleum_eumyang_level)"
+    )
+    out_conn.execute(
+        "CREATE INDEX idx_sc_hoeksu_eumyang_level ON scored_combinations(hoeksu_eumyang_level)"
+    )
+    out_conn.execute(
+        "CREATE INDEX idx_sc_surigyeok_level ON scored_combinations(surigyeok_level)"
+    )
+    out_conn.execute(
+        "CREATE INDEX idx_sc_saju_complement_level ON scored_combinations(saju_complement_level)"
     )
 
     # 6. 이중 루프: 성씨 × 이름 × 오행 → 상위 5개 조합 INSERT
@@ -406,7 +481,7 @@ def build() -> None:
                     h1.stroke_based_yin_yang or "", h1_stroke,
                     h2.character_five_elements or "", h2.sound_based_yin_yang or "",
                     h2.stroke_based_yin_yang or "", h2_stroke,
-                    char_fe_lut, yin_lut, nr_lut,
+                    char_fe_score_lut, yin_score_lut, nr_lut,
                 )
                 base_rows.append((base, h1.id, h2.id, h1, h2))
 
@@ -442,12 +517,51 @@ def build() -> None:
                     for b, h1_id, h2_id, h1, h2 in filtered
                 ]
                 scored.sort(key=lambda x: x[0], reverse=True)
-                for rank, (score, h1_id, h2_id, _h1, _h2) in enumerate(scored[:TOP_COMBOS], 1):
-                    batch.append((s_hanja, name, gender_key, yongshin, rank, h1_id, h2_id, score, rn_cnt, bc, nl))
+
+                for rank, (score, h1_id, h2_id, h1, h2) in enumerate(scored[:TOP_COMBOS], 1):
+                    h1_stroke_i = h1.original_stroke_count or h1.dictionary_stroke_count
+                    h2_stroke_i = h2.original_stroke_count or h2.dictionary_stroke_count
+                    jawon, b_ohaeng, b_eumyang, h_eumyang, suri_lv = _five_dimension_levels(
+                        s_char_fe, s_pron_fe, s_sound_yin, s_stroke_yin, s_stroke, gender_key,
+                        n1_pron_fe, n2_pron_fe,
+                        h1.character_five_elements or "", h1.sound_based_yin_yang or "",
+                        h1.stroke_based_yin_yang or "", h1_stroke_i,
+                        h2.character_five_elements or "", h2.sound_based_yin_yang or "",
+                        h2.stroke_based_yin_yang or "", h2_stroke_i,
+                        char_fe_level_lut, yin_level_lut, nr_lut,
+                    )
+                    saju_c_lv = 사주보완_complement_level(
+                        yongshin,
+                        s_char_fe,
+                        h1.character_five_elements or "",
+                        h2.character_five_elements or "",
+                    )
+                    batch.append(
+                        (
+                            s_hanja,
+                            name,
+                            gender_key,
+                            yongshin,
+                            rank,
+                            h1_id,
+                            h2_id,
+                            score,
+                            rn_cnt,
+                            bc,
+                            nl,
+                            jawon,
+                            b_ohaeng,
+                            b_eumyang,
+                            h_eumyang,
+                            suri_lv,
+                            saju_c_lv,
+                        ),
+                    )
 
             if len(batch) >= BATCH_SIZE:
                 out_conn.executemany(
-                    "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?,?,?,?)", batch
+                    "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    batch,
                 )
                 out_conn.commit()
                 total_rows += len(batch)
@@ -457,7 +571,8 @@ def build() -> None:
 
     if batch:
         out_conn.executemany(
-            "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?,?,?,?)", batch
+            "INSERT OR IGNORE INTO scored_combinations VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            batch,
         )
         out_conn.commit()
         total_rows += len(batch)

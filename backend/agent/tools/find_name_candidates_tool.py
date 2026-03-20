@@ -452,11 +452,17 @@ def find_name_candidates(
     dominant_like_reasons: list[str] | None = None,
     dominant_dislike_reasons: list[str] | None = None,
     total_reactions: int = 0,
+    exclude_combination_levels: dict[str, list[str]] | None = None,
 ) -> list[dict]:
     """이름 후보를 가져와 종합 점수 계산 후 상위 후보를 반환합니다.
 
     surname_hanja와 억부용신(목/화/토/금/수)이 모두 있으면 scored_combinations에서
     해당 yongshin 행만 조회한다. 그렇지 않으면 registered_names 기반 로직으로 한다.
+
+    exclude_combination_levels: 사전 행 과락. 키는 DB 컬럼명
+    (jawon_ohaeng_level, baleum_ohaeng_level, baleum_eumyang_level,
+    hoeksu_eumyang_level, surigyeok_level, saju_complement_level),
+    값은 제외할 등급 문자열 목록(예: 凶, 大凶).
     """
     logger.info(
         "[후보검색] 성=%s 성별=%s pool=%d sc_cursor=%d 제약={max_받침=%s, 선호오행=%s}",
@@ -499,6 +505,14 @@ def find_name_candidates(
     성_hanja_obj = _get_surname_hanja(surname_hanja, hanja_repo)
     부족한_오행_list = 부족한_오행 or []
 
+    _exclude_level_sets: dict[str, set[str]] | None = None
+    if exclude_combination_levels:
+        _exclude_level_sets = {
+            k: set(v) for k, v in exclude_combination_levels.items() if v
+        }
+        if not _exclude_level_sets:
+            _exclude_level_sets = None
+
     # preferred_오행을 enum으로 정규화 (한글 "수" ↔ 한자 "水" 불일치 방지)
     _preferred_오행_obj = 오행.from_string(preferred_오행) if preferred_오행 else None
 
@@ -518,6 +532,7 @@ def find_name_candidates(
             max_받침_count=max_받침_count,
             anchor_patterns=sibling_anchor_patterns,
             exclude_names=exclude,
+            exclude_levels=_exclude_level_sets,
         )
         logger.debug("[SC직접조회] %d개 조회 (cursor=%d)", len(sc_rows), sc_cursor)
 
@@ -714,6 +729,7 @@ def find_name_candidates(
             names=pool_names,
             required_ohaengs=[억부용신],
             gender=db_gender,
+            exclude_levels=_exclude_level_sets,
         )
         covered = set(precomputed_best_fb.keys())
         fallback_names = [n for n in pool_names if n not in covered]

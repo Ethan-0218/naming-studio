@@ -278,9 +278,12 @@ Phase 2: LLM 선별
 get_top_names(
     surname_hanja,
     required_ohaengs: [억부용신],
-    … 필터(max_받침, 앵커 패턴, 희귀도 하한 등)
+    … 필터(max_받침, 앵커 패턴, 희귀도 하한 등),
+    exclude_levels: { 컬럼명 → 제외할 등급 }  # 선택. jawon_ohaeng_level 등 6개 축
 )
 ```
+
+각 행에는 자원/발음 오행·음양, 수리격, 사주보완(`saju_complement_level`) 등급 문자열이 저장되며, `find_name_candidates(..., exclude_combination_levels=...)`로 과락할 수 있다.
 
 ### 검색 경로 2: registered_names + 런타임 채점 (폴백)
 

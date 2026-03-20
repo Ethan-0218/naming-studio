@@ -84,6 +84,7 @@ backend/
 **Databases:**
 - `db/hanja.sqlite3` — Chinese character reference data (Hanja)
 - `db/registered_name.sqlite3` — Korean registered names corpus
+- `db/scored_combinations.sqlite3` — Precomputed name–hanja scores per surname/yongshin; includes six `*_level` grade columns (indexed) for filtering via `ScoredCombinationsRepository.exclude_levels` / `find_name_candidates(exclude_combination_levels=...)`.
 
 ### Domain Models
 

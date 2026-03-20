@@ -7,6 +7,16 @@ from core.config import HANJA_DB_PATH, SCORED_COMBINATIONS_DB_PATH, REGISTERED_N
 from db.hanja_model import Hanja
 from db.hanja_repository import _row_to_hanja
 
+# 과락 필터 허용 컬럼 (SQL 인젝션 방지)
+_LEVEL_FILTER_COLUMNS = frozenset({
+    "jawon_ohaeng_level",
+    "baleum_ohaeng_level",
+    "baleum_eumyang_level",
+    "hoeksu_eumyang_level",
+    "surigyeok_level",
+    "saju_complement_level",
+})
+
 
 class ScoredCombinationsRepository:
     """scored_combinations.sqlite3 접근 레포지토리.
@@ -48,6 +58,7 @@ class ScoredCombinationsRepository:
         names: list[str],
         required_ohaengs: list[str],
         gender: str = "male",  # "male" | "female"
+        exclude_levels: dict[str, set[str]] | None = None,
     ) -> dict[str, tuple["Hanja", "Hanja", float, bool]]:
         """(성씨, 이름 목록, 용신 오행)으로 이름별 최고점 한자 조합을 반환합니다.
 
@@ -67,21 +78,24 @@ class ScoredCombinationsRepository:
 
         result: dict[str, tuple[Hanja, Hanja, float, bool]] = {}
 
+        level_sql, level_params = self._level_exclude_clause(exclude_levels)
+
         with sqlite3.connect(self._scored_db_path) as conn:
             conn.row_factory = sqlite3.Row
 
             ohaeng_placeholders = ",".join("?" * len(required_ohaengs))
-            params_ohaeng: list = [surname_hanja, gender] + names + required_ohaengs
+            params_ohaeng: list = [surname_hanja, gender] + names + required_ohaengs + level_params
             ohaeng_rows = conn.execute(
                 f"""
-                SELECT name, hanja1_id, hanja2_id, MAX(score) as score
-                FROM scored_combinations
-                WHERE surname_hanja = ?
-                  AND gender = ?
-                  AND name IN ({name_placeholders})
-                  AND yongshin IN ({ohaeng_placeholders})
-                  AND rank = 1
-                GROUP BY name
+                SELECT sc.name, sc.hanja1_id, sc.hanja2_id, MAX(sc.score) as score
+                FROM scored_combinations sc
+                WHERE sc.surname_hanja = ?
+                  AND sc.gender = ?
+                  AND sc.name IN ({name_placeholders})
+                  AND sc.yongshin IN ({ohaeng_placeholders})
+                  AND sc.rank = 1
+                  {level_sql}
+                GROUP BY sc.name
                 """,
                 params_ohaeng,
             ).fetchall()
@@ -125,6 +139,25 @@ class ScoredCombinationsRepository:
         sql = (" AND " + " AND ".join(clauses)) if clauses else ""
         return sql, params
 
+    @staticmethod
+    def _level_exclude_clause(
+        exclude_levels: dict[str, set[str]] | None,
+    ) -> tuple[str, list]:
+        """등급 과락: 컬럼명 → 제외할 등급 문자열 집합. 허용 컬럼만 반영."""
+        if not exclude_levels:
+            return "", []
+        parts: list[str] = []
+        params: list[str] = []
+        for col, bad in exclude_levels.items():
+            if col not in _LEVEL_FILTER_COLUMNS or not bad:
+                continue
+            ph = ",".join("?" * len(bad))
+            parts.append(f"sc.{col} NOT IN ({ph})")
+            params.extend(sorted(bad))
+        if not parts:
+            return "", []
+        return " AND " + " AND ".join(parts), params
+
     def get_top_names(
         self,
         surname_hanja: str,
@@ -136,10 +169,13 @@ class ScoredCombinationsRepository:
         max_받침_count: int | None = None,
         anchor_patterns: list[str] | None = None,
         exclude_names: set[str] | None = None,
+        exclude_levels: dict[str, set[str]] | None = None,
     ) -> list[tuple[str, int, int, float, bool, int]]:
         """scored_combinations에서 필터 조건을 적용해 점수 내림차순 상위 이름 목록 반환.
 
         required_ohaengs가 비어 있으면 [] 반환.
+
+        exclude_levels: 컬럼명(예: jawon_ohaeng_level) → 해당 등급 값은 행에서 제외.
 
         반환: [(name, hanja1_id, hanja2_id, score, ohaeng_covered, rn_count), ...]
         ohaeng_covered는 호환용으로 항상 True.
@@ -151,6 +187,7 @@ class ScoredCombinationsRepository:
         filter_sql, filter_params = self._build_filter_clauses(
             min_rn_count, max_받침_count, anchor_patterns, exclude_names
         )
+        level_sql, level_params = self._level_exclude_clause(exclude_levels)
 
         covered_rows: list[tuple[str, int, int, float, bool, int]] = []
 
@@ -158,7 +195,13 @@ class ScoredCombinationsRepository:
             conn.row_factory = sqlite3.Row
 
             ohaeng_placeholders = ",".join("?" * len(required_ohaengs))
-            params: list = [surname_hanja, gender] + required_ohaengs + filter_params + [limit, offset]
+            params: list = (
+                [surname_hanja, gender]
+                + required_ohaengs
+                + filter_params
+                + level_params
+                + [limit, offset]
+            )
             rows = conn.execute(
                 f"""
                 SELECT sc.name, sc.hanja1_id, sc.hanja2_id, MAX(sc.score) AS score,
@@ -169,6 +212,7 @@ class ScoredCombinationsRepository:
                   AND sc.yongshin IN ({ohaeng_placeholders})
                   AND sc.rank = 1
                   {filter_sql}
+                  {level_sql}
                 GROUP BY sc.name
                 ORDER BY score DESC
                 LIMIT ? OFFSET ?
