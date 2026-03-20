@@ -19,6 +19,7 @@ interface Props {
   value: CharSlotData;
   onUpdateHanja: (selection: HanjaSelection) => void;
   role: 'surname' | 'name';
+  disabled?: boolean;
 }
 
 export default function HanjaSlotInput({
@@ -27,6 +28,7 @@ export default function HanjaSlotInput({
   value,
   onUpdateHanja,
   role,
+  disabled = false,
 }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -44,7 +46,7 @@ export default function HanjaSlotInput({
 
       <Pressable
         onPress={() => {
-          if (hangul) setSheetOpen(true);
+          if (!disabled && hangul) setSheetOpen(true);
         }}
         className={clsx(
           'w-full rounded-md border-[1.5px] items-center justify-center',

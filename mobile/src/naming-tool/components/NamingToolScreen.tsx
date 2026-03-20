@@ -96,6 +96,14 @@ export default function NamingToolScreen({
           nameInput={nameInput}
           onUpdateHangul={updateHangul}
           onUpdateHanja={updateHanja}
+          lockedSurname={
+            selectedProfile
+              ? {
+                  hangul: selectedProfile.surname,
+                  hanja: selectedProfile.surnameHanja,
+                }
+              : undefined
+          }
         />
 
         <Divider />
