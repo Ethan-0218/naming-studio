@@ -22,7 +22,20 @@ const ITEM_HEIGHT = 44;
 const VISIBLE_ITEMS = 5;
 const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
-const YEARS = Array.from({ length: 21 }, (_, i) => 2015 + i); // 2015–2035
+/** 백엔드 절기 테이블(domain/saju/절기_데이터.py)과 동일 범위 */
+const YEAR_MIN = 1950;
+const YEAR_MAX = 2040;
+const YEARS = Array.from(
+  { length: YEAR_MAX - YEAR_MIN + 1 },
+  (_, i) => YEAR_MIN + i,
+);
+
+function clampYearIndex(year: number): number {
+  const i = YEARS.indexOf(year);
+  if (i >= 0) return i;
+  if (year < YEAR_MIN) return 0;
+  return YEARS.length - 1;
+}
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -126,13 +139,13 @@ export default function DatePickerSheet({
   const slideAnim = useRef(new Animated.Value(400)).current;
 
   // 각 열의 현재 스크롤 오프셋을 추적
-  const yearOffsetRef = useRef(YEARS.indexOf(year) * ITEM_HEIGHT);
+  const yearOffsetRef = useRef(clampYearIndex(year) * ITEM_HEIGHT);
   const monthOffsetRef = useRef((month - 1) * ITEM_HEIGHT);
   const dayOffsetRef = useRef((day - 1) * ITEM_HEIGHT);
 
   // 초기 인덱스 (열 마운트 시 초기 스크롤 위치용)
   const [initialIndexes, setInitialIndexes] = useState({
-    year: YEARS.indexOf(year),
+    year: clampYearIndex(year),
     month: month - 1,
     day: day - 1,
   });
@@ -141,7 +154,7 @@ export default function DatePickerSheet({
   useEffect(() => {
     if (visible && !isOpen) {
       // 오픈 시 오프셋 ref와 초기 인덱스를 현재 props 값으로 리셋
-      const yi = Math.max(0, YEARS.indexOf(year));
+      const yi = clampYearIndex(year);
       const mi = month - 1;
       const di = day - 1;
       yearOffsetRef.current = yi * ITEM_HEIGHT;
