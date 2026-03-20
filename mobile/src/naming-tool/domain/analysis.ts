@@ -12,6 +12,7 @@ import { computeEumyangHarmony } from './eumyangHarmony';
 import { soundEumyangFromHangul } from './soundEumyangMap';
 import { computeSurigyeok } from './surigyeok';
 import { toScore } from './ratingScore';
+import { computeSajuComplementLevel } from './sajuComplementLevel';
 import rawWeights from '@shared/data/scoring_weights.json';
 
 const W_TOTAL =
@@ -93,6 +94,15 @@ export function computeNamingAnalysis(
   let suriScore: number | null = null;
   let eumyangScore: number | null = null;
 
+  const sajuComplementLevel =
+    sajuInput.yongsin != null
+      ? computeSajuComplementLevel(sajuInput.yongsin, jawonElements)
+      : null;
+  const sajuComplementScore =
+    sajuComplementLevel != null
+      ? Math.round(toScore(sajuComplementLevel) * 100)
+      : null;
+
   const hasAny =
     baleumOhaengResult ||
     baleumEumyangResult ||
@@ -154,5 +164,7 @@ export function computeNamingAnalysis(
     ohaengScore,
     suriScore,
     eumyangScore,
+    sajuComplementLevel,
+    sajuComplementScore,
   };
 }

@@ -5,6 +5,9 @@ export type SuriLevel = '大吉' | '吉' | '中吉' | '中凶' | '凶' | '大凶
 export type Gender = 'male' | 'female';
 export type OhaengRelation = '상생' | '동일' | '상극';
 
+/** 사주보완(용·희·기 net) — 백엔드 saju_complement_level 과 동일 5단 */
+export type SajuComplementLevel = '大吉' | '吉' | '平' | '凶' | '大凶';
+
 /** 한자 선택 정보 — 어떤 한글에 대한 선택인지(forHangul)를 함께 저장해 한글 변경 시 자동 무효화 */
 export interface HanjaSelection {
   forHangul: string;
@@ -87,6 +90,10 @@ export interface NamingAnalysis {
   ohaengScore: number | null; // 오행 기둥 점수 0–100 (발음오행 + 자원오행)
   suriScore: number | null; // 수리 기둥 점수 0–100
   eumyangScore: number | null; // 음양 기둥 점수 0–100 (발음음양 + 획수음양)
+  /** 용신 선택 시 자원오행 기준 사주보완 등급 (백엔드와 동일 net 규칙) */
+  sajuComplementLevel: SajuComplementLevel | null;
+  /** toScore(등급)×100, 용신 미선택 시 null */
+  sajuComplementScore: number | null;
 }
 
 export interface HanjaSearchResult {

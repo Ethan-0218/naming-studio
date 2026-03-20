@@ -112,6 +112,8 @@ export default function NameDetailScreen() {
             sajuInput={sajuInput}
             nameInput={nameInput}
             onUpdate={(data) => setSajuInput((prev) => ({ ...prev, ...data }))}
+            sajuComplementLevel={analysis.sajuComplementLevel}
+            sajuComplementScore={analysis.sajuComplementScore}
             isPurchased={true}
           />
           <SurigyeokSection

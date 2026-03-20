@@ -3,10 +3,14 @@ import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, ohaengColors, primitives } from '@/design-system';
 import { Font } from '@/components/Font';
-import { NameInput, Ohaeng, SajuInput } from '@/naming-tool/types';
-import { getRelation } from '@/naming-tool/domain/ohaeng';
-import { baleumOhaengFromChar } from '@/naming-tool/domain/baleumOhaeng';
-import SectionCard from './SectionCard';
+import {
+  NameInput,
+  Ohaeng,
+  SajuComplementLevel,
+  SajuInput,
+} from '@/naming-tool/types';
+import { charYongsinRole } from '@/naming-tool/domain/sajuComplementLevel';
+import SectionCard, { ratingColor, ratingLabel } from './SectionCard';
 
 const OHAENG_LIST: Ohaeng[] = ['목', '화', '토', '금', '수'];
 
@@ -14,19 +18,26 @@ interface Props {
   sajuInput: SajuInput;
   nameInput: NameInput;
   onUpdate: (data: Partial<SajuInput>) => void;
+  /** computeNamingAnalysis — 자원오행 기준 사주보완 등급 (용신 선택 시) */
+  sajuComplementLevel?: SajuComplementLevel | null;
+  sajuComplementScore?: number | null;
   isPurchased?: boolean;
   onPressBuy?: () => void;
 }
 
-const RELATION_BADGE: Record<string, { label: string; color: string }> = {
-  상생: { label: '상생 ✓', color: colors.positive },
-  동일: { label: '동일', color: colors.fillAccent },
-  상극: { label: '상극 ✗', color: colors.negative },
+const ROLE_BADGE: Record<
+  NonNullable<ReturnType<typeof charYongsinRole>>,
+  { label: string; color: string }
+> = {
+  용: { label: '용신', color: colors.positive },
+  희: { label: '희신', color: colors.fillAccent },
+  기: { label: '기신', color: colors.negative },
+  중: { label: '중립', color: colors.textTertiary },
 };
 
 const REASONS = [
   '용신 오행이 부족한 에너지를 보완해 사주의 균형을 맞춥니다.',
-  '이름 글자의 자원·발음 오행이 용신과 상생하면 긍정적 기운이 강화됩니다.',
+  '이름 한자의 자원오행이 용신·희신에 가까울수록 사주보완 점수가 높아집니다.',
   '용신 보완이 잘 된 이름은 평생 좋은 운을 뒷받침하는 힘이 됩니다.',
 ];
 
@@ -34,6 +45,8 @@ export default function YongsinSection({
   sajuInput,
   nameInput,
   onUpdate,
+  sajuComplementLevel = null,
+  sajuComplementScore = null,
   isPurchased = false,
   onPressBuy,
 }: Props) {
@@ -158,8 +171,21 @@ export default function YongsinSection({
     );
   }
 
+  const levelBadge =
+    yongsin && sajuComplementLevel
+      ? ratingLabel(sajuComplementLevel)
+      : undefined;
+  const levelBadgeColor =
+    yongsin && sajuComplementLevel
+      ? ratingColor(sajuComplementLevel)
+      : undefined;
+
   return (
-    <SectionCard title="용신 보완">
+    <SectionCard
+      title="사주 보완"
+      badge={levelBadge}
+      badgeColor={levelBadgeColor}
+    >
       <Font tag="secondary" className="text-bodySm text-textSecondary mb-3">
         아이의 용신 오행을 선택하면 이름 글자들과의 궁합을 분석합니다.
       </Font>
@@ -192,14 +218,21 @@ export default function YongsinSection({
 
       {yongsin && (
         <View className="gap-2 pt-2 border-t border-border">
+          {sajuComplementScore != null && (
+            <Font
+              tag="secondaryMedium"
+              className="text-bodySm text-textPrimary mb-1"
+            >
+              사주보완 점수 {sajuComplementScore}점 (자원오행 3글자 기준)
+            </Font>
+          )}
+          <Font tag="secondary" className="text-bodySm text-textTertiary mb-2">
+            글자별 판정은 한자 자원오행만 사용합니다 (백엔드와 동일).
+          </Font>
           {slots.map((slot, i) => {
-            const charOhaeng =
-              slot.charOhaeng ??
-              (slot.hangul ? baleumOhaengFromChar(slot.hangul) : null);
-            const relation = charOhaeng
-              ? getRelation(charOhaeng, yongsin)
-              : null;
-            const badge = relation ? RELATION_BADGE[relation] : null;
+            const charOhaeng = slot.charOhaeng;
+            const role = charYongsinRole(yongsin, charOhaeng);
+            const badge = role ? ROLE_BADGE[role] : null;
             return (
               <View key={i} className="flex-row items-center">
                 <Font
@@ -225,7 +258,12 @@ export default function YongsinSection({
                     </Font>
                   </View>
                 ) : (
-                  <View className="w-9" />
+                  <Font
+                    tag="secondary"
+                    className="text-bodySm text-textDisabled w-16"
+                  >
+                    미입력
+                  </Font>
                 )}
                 <Font
                   tag="secondary"
