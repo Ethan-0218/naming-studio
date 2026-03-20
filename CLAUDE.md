@@ -23,6 +23,9 @@ cp .env.example .env  # Set OPENAI_API_KEY
 # 최초 세팅: generated SQLite DB 생성 (name_hanja_combinations, scored_combinations)
 bash scripts/bootstrap.sh
 
+# 24절기 테이블 갱신: love-teller `절기.ts` 갱신 후
+# `python3 scripts/generate_jeolgi_data.py <절기.ts 경로>` → `domain/saju/절기_데이터.py` 재생성
+
 uvicorn main:app --reload  # Dev server on :8000
 ```
 
