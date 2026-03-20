@@ -21,38 +21,6 @@ const REASONS = [
   '용신 보완이 잘 된 이름은 평생 좋은 운을 뒷받침하는 힘이 됩니다.',
 ];
 
-interface RoleStyle {
-  badgeColor: string;
-  badgeBg: string;
-  badgeBorder: string;
-  boxBg: string;
-  boxBorder: string;
-}
-
-const ROLE_STYLE: Record<'용신' | '희신' | '기신', RoleStyle> = {
-  용신: {
-    badgeColor: colors.positive,
-    badgeBg: colors.positiveSub,
-    badgeBorder: colors.positiveBorder,
-    boxBg: colors.positiveSub,
-    boxBorder: colors.positiveBorder,
-  },
-  희신: {
-    badgeColor: primitives.wood600,
-    badgeBg: primitives.wood200,
-    badgeBorder: primitives.wood400,
-    boxBg: primitives.wood200,
-    boxBorder: primitives.wood400,
-  },
-  기신: {
-    badgeColor: colors.negative,
-    badgeBg: colors.negativeSub,
-    badgeBorder: colors.negativeBorder,
-    boxBg: colors.negativeSub,
-    boxBorder: colors.negativeBorder,
-  },
-};
-
 const ROLE_DESC: Record<'용신' | '희신' | '기신', { desc: string }> = {
   용신: {
     desc: '사주의 균형을 잡아주는 핵심 오행. 이름에 담기면 삶 전반에 안정과 추진력을 더합니다.',
@@ -167,7 +135,7 @@ export default function YongsinSection({
         </Font>
 
         <View
-          className="rounded-lg p-3 border mb-3"
+          className="rounded-md p-3 border mb-3"
           style={{
             backgroundColor: primitives.gold200,
             borderColor: primitives.gold400,
@@ -250,18 +218,14 @@ export default function YongsinSection({
     ];
 
   return (
-    <SectionCard title="용신 보완">
+    <SectionCard title="사주 보완">
       {/* 상단 3컬럼 배지 행 */}
       <View className="flex-row gap-2 mb-4">
         {roleEntries.map(({ role, ohaeng }) => {
-          const style = ROLE_STYLE[role];
           const oc = ohaengColors[ohaeng];
           return (
             <View key={role} className="flex-1 items-center gap-1">
-              <Font
-                tag="secondary"
-                style={{ fontSize: 11, color: style.badgeColor }}
-              >
+              <Font tag="secondary" style={{ fontSize: 11, color: oc.base }}>
                 {role}
               </Font>
               <View
@@ -294,20 +258,20 @@ export default function YongsinSection({
       {/* 용신/희신/기신 설명 박스 */}
       <View className="gap-2 mb-4">
         {roleEntries.map(({ role, ohaeng }) => {
-          const style = ROLE_STYLE[role];
+          const oc = ohaengColors[ohaeng];
           const desc = ROLE_DESC[role];
           return (
             <View
               key={role}
-              className="rounded-lg p-3 border flex-row gap-2"
+              className="rounded-md p-3 border flex-row gap-2"
               style={{
-                backgroundColor: style.boxBg,
-                borderColor: style.boxBorder,
+                backgroundColor: oc.light,
+                borderColor: oc.border,
               }}
             >
               <View
                 className="px-[6px] py-[2px] rounded-sm self-start"
-                style={{ backgroundColor: style.badgeColor }}
+                style={{ backgroundColor: oc.base }}
               >
                 <Font
                   tag="secondaryMedium"
@@ -321,7 +285,7 @@ export default function YongsinSection({
                   tag="secondaryMedium"
                   style={{
                     fontSize: 12,
-                    color: style.badgeColor,
+                    color: oc.base,
                     marginBottom: 2,
                   }}
                 >
@@ -365,14 +329,10 @@ export default function YongsinSection({
               return (
                 <View
                   key={i}
-                  className="flex-row items-center gap-2 rounded-lg p-3 border"
-                  style={{
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
-                  }}
+                  className="flex-row items-center gap-2 rounded-md p-3"
                 >
                   <View
-                    className="items-center justify-center rounded-lg"
+                    className="items-center justify-center rounded-md"
                     style={{
                       width: 44,
                       height: 52,
@@ -397,7 +357,13 @@ export default function YongsinSection({
                     size={14}
                     color={colors.textDisabled}
                   />
-                  <View className="flex-1">
+                  <View
+                    className="flex-1 border"
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    }}
+                  >
                     <View
                       className="self-start px-2 py-[2px] rounded-full border mb-1"
                       style={{
@@ -437,51 +403,12 @@ export default function YongsinSection({
             }
 
             const roleInfo = role ? CHAR_ROLE_INFO[role] : null;
-            const roleKey = role as '용' | '희' | '기' | '중' | null;
-            const roleStyleMap: Record<
-              '용' | '희' | '기' | '중',
-              {
-                badgeColor: string;
-                badgeBg: string;
-                badgeBorder: string;
-                boxBg: string;
-                boxBorder: string;
-              }
-            > = {
-              용: ROLE_STYLE['용신'],
-              희: ROLE_STYLE['희신'],
-              기: ROLE_STYLE['기신'],
-              중: {
-                badgeColor: colors.textTertiary,
-                badgeBg: colors.surface,
-                badgeBorder: colors.border,
-                boxBg: colors.surface,
-                boxBorder: colors.border,
-              },
-            };
-            const cardStyle = roleKey
-              ? roleStyleMap[roleKey]
-              : {
-                  badgeColor: colors.textTertiary,
-                  badgeBg: colors.surface,
-                  badgeBorder: colors.border,
-                  boxBg: colors.surface,
-                  boxBorder: colors.border,
-                };
-
             const oc = charOhaeng ? ohaengColors[charOhaeng] : null;
 
             return (
-              <View
-                key={i}
-                className="flex-row items-center gap-2 rounded-lg p-3 border"
-                style={{
-                  backgroundColor: cardStyle.boxBg,
-                  borderColor: cardStyle.boxBorder,
-                }}
-              >
+              <View key={i} className="flex-row items-center gap-2">
                 <View
-                  className="items-center justify-center rounded-lg border"
+                  className="items-center justify-center rounded-md border"
                   style={{
                     width: 44,
                     height: 52,
@@ -510,14 +437,22 @@ export default function YongsinSection({
                 <Ionicons
                   name="arrow-forward"
                   size={14}
-                  color={colors.textTertiary}
+                  color={oc ? oc.base : colors.textTertiary}
                 />
-                <View className="flex-1">
+                <View
+                  className="flex-1 border p-3 rounded-md"
+                  style={{
+                    backgroundColor: oc ? oc.light : colors.surface,
+                    borderColor: oc ? oc.border : colors.border,
+                  }}
+                >
                   <View className="flex-row items-center gap-2 mb-1">
                     {roleInfo && (
                       <View
                         className="self-start px-2 py-[2px] rounded-sm"
-                        style={{ backgroundColor: cardStyle.badgeColor }}
+                        style={{
+                          backgroundColor: oc ? oc.base : colors.textTertiary,
+                        }}
                       >
                         <Font
                           tag="secondaryMedium"
@@ -531,7 +466,7 @@ export default function YongsinSection({
                       tag="secondaryMedium"
                       style={{
                         fontSize: 12,
-                        color: cardStyle.badgeColor,
+                        color: oc ? oc.base : colors.textTertiary,
                         marginBottom: 1,
                       }}
                     >
@@ -557,7 +492,7 @@ export default function YongsinSection({
 
       {/* 하단 요약 텍스트 */}
       <View
-        className="mt-4 p-3 rounded-lg border"
+        className="mt-4 p-3 rounded-md border"
         style={{
           backgroundColor: colors.surface,
           borderColor: colors.border,
