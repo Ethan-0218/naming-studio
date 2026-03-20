@@ -1,33 +1,32 @@
+import ChatInputBar from '@/ai-naming/components/ChatInputBar';
+import DolrimjaModal from '@/ai-naming/components/DolrimjaModal';
+import LikedNamesPanel from '@/ai-naming/components/LikedNamesPanel';
+import MessageBubble from '@/ai-naming/components/MessageBubble';
+import PaymentBanner from '@/ai-naming/components/PaymentBanner';
+import ReasonPicker from '@/ai-naming/components/ReasonPicker';
+import SessionRestoreModal from '@/ai-naming/components/SessionRestoreModal';
+import TypingIndicator from '@/ai-naming/components/TypingIndicator';
+import { useAINamingSession } from '@/ai-naming/hooks/useAINamingSession';
+import { NameData } from '@/ai-naming/types';
+import NavBar from '@/components/NavBar';
+import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
+import MyeongJuStrip from '@/naming-tool/components/MyeongJuStrip';
+import AIPaymentModal from '@/payment/components/AIPaymentModal';
+import { usePurchaseStatus } from '@/payment/hooks/usePurchaseStatus';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import React, { useRef } from 'react';
 import {
   KeyboardAvoidingView,
-  NativeSyntheticEvent,
   NativeScrollEvent,
+  NativeSyntheticEvent,
   Platform,
   ScrollView,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import NavBar from '@/components/NavBar';
-import MyeongJuStrip from '@/naming-tool/components/MyeongJuStrip';
-import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
-import { usePurchaseStatus } from '@/payment/hooks/usePurchaseStatus';
-import AIPaymentModal from '@/payment/components/AIPaymentModal';
-import MessageBubble from '@/ai-naming/components/MessageBubble';
-import DolrimjaModal from '@/ai-naming/components/DolrimjaModal';
-import ReasonPicker from '@/ai-naming/components/ReasonPicker';
-import SessionRestoreModal from '@/ai-naming/components/SessionRestoreModal';
-import TypingIndicator from '@/ai-naming/components/TypingIndicator';
-import DevToolbar from '@/ai-naming/components/DevToolbar';
-import LikedNamesPanel from '@/ai-naming/components/LikedNamesPanel';
-import PaymentBanner from '@/ai-naming/components/PaymentBanner';
-import ChatInputBar from '@/ai-naming/components/ChatInputBar';
-import { useAINamingSession } from '@/ai-naming/hooks/useAINamingSession';
 import { RootStackParamList } from '../navigation/types';
-import { NameData } from '@/ai-naming/types';
 
 type AINamingNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -79,14 +78,6 @@ export default function AINamingScreen() {
           onBack={() => navigation.goBack()}
         />
       </View>
-
-      {__DEV__ && (
-        <DevToolbar
-          showDebug={session.showDebug}
-          onToggleDebug={() => session.setShowDebug((v) => !v)}
-          onReset={session.handleReset}
-        />
-      )}
 
       {profile && <MyeongJuStrip profile={profile} readOnly />}
 
