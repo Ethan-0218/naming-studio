@@ -4,8 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, ohaengColors, primitives } from '@/design-system';
 import { Font } from '@/components/Font';
 import { NameInput, Ohaeng } from '@/naming-tool/types';
-import { charYongsinRole } from '@/naming-tool/domain/sajuComplementLevel';
-import SectionCard from './SectionCard';
+import {
+  charYongsinRole,
+  computeSajuComplementLevel,
+} from '@/naming-tool/domain/sajuComplementLevel';
+import { getSajuComplementCombinationDescription } from '@/naming-tool/domain/sajuComplementCombinationDescriptions';
+import SectionCard, { ratingLabel, ratingColor } from './SectionCard';
 
 const OHAENG_HANJA: Record<Ohaeng, string> = {
   목: '木',
@@ -217,8 +221,26 @@ export default function YongsinSection({
       { role: '기신', ohaeng: gisin },
     ];
 
+  const role1 = nameInput.first1.charOhaeng
+    ? charYongsinRole(yongsin, nameInput.first1.charOhaeng)
+    : null;
+  const role2 = nameInput.first2.charOhaeng
+    ? charYongsinRole(yongsin, nameInput.first2.charOhaeng)
+    : null;
+
+  const level = computeSajuComplementLevel(yongsin, [
+    nameInput.first1.charOhaeng ?? null,
+    nameInput.first2.charOhaeng ?? null,
+  ]);
+
+  const combinationDesc = getSajuComplementCombinationDescription(role1, role2);
+
   return (
-    <SectionCard title="사주 보완">
+    <SectionCard
+      title="사주 보완"
+      badge={ratingLabel(level)}
+      badgeColor={ratingColor(level)}
+    >
       {/* 상단 3컬럼 배지 행 */}
       <View className="flex-row gap-2 mb-4">
         {roleEntries.map(({ role, ohaeng }) => {
@@ -490,7 +512,7 @@ export default function YongsinSection({
         </View>
       </View>
 
-      {/* 하단 요약 텍스트 */}
+      {/* 하단 조합별 해설 */}
       <View
         className="mt-4 p-3 rounded-md border"
         style={{
@@ -499,6 +521,16 @@ export default function YongsinSection({
         }}
       >
         <Font
+          tag="secondaryMedium"
+          style={{
+            fontSize: 12,
+            color: ratingColor(level),
+            marginBottom: 4,
+          }}
+        >
+          사주 보완 {ratingLabel(level)}
+        </Font>
+        <Font
           tag="secondary"
           style={{
             fontSize: 12,
@@ -506,8 +538,8 @@ export default function YongsinSection({
             lineHeight: 18,
           }}
         >
-          이름에 용신 오행을 담으면 사주의 균형이 강화됩니다. 용신·희신 계열
-          한자를 우선 선택하고, 기신 계열 한자는 가급적 피하는 것을 권장합니다.
+          {combinationDesc?.description ??
+            '한자를 선택하면 사주 보완 해설이 표시됩니다.'}
         </Font>
       </View>
     </SectionCard>
