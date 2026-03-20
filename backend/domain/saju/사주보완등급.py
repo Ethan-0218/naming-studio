@@ -1,4 +1,5 @@
 # 사주보완(용신·희신·기신) 글자 수 기반 5단 등급 — scored_combinations.saju_complement_level
+# 이름 두 글자(성씨 제외) 기준으로 net = (용신+희신) − 기신 계산
 
 from typing import Literal
 
@@ -7,11 +8,10 @@ from typing import Literal
 
 def 사주보완_complement_level(
     용신_한글: str,
-    surname_char_fe: str,
-    h1_char_fe: str,
-    h2_char_fe: str,
+    h1_char_fe: str,  # 이름 첫째 글자 자원오행
+    h2_char_fe: str,  # 이름 둘째 글자 자원오행
 ) -> 사주보완등급:
-    """성·이름 두 글자 자원오행(유효한 것만)에 대해 net = (용신+희신)−기신 으로 5단.
+    """이름 두 글자 자원오행(유효한 것만)에 대해 net = (용신+희신)−기신 으로 5단.
 
     유효 오행 글자가 0개면 平.
     """
@@ -21,10 +21,9 @@ def 사주보완_complement_level(
     if ys is None:
         return "平"
 
-    o0 = 오행.from_string(surname_char_fe) if surname_char_fe else None
     o1 = 오행.from_string(h1_char_fe) if h1_char_fe else None
     o2 = 오행.from_string(h2_char_fe) if h2_char_fe else None
-    elements = [e for e in (o0, o1, o2) if e is not None]
+    elements = [e for e in (o1, o2) if e is not None]
     if not elements:
         return "平"
 

@@ -13,9 +13,9 @@
 
 사전 계산 점수:
   - 전통 5항 (합 0.60): 자원·발음 오행, 수리격, 발음·획수 음양
-  - 사주보완: 각 yongshin(목~수)별로 성씨 한자 + 이름 두 글자(총 3글자) 자원오행에
-    용신 +2.5 / 희신(용신을 생함) +1.5 / 기신(용신을 극함) -1.5 / 기타 +1
-    → 유효 오행이 있는 글자 수로 0~1 정규화 후 가중 W_SAJU_BOJANG(0.40)을 곱해 합산
+  - 사주보완: 각 yongshin(목~수)별로 이름 두 글자 자원오행(성씨 제외) 기준
+    net = (용신+희신) − 기신 → 大吉 1.0 / 吉 0.8 / 平 0.5 / 凶 0.3 / 大凶 0.0
+    → 등급별 고정 점수에 가중 W_SAJU_BOJANG(0.40)을 곱해 합산
   - 등급 컬럼 6개(과락 필터용): jawon/baleum 오행·음양, surigyeok_level, saju_complement_level
 """
 
@@ -179,60 +179,37 @@ def _compute_score(
     return score
 
 
+_SAJU_LEVEL_SCORE: dict[str, float] = {
+    "大吉": 1.0,
+    "吉": 0.8,
+    "平": 0.5,
+    "凶": 0.3,
+    "大凶": 0.0,
+}
+
+
 def _정규화_사주보완_점수(
     용신_한글: str,
-    surname_char_fe: str,
     h1_char_fe: str,
     h2_char_fe: str,
 ) -> float:
-    """성씨 한자 + 이름 두 글자(총 3글자) 한자 자원오행. 용신·희신·기신(get극아오행).
+    """이름 두 글자(성씨 제외) 자원오행 기준 등급별 고정 점수.
 
-    글자당: 용신 +2.5, 희신 +1.5, 기신 -1.5, 기타 +1.0 → 유효 글자 N에 대해 선형 0~1.
-    유효 오행이 없으면 0.5.
+    大吉 1.0 / 吉 0.8 / 平 0.5 / 凶 0.3 / 大凶 0.0
     """
-    from domain.saju.오행 import 오행
+    from domain.saju.사주보완등급 import 사주보완_complement_level
 
-    w_y, w_h, w_g, w_o = 2.5, 1.5, -1.5, 1.0
-    ys = 오행.from_string(용신_한글)
-    if ys is None:
-        return 0.5
-    o0 = 오행.from_string(surname_char_fe) if surname_char_fe else None
-    o1 = 오행.from_string(h1_char_fe) if h1_char_fe else None
-    o2 = 오행.from_string(h2_char_fe) if h2_char_fe else None
-    elements = [e for e in (o0, o1, o2) if e is not None]
-    if not elements:
-        return 0.5
-    gisin_o = ys.get극아오행()
-    huisin_o = ys.get생아오행()
-    raw = 0.0
-    for e in elements:
-        if e == ys:
-            raw += w_y
-        elif e == huisin_o:
-            raw += w_h
-        elif e == gisin_o:
-            raw += w_g
-        else:
-            raw += w_o
-    n = len(elements)
-    min_raw = w_g * n
-    max_raw = w_y * n
-    if max_raw == min_raw:
-        return 0.5
-    return (raw - min_raw) / (max_raw - min_raw)
+    level = 사주보완_complement_level(용신_한글, h1_char_fe, h2_char_fe)
+    return _SAJU_LEVEL_SCORE[level]
 
 
 def _사주보완_가중합(
     용신_한글: str,
-    surname_char_fe: str,
     h1_char_fe: str,
     h2_char_fe: str,
 ) -> float:
-    """0~1 정규화 사주보완 × W_SAJU_BOJANG."""
-    return (
-        _정규화_사주보완_점수(용신_한글, surname_char_fe, h1_char_fe, h2_char_fe)
-        * W_SAJU_BOJANG
-    )
+    """이름 두 글자 기준 사주보완 점수 × W_SAJU_BOJANG."""
+    return _정규화_사주보완_점수(용신_한글, h1_char_fe, h2_char_fe) * W_SAJU_BOJANG
 
 
 def _five_dimension_levels(
@@ -505,7 +482,6 @@ def build() -> None:
                     (
                         b + _사주보완_가중합(
                             yongshin,
-                            s_char_fe,
                             h1.character_five_elements or "",
                             h2.character_five_elements or "",
                         ),
@@ -532,7 +508,6 @@ def build() -> None:
                     )
                     saju_c_lv = 사주보완_complement_level(
                         yongshin,
-                        s_char_fe,
                         h1.character_five_elements or "",
                         h2.character_five_elements or "",
                     )
