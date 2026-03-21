@@ -47,8 +47,10 @@ export default function NamingToolScreen({
   const { data: profiles = [] } = useMyeongJuList();
   const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
   const gender = selectedProfile?.gender ?? 'male';
-  const { nameInput, analysis, updateHangul, updateHanja } =
-    useNamingToolState(gender);
+  const { nameInput, analysis, updateHangul, updateHanja } = useNamingToolState(
+    gender,
+    selectedProfile?.yongsin ?? null,
+  );
 
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const isPremium = useSelfNamingPremium();

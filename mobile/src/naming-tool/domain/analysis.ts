@@ -15,19 +15,22 @@ import { toScore } from './ratingScore';
 import { computeSajuComplementLevel } from './sajuComplementLevel';
 import rawWeights from '@shared/data/scoring_weights.json';
 
+// 전통 5항 원래 가중치 합 = 0.60, 사주보완 = 0.40 → 총 1.0
 const W_TOTAL =
   rawWeights.jawonOhaeng +
   rawWeights.baleumOhaeng +
   rawWeights.surigyeok +
   rawWeights.baleumEumyang +
   rawWeights.hoeksuEumyang;
+const W_SAJU = 0.4;
 
+// 원래 가중치(raw) 사용: 합산 시 0~0.60 스케일, 비율은 ohaengScore/eumyangScore 계산에서 그대로 유지됨
 const W = {
-  jawonOhaeng: Math.round((rawWeights.jawonOhaeng / W_TOTAL) * 100),
-  baleumOhaeng: Math.round((rawWeights.baleumOhaeng / W_TOTAL) * 100),
-  surigyeok: Math.round((rawWeights.surigyeok / W_TOTAL) * 100),
-  baleumEumyang: Math.round((rawWeights.baleumEumyang / W_TOTAL) * 100),
-  hoeksuEumyang: Math.round((rawWeights.hoeksuEumyang / W_TOTAL) * 100),
+  jawonOhaeng: rawWeights.jawonOhaeng,
+  baleumOhaeng: rawWeights.baleumOhaeng,
+  surigyeok: rawWeights.surigyeok,
+  baleumEumyang: rawWeights.baleumEumyang,
+  hoeksuEumyang: rawWeights.hoeksuEumyang,
 };
 
 /**
@@ -111,17 +114,27 @@ export function computeNamingAnalysis(
     hoeksuEumyangResult;
 
   if (hasAny) {
-    let score = 0;
+    let rawScore = 0;
     if (baleumOhaengResult)
-      score += toScore(baleumOhaengResult.level) * W.baleumOhaeng;
+      rawScore += toScore(baleumOhaengResult.level) * W.baleumOhaeng;
     if (baleumEumyangResult)
-      score += toScore(baleumEumyangResult.rating) * W.baleumEumyang;
-    if (surigyeokResult) score += surigyeokResult.totalScore * W.surigyeok;
+      rawScore += toScore(baleumEumyangResult.rating) * W.baleumEumyang;
+    if (surigyeokResult) rawScore += surigyeokResult.totalScore * W.surigyeok;
     if (jawonOhaengResult)
-      score += toScore(jawonOhaengResult.level) * W.jawonOhaeng;
+      rawScore += toScore(jawonOhaengResult.level) * W.jawonOhaeng;
     if (hoeksuEumyangResult)
-      score += toScore(hoeksuEumyangResult.rating) * W.hoeksuEumyang;
-    totalScore = Math.round(Math.min(100, score));
+      rawScore += toScore(hoeksuEumyangResult.rating) * W.hoeksuEumyang;
+
+    // 사주보완(용신) 있으면 백엔드와 동일하게 0.40 가중 합산 → 0~1.0 × 100
+    // 없으면 전통 5항만 W_TOTAL(0.60)로 정규화 → 0~100
+    if (sajuComplementLevel != null) {
+      const sajuScore = toScore(sajuComplementLevel);
+      totalScore = Math.round(
+        Math.min(100, (rawScore + sajuScore * W_SAJU) * 100),
+      );
+    } else {
+      totalScore = Math.round(Math.min(100, (rawScore / W_TOTAL) * 100));
+    }
 
     if (baleumOhaengResult && jawonOhaengResult) {
       ohaengScore = Math.round(
