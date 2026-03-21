@@ -97,54 +97,23 @@ export default function NameDisplaySection({ nameInput, analysis }: Props) {
                 >
                   <Font
                     tag="primaryMedium"
-                    style={{
-                      fontSize: 22,
-                      color: data.hanja
-                        ? colors.textPrimary
-                        : colors.textDisabled,
-                    }}
+                    className="text-hanjaLg text-center"
+                    style={{ color: oc?.base ?? colors.textSecondary }}
                   >
-                    {data.hanja || '-'}
+                    {data.hanja}
                   </Font>
-                  {data.charOhaeng && (
-                    <View
-                      className="px-1.5 py-0.5 rounded-full"
-                      style={{ backgroundColor: oc?.base }}
-                    >
-                      <Font
-                        tag="secondaryMedium"
-                        style={{
-                          fontSize: 10,
-                          color: '#fff',
-                          letterSpacing: 0,
-                        }}
-                      >
-                        {data.charOhaeng}
-                      </Font>
-                    </View>
-                  )}
-                  {data.mean ? (
-                    <Font
-                      tag="secondary"
-                      className="text-center"
-                      style={{
-                        fontSize: 10,
-                        color: colors.textTertiary,
-                        lineHeight: 14,
-                      }}
-                      numberOfLines={2}
-                    >
-                      {data.mean}
-                    </Font>
-                  ) : null}
-                  {data.strokeCount != null && (
-                    <Font
-                      tag="secondary"
-                      style={{ fontSize: 10, color: colors.textDisabled }}
-                    >
-                      {data.strokeCount}획
-                    </Font>
-                  )}
+                  <Font
+                    tag="secondaryMedium"
+                    className="text-center text-caption"
+                    style={{
+                      color: oc?.base ?? colors.textSecondary,
+                      fontSize: 12,
+                      lineHeight: 16,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {data.mean} {data.hangul}
+                  </Font>
                 </View>
               );
             })}
