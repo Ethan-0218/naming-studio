@@ -73,7 +73,7 @@ export default function NameDetailScreen() {
         style={{ backgroundColor: colors.bgSubtle }}
       >
         <NavBar
-          title={nameData.한글}
+          title={nameData.full_name}
           subtitle="이름 상세 분석"
           onBack={() => navigation.goBack()}
         />
