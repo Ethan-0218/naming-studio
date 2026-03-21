@@ -26,9 +26,9 @@ const PAIR_INDICES: [number, number][] = [
 ];
 
 const PAIR_LABEL_OFFSETS = [
-  { dx: -12, dy: -8 },
-  { dx: 0, dy: -10 },
-  { dx: 12, dy: -8 },
+  { dx: -18, dy: -8 },
+  { dx: 0, dy: -12 },
+  { dx: 18, dy: -8 },
 ];
 
 const RELATION_COLOR: Record<OhaengRelation, string> = {

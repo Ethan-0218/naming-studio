@@ -16,11 +16,7 @@ interface Props {
   readOnly?: boolean;
 }
 
-export default function MyeongJuStrip({
-  profile,
-  onPress,
-  readOnly = false,
-}: Props) {
+function MyeongJuStrip({ profile, onPress, readOnly = false }: Props) {
   const ohaeng = ohaengColors[profile.ohaeng];
   const genderLabel = profile.gender === 'male' ? '남' : '여';
   const timePeriod = extractTimePeriod(profile.birthTime);
@@ -123,3 +119,5 @@ export default function MyeongJuStrip({
     </Container>
   );
 }
+
+export default React.memo(MyeongJuStrip);

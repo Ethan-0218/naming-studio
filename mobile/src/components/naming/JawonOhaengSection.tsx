@@ -11,7 +11,7 @@ interface Props {
   result: OhaengHarmonyResult | null;
 }
 
-export default function JawonOhaengSection({ nameInput, result }: Props) {
+function JawonOhaengSection({ nameInput, result }: Props) {
   const { surname, first1, first2 } = nameInput;
 
   const nodes: React.ComponentProps<typeof OhaengRelationDiagram>['nodes'] = [
@@ -69,3 +69,5 @@ export default function JawonOhaengSection({ nameInput, result }: Props) {
     </SectionCard>
   );
 }
+
+export default React.memo(JawonOhaengSection);

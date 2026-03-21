@@ -20,7 +20,7 @@ interface Props {
 const SLOT_LABELS = { surname: '성', first1: '첫째', first2: '둘째' } as const;
 const SLOTS: SlotKey[] = ['surname', 'first1', 'first2'];
 
-export default function NameInputSection({
+function NameInputSection({
   analysis,
   nameInput,
   onUpdateHangul,
@@ -185,3 +185,5 @@ export default function NameInputSection({
     </View>
   );
 }
+
+export default React.memo(NameInputSection);

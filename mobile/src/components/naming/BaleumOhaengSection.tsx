@@ -12,7 +12,7 @@ interface Props {
   result: OhaengHarmonyResult | null;
 }
 
-export default function BaleumOhaengSection({ nameInput, result }: Props) {
+function BaleumOhaengSection({ nameInput, result }: Props) {
   const { surname, first1, first2 } = nameInput;
 
   const nodes: React.ComponentProps<typeof OhaengRelationDiagram>['nodes'] = [
@@ -70,3 +70,5 @@ export default function BaleumOhaengSection({ nameInput, result }: Props) {
     </SectionCard>
   );
 }
+
+export default React.memo(BaleumOhaengSection);

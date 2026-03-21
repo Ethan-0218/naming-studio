@@ -7,6 +7,8 @@ interface Props {
   result: EumyangHarmonyResult | null;
 }
 
-export default function BaleumEumyangSection(props: Props) {
+function BaleumEumyangSection(props: Props) {
   return <EumyangSection variant="baleum" {...props} />;
 }
+
+export default React.memo(BaleumEumyangSection);

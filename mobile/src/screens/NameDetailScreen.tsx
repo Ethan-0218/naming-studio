@@ -40,7 +40,10 @@ export default function NameDetailScreen() {
   const { bottom } = useSafeAreaInsets();
 
   const { data: profiles = [] } = useMyeongJuList();
-  const profile = profiles.find((p) => p.id === profileId) ?? null;
+  const profile = useMemo(
+    () => profiles.find((p) => p.id === profileId) ?? null,
+    [profiles, profileId],
+  );
   const gender = profile?.gender ?? 'male';
 
   const nameInput = useMemo(() => nameDataToNameInput(nameData), [nameData]);

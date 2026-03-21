@@ -1,7 +1,7 @@
 import NavBar from '@/components/NavBar';
 import { colors } from '@/design-system';
 import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSelfNamingPremium } from '@/payment/hooks/useSelfNamingPremium';
 import SelfNamingPaywallOverlay from '@/payment/components/SelfNamingPaywallOverlay';
@@ -45,7 +45,10 @@ export default function NamingToolScreen({
 }: Props) {
   const { bottom } = useSafeAreaInsets();
   const { data: profiles = [] } = useMyeongJuList();
-  const selectedProfile = profiles.find((p) => p.id === profileId) ?? null;
+  const selectedProfile = useMemo(
+    () => profiles.find((p) => p.id === profileId) ?? null,
+    [profiles, profileId],
+  );
   const gender = selectedProfile?.gender ?? 'male';
   const { nameInput, analysis, updateHangul, updateHanja } = useNamingToolState(
     gender,
@@ -54,6 +57,26 @@ export default function NamingToolScreen({
 
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const isPremium = useSelfNamingPremium();
+
+  const lockedSurname = useMemo(
+    () =>
+      selectedProfile
+        ? {
+            hangul: selectedProfile.surname,
+            hanja: selectedProfile.surnameHanja,
+          }
+        : undefined,
+    [selectedProfile],
+  );
+
+  const handleOpenPremiumModal = useCallback(
+    () => setShowPremiumModal(true),
+    [],
+  );
+  const handleClosePremiumModal = useCallback(
+    () => setShowPremiumModal(false),
+    [],
+  );
 
   return (
     <KeyboardAvoidingView
@@ -98,14 +121,7 @@ export default function NamingToolScreen({
           nameInput={nameInput}
           onUpdateHangul={updateHangul}
           onUpdateHanja={updateHanja}
-          lockedSurname={
-            selectedProfile
-              ? {
-                  hangul: selectedProfile.surname,
-                  hanja: selectedProfile.surnameHanja,
-                }
-              : undefined
-          }
+          lockedSurname={lockedSurname}
         />
 
         <Divider />
@@ -132,7 +148,7 @@ export default function NamingToolScreen({
             gisin={selectedProfile?.gisin ?? null}
             nameInput={nameInput}
             isPurchased={isPremium}
-            onPressBuy={isPremium ? undefined : () => setShowPremiumModal(true)}
+            onPressBuy={isPremium ? undefined : handleOpenPremiumModal}
           />
           <SurigyeokSection
             nameInput={nameInput}
@@ -152,8 +168,8 @@ export default function NamingToolScreen({
 
       <SelfNamingPaywallOverlay
         visible={showPremiumModal}
-        onClose={() => setShowPremiumModal(false)}
-        onSuccess={() => setShowPremiumModal(false)}
+        onClose={handleClosePremiumModal}
+        onSuccess={handleClosePremiumModal}
       />
     </KeyboardAvoidingView>
   );

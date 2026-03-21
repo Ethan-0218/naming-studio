@@ -72,7 +72,7 @@ interface Props {
   onPressBuy?: () => void;
 }
 
-export default function YongsinSection({
+function YongsinSection({
   yongsin,
   heesin,
   gisin,
@@ -545,3 +545,5 @@ export default function YongsinSection({
     </SectionCard>
   );
 }
+
+export default React.memo(YongsinSection);

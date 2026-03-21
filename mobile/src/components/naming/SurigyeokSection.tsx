@@ -91,7 +91,7 @@ const GYEOK_LABELS: {
   { key: 'jeongyeok', label: '정격 (貞格)' },
 ];
 
-export default function SurigyeokSection({ nameInput, gender, result }: Props) {
+function SurigyeokSection({ nameInput, gender, result }: Props) {
   const [selected, setSelected] = useState<{
     label: string;
     entry: SuriEntry;
@@ -157,3 +157,5 @@ export default function SurigyeokSection({ nameInput, gender, result }: Props) {
     </>
   );
 }
+
+export default React.memo(SurigyeokSection);

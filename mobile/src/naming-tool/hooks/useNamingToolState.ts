@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { computeNamingAnalysis } from '../domain/analysis';
 import {
   CharSlotData,
@@ -83,13 +83,16 @@ export function useNamingToolState(gender: Gender, yongsin: Ohaeng | null) {
     [nameInput, yongsin, gender],
   );
 
-  function updateHangul(slot: SlotKey, hangul: string) {
+  const updateHangul = useCallback((slot: SlotKey, hangul: string) => {
     setHangulInput((prev) => ({ ...prev, [slot]: hangul }));
-  }
+  }, []);
 
-  function updateHanja(slot: SlotKey, selection: HanjaSelection) {
-    setHanjaInput((prev) => ({ ...prev, [slot]: selection }));
-  }
+  const updateHanja = useCallback(
+    (slot: SlotKey, selection: HanjaSelection) => {
+      setHanjaInput((prev) => ({ ...prev, [slot]: selection }));
+    },
+    [],
+  );
 
   return {
     nameInput,

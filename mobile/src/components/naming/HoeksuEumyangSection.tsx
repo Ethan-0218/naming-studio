@@ -7,6 +7,8 @@ interface Props {
   result: EumyangHarmonyResult | null;
 }
 
-export default function HoeksuEumyangSection(props: Props) {
+function HoeksuEumyangSection(props: Props) {
   return <EumyangSection variant="hoeksu" {...props} />;
 }
+
+export default React.memo(HoeksuEumyangSection);
