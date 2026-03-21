@@ -1,26 +1,25 @@
-import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { nameDataToNameInput } from '@/ai-naming/utils';
+import { Font } from '@/components/Font';
+import BaleumEumyangSection from '@/components/naming/BaleumEumyangSection';
+import BaleumOhaengSection from '@/components/naming/BaleumOhaengSection';
+import HoeksuEumyangSection from '@/components/naming/HoeksuEumyangSection';
+import JawonOhaengSection from '@/components/naming/JawonOhaengSection';
+import NameDisplaySection from '@/components/naming/NameDisplaySection';
+import SurigyeokSection from '@/components/naming/SurigyeokSection';
+import YongsinSection from '@/components/naming/YongsinSection';
+import NavBar from '@/components/NavBar';
+import { colors } from '@/design-system';
+import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
+import MyeongJuStrip from '@/naming-tool/components/MyeongJuStrip';
+import { computeNamingAnalysis } from '@/naming-tool/domain/analysis';
+import { RootStackParamList } from '@/navigation/types';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import React, { useMemo } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
-import NavBar from '@/components/NavBar';
-import { Font } from '@/components/Font';
-import { colors } from '@/design-system';
-import { RootStackParamList } from '@/navigation/types';
-import { useMyeongJuList } from '@/myeongju/hooks/useMyeongJuList';
-import MyeongJuStrip from '@/naming-tool/components/MyeongJuStrip';
-import NameDisplaySection from '@/components/naming/NameDisplaySection';
-import BaleumOhaengSection from '@/components/naming/BaleumOhaengSection';
-import BaleumEumyangSection from '@/components/naming/BaleumEumyangSection';
-import YongsinSection from '@/components/naming/YongsinSection';
-import SurigyeokSection from '@/components/naming/SurigyeokSection';
-import JawonOhaengSection from '@/components/naming/JawonOhaengSection';
-import HoeksuEumyangSection from '@/components/naming/HoeksuEumyangSection';
-import { nameDataToNameInput } from '@/ai-naming/utils';
-import { computeNamingAnalysis } from '@/naming-tool/domain/analysis';
-import { SajuInput } from '@/naming-tool/types';
 
 function Divider() {
   return <View className="h-[1px] bg-border my-5" />;
@@ -46,11 +45,14 @@ export default function NameDetailScreen() {
 
   const nameInput = useMemo(() => nameDataToNameInput(nameData), [nameData]);
 
-  const [sajuInput, setSajuInput] = useState<SajuInput>({ yongsin: null });
-
   const analysis = useMemo(
-    () => computeNamingAnalysis(nameInput, sajuInput, gender),
-    [nameInput, sajuInput, gender],
+    () =>
+      computeNamingAnalysis(
+        nameInput,
+        { yongsin: profile?.yongsin ?? null },
+        gender,
+      ),
+    [nameInput, profile?.yongsin, gender],
   );
 
   return (
@@ -109,11 +111,10 @@ export default function NameDetailScreen() {
         <GroupTitle>한자 이름 평가</GroupTitle>
         <View style={{ gap: 12 }}>
           <YongsinSection
-            sajuInput={sajuInput}
             nameInput={nameInput}
-            onUpdate={(data) => setSajuInput((prev) => ({ ...prev, ...data }))}
-            sajuComplementLevel={analysis.sajuComplementLevel}
-            sajuComplementScore={analysis.sajuComplementScore}
+            yongsin={profile?.yongsin ?? null}
+            heesin={profile?.heesin ?? null}
+            gisin={profile?.gisin ?? null}
             isPurchased={true}
           />
           <SurigyeokSection
