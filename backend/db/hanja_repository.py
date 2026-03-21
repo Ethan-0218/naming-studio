@@ -6,6 +6,14 @@ from pathlib import Path
 from core.config import HANJA_DB_PATH
 from db.hanja_model import Hanja
 
+_OHAENG_CN_TO_KO = {"木": "목", "火": "화", "土": "토", "金": "금", "水": "수"}
+
+
+def _normalize_ohaeng(v: str | None) -> str:
+    if not v:
+        return ""
+    return _OHAENG_CN_TO_KO.get(v, v)
+
 
 def _row_to_hanja(row: sqlite3.Row) -> Hanja:
     return Hanja(
@@ -19,8 +27,8 @@ def _row_to_hanja(row: sqlite3.Row) -> Hanja:
         dictionary_stroke_count=row["dictionary_stroke_count"],
         sound_based_yin_yang=row["sound_based_yin_yang"] or "",
         stroke_based_yin_yang=row["stroke_based_yin_yang"] or "",
-        pronunciation_five_elements=row["pronunciation_five_elements"] or "",
-        character_five_elements=row["character_five_elements"] or "",
+        pronunciation_five_elements=_normalize_ohaeng(row["pronunciation_five_elements"]),
+        character_five_elements=_normalize_ohaeng(row["character_five_elements"]),
         english=row["english"] or "",
         usage_count=row["usage_count"],
         is_family_hanja=bool(row["is_family_hanja"]),
