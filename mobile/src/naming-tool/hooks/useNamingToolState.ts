@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
+import { computeNamingAnalysis } from '../domain/analysis';
 import {
-  HanjaSelection,
   CharSlotData,
   Gender,
+  HanjaSelection,
   NameInput,
-  SajuInput,
+  Ohaeng,
 } from '../types';
-import { computeNamingAnalysis } from '../domain/analysis';
 
 type SlotKey = 'surname' | 'first1' | 'first2';
 
@@ -47,7 +47,7 @@ function resolveSlot(
   };
 }
 
-export function useNamingToolState(gender: Gender) {
+export function useNamingToolState(gender: Gender, yongsin: Ohaeng | null) {
   const [hangulInput, setHangulInput] = useState<HangulInput>({
     surname: '',
     first1: '',
@@ -58,7 +58,6 @@ export function useNamingToolState(gender: Gender) {
     first1: null,
     first2: null,
   });
-  const [sajuInput, setSajuInput] = useState<SajuInput>({ yongsin: null });
 
   const resolvedHanjaInput = useMemo<HanjaInput>(
     () => ({
@@ -80,8 +79,8 @@ export function useNamingToolState(gender: Gender) {
   );
 
   const analysis = useMemo(
-    () => computeNamingAnalysis(nameInput, sajuInput, gender),
-    [nameInput, sajuInput, gender],
+    () => computeNamingAnalysis(nameInput, { yongsin }, gender),
+    [nameInput, yongsin, gender],
   );
 
   function updateHangul(slot: SlotKey, hangul: string) {
@@ -92,16 +91,10 @@ export function useNamingToolState(gender: Gender) {
     setHanjaInput((prev) => ({ ...prev, [slot]: selection }));
   }
 
-  function updateSaju(data: Partial<SajuInput>) {
-    setSajuInput((prev) => ({ ...prev, ...data }));
-  }
-
   return {
     nameInput,
-    sajuInput,
     analysis,
     updateHangul,
     updateHanja,
-    updateSaju,
   };
 }
